@@ -1,248 +1,203 @@
 <!DOCTYPE html>
-<html lang="cs">
+<html lang="cs" class="dark">
 <head>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Login</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>window.FontAwesomeConfig = { autoReplaceSvg: 'nest'};</script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        ::-webkit-scrollbar { display: none; }
-        body { font-family: 'Inter', sans-serif; }
-        .input-error { border-color: #EF4444; background-color: #FEF2F2; }
-        .error-message { display: none; color: #EF4444; font-size: 0.75rem; margin-top: 0.25rem; }
-        .error-message.show { display: block; }
-        .password-toggle { cursor: pointer; transition: color 0.2s; }
-        .password-toggle:hover { color: #6366F1; }
-    </style>
     <script>
+        window.FontAwesomeConfig = { autoReplaceSvg: 'nest' };
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        primary: '#6366F1',
-                        primaryDark: '#4F46E5',
-                        secondary: '#EC4899',
-                        accent: '#8B5CF6',
-                        dark: '#0F172A',
-                        darker: '#020617',
-                        light: '#F8FAFC'
+                        app: {
+                            bg: '#0F172A',
+                            surface: '#1E293B',
+                            card: '#111827',
+                            primary: '#3B82F6',
+                            accent: '#A855F7',
+                            success: '#22C55E',
+                            text: '#F8FAFC',
+                            muted: '#94A3B8',
+                            border: '#334155'
+                        }
                     },
                     fontFamily: {
-                        sans: ['Inter', 'sans-serif']
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'glow': '0 0 20px -5px rgba(59, 130, 246, 0.5)',
+                        'glow-accent': '0 0 20px -5px rgba(168, 85, 247, 0.5)',
                     }
                 }
             }
         }
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0F172A;
+            color: #F8FAFC;
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        .floating-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+        .gradient-border {
+            background: linear-gradient(135deg, #3B82F6, #A855F7);
+            border-radius: 16px;
+            padding: 1px;
+        }
+        .gradient-border-inner {
+            background: #1E293B;
+            border-radius: 15px;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-primary via-accent to-secondary min-h-screen">
-    <div id="login-container" class="w-full max-w-[375px] mx-auto min-h-screen flex flex-col">
-        <div id="login-header" class="pt-12 px-6 pb-6">
-            <button id="back-button" class="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center mb-6 hover:bg-white/30 transition-all">
-                <i class="fa-solid fa-arrow-left text-white text-lg"></i>
-            </button>
-            <div class="flex justify-center mb-4">
-                <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-xl">
-                    <i class="fa-solid fa-music text-3xl text-primary"></i>
+<body class="bg-app-bg text-app-text min-h-[100dvh] flex flex-col w-full max-w-[430px] mx-auto relative shadow-2xl overflow-hidden">
+
+<div id="LoginBackground" class="absolute inset-0 overflow-hidden">
+    <div class="absolute top-20 left-10 w-32 h-32 bg-app-primary/20 rounded-full blur-3xl floating-animation"></div>
+    <div class="absolute top-60 right-8 w-24 h-24 bg-app-accent/20 rounded-full blur-2xl floating-animation" style="animation-delay: -1s;"></div>
+    <div class="absolute bottom-40 left-6 w-20 h-20 bg-app-success/20 rounded-full blur-2xl floating-animation" style="animation-delay: -2s;"></div>
+</div>
+
+<main class="relative z-10 flex-1 flex flex-col justify-center px-6 py-8">
+    
+    <section id="LoginHeader" class="text-center mb-12">
+        <div class="mb-8">
+            <div class="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-app-primary to-app-accent rounded-2xl flex items-center justify-center shadow-glow">
+                <i class="fa-solid fa-user-music text-3xl text-white"></i>
+            </div>
+            <h1 class="text-4xl font-bold bg-gradient-to-r from-app-primary to-app-accent bg-clip-text text-transparent mb-3">Dancee</h1>
+            <p class="text-app-muted text-lg font-medium">Objevuj taneční svět</p>
+        </div>
+        
+        <div class="space-y-2">
+            <h2 class="text-2xl font-bold text-app-text">Vítej zpět!</h2>
+            <p class="text-app-muted">Přihlaš se a pokračuj v objevování tanečních akcí</p>
+        </div>
+    </section>
+
+    <section id="LoginForm" class="space-y-6">
+        
+        <div class="space-y-4">
+            <div class="space-y-2">
+                <label class="text-sm font-semibold text-app-text block">E-mail</label>
+                <div class="relative">
+                    <input type="email" placeholder="tvuj@email.cz" class="w-full h-14 pl-12 pr-4 bg-app-surface border border-app-border rounded-2xl text-app-text placeholder-app-muted focus:border-app-primary focus:ring-2 focus:ring-app-primary/20 focus:outline-none transition-all">
+                    <i class="fa-regular fa-envelope absolute left-4 top-1/2 transform -translate-y-1/2 text-app-muted"></i>
                 </div>
             </div>
-            <h1 class="text-white text-3xl font-bold text-center mb-1">Přihlášení</h1>
-            <p class="text-white/90 text-sm text-center font-medium">Vítejte zpět v Dancee</p>
+
+            <div class="space-y-2">
+                <label class="text-sm font-semibold text-app-text block">Heslo</label>
+                <div class="relative">
+                    <input type="password" placeholder="••••••••" class="w-full h-14 pl-12 pr-12 bg-app-surface border border-app-border rounded-2xl text-app-text placeholder-app-muted focus:border-app-primary focus:ring-2 focus:ring-app-primary/20 focus:outline-none transition-all">
+                    <i class="fa-solid fa-lock absolute left-4 top-1/2 transform -translate-y-1/2 text-app-muted"></i>
+                    <button class="absolute right-4 top-1/2 transform -translate-y-1/2 text-app-muted hover:text-app-primary transition-colors">
+                        <i class="fa-regular fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-2">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" class="w-5 h-5 rounded border-2 border-app-border bg-app-surface checked:bg-app-primary checked:border-app-primary focus:ring-2 focus:ring-app-primary/20 transition-all">
+                    <span class="text-sm text-app-muted">Zůstat přihlášen</span>
+                </label>
+                <button class="text-sm text-app-primary hover:text-app-primary/80 font-medium transition-colors">
+                    Zapomenuté heslo?
+                </button>
+            </div>
         </div>
 
-        <div id="login-main" class="flex-1 bg-white rounded-t-[2rem] px-6 pt-8 pb-6 shadow-2xl">
-            <div id="login-error-alert" class="hidden mb-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
-                <i class="fa-solid fa-circle-exclamation text-red-500 text-lg mt-0.5"></i>
-                <div class="flex-1">
-                    <h4 class="text-sm font-semibold text-red-800 mb-1">Přihlášení se nezdařilo</h4>
-                    <p class="text-xs text-red-600">Nesprávný e-mail nebo heslo. Zkuste to prosím znovu.</p>
-                </div>
+        <button class="w-full h-14 bg-gradient-to-r from-app-primary to-app-accent text-white font-bold rounded-2xl shadow-glow hover:shadow-glow-accent transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]">
+            Přihlásit se
+        </button>
+
+        <div class="relative my-8">
+            <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t border-app-border"></div>
             </div>
-
-            <form id="loginForm" class="mb-6">
-                <div class="mb-4">
-                    <label for="email" class="block text-sm font-semibold text-dark mb-2">E-mail</label>
-                    <div class="relative">
-                        <div class="absolute left-4 top-1/2 -translate-y-1/2">
-                            <i class="fa-solid fa-envelope text-gray-400"></i>
-                        </div>
-                        <input type="email" id="email" placeholder="vas@email.cz" class="w-full h-14 pl-12 pr-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-primary transition-all duration-300 text-dark font-medium">
-                    </div>
-                    <div id="email-error" class="error-message">
-                        <i class="fa-solid fa-circle-exclamation"></i>
-                        <span>Zadejte platnou e-mailovou adresu</span>
-                    </div>
-                </div>
-
-                <div class="mb-4">
-                    <label for="password" class="block text-sm font-semibold text-dark mb-2">Heslo</label>
-                    <div class="relative">
-                        <div class="absolute left-4 top-1/2 -translate-y-1/2">
-                            <i class="fa-solid fa-lock text-gray-400"></i>
-                        </div>
-                        <input type="password" id="password" placeholder="••••••••" class="w-full h-14 pl-12 pr-12 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-primary transition-all duration-300 text-dark font-medium">
-                        <div id="togglePassword" class="absolute right-4 top-1/2 -translate-y-1/2 password-toggle">
-                            <i id="eyeIcon" class="fa-solid fa-eye text-gray-400"></i>
-                        </div>
-                    </div>
-                    <div id="password-error" class="error-message">
-                        <i class="fa-solid fa-circle-exclamation"></i>
-                        <span>Heslo musí mít alespoň 6 znaků</span>
-                    </div>
-                </div>
-
-                <div class="flex justify-end mb-6">
-                    <a href="#" class="text-sm font-semibold text-primary hover:text-primaryDark transition-colors">Zapomněli jste heslo?</a>
-                </div>
-
-                <button type="submit" class="w-full h-14 bg-gradient-to-r from-primary to-accent text-white rounded-xl font-bold text-base shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 mb-6">
-                    <span>Přihlásit se</span>
-                    <i class="fa-solid fa-arrow-right"></i>
-                </button>
-            </form>
-
-            <div class="flex items-center gap-3 mb-6">
-                <div class="flex-1 h-px bg-gray-200"></div>
-                <span class="text-xs text-gray-500 font-medium">NEBO</span>
-                <div class="flex-1 h-px bg-gray-200"></div>
+            <div class="relative flex justify-center">
+                <span class="px-4 text-sm text-app-muted bg-app-bg">nebo pokračuj s</span>
             </div>
+        </div>
 
-            <div id="social-login-section" class="space-y-3 mb-6">
-                <button class="w-full h-14 bg-white border-2 border-gray-200 rounded-xl font-semibold text-dark hover:border-gray-300 hover:bg-gray-50 transition-all duration-300 flex items-center justify-center gap-3">
-                    <i class="fa-brands fa-google text-xl text-red-500"></i>
-                    <span>Pokračovat s Google</span>
-                </button>
-                <button class="w-full h-14 bg-white border-2 border-gray-200 rounded-xl font-semibold text-dark hover:border-gray-300 hover:bg-gray-50 transition-all duration-300 flex items-center justify-center gap-3">
-                    <i class="fa-brands fa-apple text-xl"></i>
-                    <span>Pokračovat s Apple</span>
-                </button>
-            </div>
+        <div class="space-y-3">
+            <button class="w-full h-14 bg-app-surface border border-app-border rounded-2xl flex items-center justify-center gap-3 hover:bg-app-card transition-colors group">
+                <i class="fa-brands fa-google text-xl text-red-500 group-hover:scale-110 transition-transform"></i>
+                <span class="font-semibold text-app-text">Pokračovat s Google</span>
+            </button>
 
-            <div class="text-center pt-4">
-                <p class="text-sm text-gray-600">
-                    Nemáte účet? 
-                    <a href="#" class="font-semibold text-primary hover:text-primaryDark transition-colors">Zaregistrujte se</a>
+            <button class="w-full h-14 bg-app-surface border border-app-border rounded-2xl flex items-center justify-center gap-3 hover:bg-app-card transition-colors group">
+                <i class="fa-brands fa-apple text-xl text-app-text group-hover:scale-110 transition-transform"></i>
+                <span class="font-semibold text-app-text">Pokračovat s Apple</span>
+            </button>
+        </div>
+
+        <div class="text-center pt-6 space-y-4">
+            <p class="text-sm text-app-muted">
+                Nemáš ještě účet? 
+                <button class="text-app-primary hover:text-app-primary/80 font-semibold transition-colors ml-1">
+                    Zaregistruj se
+                </button>
+            </p>
+            
+            <div class="pt-4 border-t border-app-border">
+                <p class="text-xs text-app-muted leading-relaxed">
+                    Pokračováním souhlasíš s našimi 
+                    <button class="text-app-primary hover:underline">Podmínkami používání</button>
+                    a 
+                    <button class="text-app-primary hover:underline">Zásadami ochrany osobních údajů</button>
                 </p>
             </div>
         </div>
-    </div>
+    </section>
 
-    <script>
-        window.addEventListener('load', function() {
-            const loginForm = document.getElementById('loginForm');
-            const emailInput = document.getElementById('email');
-            const passwordInput = document.getElementById('password');
-            const emailError = document.getElementById('email-error');
-            const passwordError = document.getElementById('password-error');
-            const loginErrorAlert = document.getElementById('login-error-alert');
-            const togglePassword = document.getElementById('togglePassword');
-            const eyeIcon = document.getElementById('eyeIcon');
+</main>
 
-            togglePassword.addEventListener('click', function() {
-                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordInput.setAttribute('type', type);
-                
-                if (type === 'text') {
-                    eyeIcon.classList.remove('fa-eye');
-                    eyeIcon.classList.add('fa-eye-slash');
-                } else {
-                    eyeIcon.classList.remove('fa-eye-slash');
-                    eyeIcon.classList.add('fa-eye');
-                }
-            });
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const passwordInput = document.querySelector('input[type="password"]');
+    const eyeButton = passwordInput.nextElementSibling;
+    const eyeIcon = eyeButton.querySelector('i');
+    
+    eyeButton.addEventListener('click', function() {
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            eyeIcon.className = 'fa-regular fa-eye-slash';
+        } else {
+            passwordInput.type = 'password';
+            eyeIcon.className = 'fa-regular fa-eye';
+        }
+    });
+});
+</script>
 
-            function validateEmail(email) {
-                const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                return re.test(email);
-            }
-
-            function validatePassword(password) {
-                return password.length >= 6;
-            }
-
-            emailInput.addEventListener('blur', function() {
-                if (emailInput.value && !validateEmail(emailInput.value)) {
-                    emailInput.classList.add('input-error');
-                    emailError.classList.add('show');
-                } else {
-                    emailInput.classList.remove('input-error');
-                    emailError.classList.remove('show');
-                }
-            });
-
-            emailInput.addEventListener('input', function() {
-                if (emailInput.classList.contains('input-error')) {
-                    emailInput.classList.remove('input-error');
-                    emailError.classList.remove('show');
-                }
-                if (loginErrorAlert.classList.contains('hidden') === false) {
-                    loginErrorAlert.classList.add('hidden');
-                }
-            });
-
-            passwordInput.addEventListener('blur', function() {
-                if (passwordInput.value && !validatePassword(passwordInput.value)) {
-                    passwordInput.classList.add('input-error');
-                    passwordError.classList.add('show');
-                } else {
-                    passwordInput.classList.remove('input-error');
-                    passwordError.classList.remove('show');
-                }
-            });
-
-            passwordInput.addEventListener('input', function() {
-                if (passwordInput.classList.contains('input-error')) {
-                    passwordInput.classList.remove('input-error');
-                    passwordError.classList.remove('show');
-                }
-                if (loginErrorAlert.classList.contains('hidden') === false) {
-                    loginErrorAlert.classList.add('hidden');
-                }
-            });
-
-            loginForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                let isValid = true;
-                
-                if (!emailInput.value) {
-                    emailInput.classList.add('input-error');
-                    emailError.querySelector('span').textContent = 'E-mail je povinný';
-                    emailError.classList.add('show');
-                    isValid = false;
-                } else if (!validateEmail(emailInput.value)) {
-                    emailInput.classList.add('input-error');
-                    emailError.querySelector('span').textContent = 'Zadejte platnou e-mailovou adresu';
-                    emailError.classList.add('show');
-                    isValid = false;
-                }
-                
-                if (!passwordInput.value) {
-                    passwordInput.classList.add('input-error');
-                    passwordError.querySelector('span').textContent = 'Heslo je povinné';
-                    passwordError.classList.add('show');
-                    isValid = false;
-                } else if (!validatePassword(passwordInput.value)) {
-                    passwordInput.classList.add('input-error');
-                    passwordError.querySelector('span').textContent = 'Heslo musí mít alespoň 6 znaků';
-                    passwordError.classList.add('show');
-                    isValid = false;
-                }
-                
-                if (isValid) {
-                    loginErrorAlert.classList.remove('hidden');
-                    setTimeout(() => {
-                        loginErrorAlert.classList.add('hidden');
-                    }, 5000);
-                }
-            });
-        });
-    </script>
 </body>
 </html>

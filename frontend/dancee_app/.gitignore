@@ -44,13 +44,12 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-*.g.dart
-*.freezed.dart
-
-# Generated localization files
-lib/l10n/
-
-# Environment-specific sensitive configuration
+# Sensitive app configuration (copy config.example.dart to config.dart)
 lib/config.dart
 
-.flutter-plugins
+# Firebase platform configuration files (contain project-specific identifiers)
+# Place these in the correct platform directories and do NOT commit them.
+# For Android: android/app/google-services.json
+# For iOS: ios/Runner/GoogleService-Info.plist
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist

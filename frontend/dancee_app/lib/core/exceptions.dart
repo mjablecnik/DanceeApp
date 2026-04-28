@@ -1,19 +1,24 @@
-/// Exception thrown when API calls fail.
+/// Typed exception thrown when a CMS API request fails.
 ///
-/// This is part of the core exceptions module.
-/// Future exception types (ValidationException, BusinessLogicException, etc.)
-/// can be added to this file or split into a core/exceptions/ directory if needed.
+/// Contains the HTTP [statusCode] (null for network/connection errors),
+/// a human-readable [message] describing the failure, and optionally
+/// the [originalError] (e.g. a [DioException]) for debugging.
 class ApiException implements Exception {
-  final String message;
-  final int? statusCode;
-  final dynamic originalError;
-  
-  ApiException({
+  const ApiException({
     required this.message,
     this.statusCode,
     this.originalError,
   });
-  
+
+  final String message;
+  final int? statusCode;
+
+  /// The original error that caused this exception (e.g. a DioException).
+  /// Useful for debugging — preserves the full stack trace and response body.
+  final dynamic originalError;
+
   @override
-  String toString() => 'ApiException: $message (status: $statusCode)';
+  String toString() => statusCode != null
+      ? 'ApiException($statusCode): $message'
+      : 'ApiException: $message';
 }

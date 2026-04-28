@@ -1,30 +1,24 @@
-import '../config.dart';
+// Re-exports sensitive CMS config values and defines public app constants.
+// Import this file throughout the app instead of importing lib/config.dart directly.
+
+import '../config.dart' as sensitive;
 
 /// Application configuration.
 ///
-/// This file consolidates all configuration values:
-/// - Sensitive values are imported from lib/config.dart (gitignored)
-/// - Public non-sensitive values are defined directly here
-///
-/// All code should import this file for configuration access.
+/// Sensitive values ([directusBaseUrl], [directusAccessToken]) are read from
+/// the gitignored `lib/config.dart`. All other constants are defined here.
 class AppConfig {
-  /// Base URL for the Directus CMS API.
-  static const String directusBaseUrl = Config.directusBaseUrl;
+  AppConfig._();
 
-  /// Directus access token for API authentication.
-  static const String directusAccessToken = Config.directusAccessToken;
+  /// Directus CMS base URL (e.g. "https://your-cms.example.com").
+  static const String directusBaseUrl = sensitive.directusBaseUrl;
 
-  /// Hardcoded user ID for initial implementation.
-  ///
-  /// This will be replaced with actual authentication in the future.
-  static const String userId = 'user123';
+  /// Directus static access token for API requests.
+  static const String directusAccessToken = sensitive.directusAccessToken;
 
-  /// Connection timeout in milliseconds.
-  static const int connectTimeout = 10000;
+  /// HTTP connection timeout in milliseconds.
+  static const int connectionTimeoutMs = 10000;
 
-  /// Receive timeout in milliseconds.
-  static const int receiveTimeout = 10000;
-
-  /// Send timeout in milliseconds.
-  static const int sendTimeout = 10000;
+  /// HTTP receive timeout in milliseconds.
+  static const int receiveTimeoutMs = 15000;
 }

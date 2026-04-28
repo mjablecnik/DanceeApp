@@ -1,83 +1,76 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import 'clients.dart';
 import 'config.dart';
+import '../data/repositories/auth_repository.dart';
+import '../data/repositories/event_repository.dart';
+import '../data/repositories/course_repository.dart';
+import '../data/repositories/favorites_repository.dart';
+import '../data/repositories/dance_style_repository.dart';
+import '../logic/cubits/auth_cubit.dart';
+import '../logic/cubits/event_cubit.dart';
+import '../logic/cubits/course_cubit.dart';
+import '../logic/cubits/favorites_cubit.dart';
+import '../logic/cubits/filter_cubit.dart';
+import '../logic/cubits/settings_cubit.dart';
 
-// Feature repositories
-import '../features/events/data/event_repository.dart';
-import '../features/auth/data/auth_repository.dart';
-import '../features/settings/data/settings_repository.dart';
+final GetIt sl = GetIt.instance;
 
-// Feature cubits
-import '../features/events/logic/event_list.dart';
-import '../features/events/logic/favorites.dart';
-import '../features/auth/logic/auth.dart';
-import '../features/settings/logic/settings.dart';
-import '../features/events/logic/event_detail.dart';
-import '../features/events/data/filter_persistence_service.dart';
-import '../features/events/logic/event_filter.dart';
-
-final getIt = GetIt.instance;
-
-Future<void> setupDependencies() async {
-  // Register DirectusClient as lazy singleton
-  getIt.registerLazySingleton<DirectusClient>(
+void setupServiceLocator() {
+  // Core
+  sl.registerLazySingleton<DirectusClient>(
     () => DirectusClient(
       baseUrl: AppConfig.directusBaseUrl,
       accessToken: AppConfig.directusAccessToken,
+      idTokenProvider: () => sl<AuthRepository>().getIdToken(),
     ),
   );
 
-  // Register repositories as lazy singletons
-  getIt.registerLazySingleton<EventRepository>(
-    () => EventRepository(getIt<DirectusClient>()),
+  // Auth
+  sl.registerLazySingleton<AuthRepository>(
+    () => AuthRepository(
+      firebaseAuth: FirebaseAuth.instance,
+      googleSignIn: GoogleSignIn(),
+    ),
   );
-
-  getIt.registerLazySingleton<AuthRepository>(
-    () => AuthRepository(getIt<DirectusClient>()),
-  );
-
-  getIt.registerLazySingleton<SettingsRepository>(
-    () => SettingsRepository(getIt<DirectusClient>()),
-  );
-
-  // Register cubits
-  getIt.registerLazySingleton<EventListCubit>(
-    () => EventListCubit(getIt<EventRepository>()),
-  );
-
-  getIt.registerLazySingleton<FavoritesCubit>(
-    () => FavoritesCubit(getIt<EventRepository>(), getIt<EventListCubit>()),
-  );
-
-  getIt.registerFactory<AuthCubit>(
-    () => AuthCubit(getIt<AuthRepository>()),
-  );
-
-  getIt.registerFactory<SettingsCubit>(
-    () => SettingsCubit(getIt<SettingsRepository>()),
-  );
-
-  getIt.registerFactoryParam<EventDetailCubit, String, void>(
-    (eventId, _) => EventDetailCubit(
-      eventListCubit: getIt<EventListCubit>(),
-      eventId: eventId,
+  sl.registerLazySingleton<AuthCubit>(
+    () => AuthCubit(
+      authRepository: sl<AuthRepository>(),
+      favoritesRepository: sl<FavoritesRepository>(),
     ),
   );
 
-  getIt.registerLazySingleton<FilterPersistenceService>(
-    () => FilterPersistenceService(),
+  // Repositories
+  sl.registerLazySingleton<EventRepository>(
+    () => EventRepository(client: sl<DirectusClient>()),
+  );
+  sl.registerLazySingleton<CourseRepository>(
+    () => CourseRepository(client: sl<DirectusClient>()),
+  );
+  sl.registerLazySingleton<FavoritesRepository>(
+    () => FavoritesRepository(client: sl<DirectusClient>()),
+  );
+  sl.registerLazySingleton<DanceStyleRepository>(
+    () => DanceStyleRepository(client: sl<DirectusClient>()),
   );
 
-  // Use registerSingleton (eager) since the cubit is accessed immediately for
-  // restoreFilters() — using lazySingleton here would be misleading.
-  getIt.registerSingleton<EventFilterCubit>(
-    EventFilterCubit(
-      getIt<EventListCubit>(),
-      getIt<FilterPersistenceService>(),
+  // Cubits
+  sl.registerFactory<SettingsCubit>(() => SettingsCubit());
+  sl.registerFactory<FilterCubit>(
+    () => FilterCubit(danceStyleRepository: sl<DanceStyleRepository>()),
+  );
+  sl.registerFactory<EventCubit>(
+    () => EventCubit(eventRepository: sl<EventRepository>()),
+  );
+  sl.registerFactory<CourseCubit>(
+    () => CourseCubit(courseRepository: sl<CourseRepository>()),
+  );
+  sl.registerLazySingleton<FavoritesCubit>(
+    () => FavoritesCubit(
+      favoritesRepository: sl<FavoritesRepository>(),
+      authCubit: sl<AuthCubit>(),
     ),
   );
-
-  // Await restoreFilters so saved filters are in place before the UI renders.
-  await getIt<EventFilterCubit>().restoreFilters();
 }

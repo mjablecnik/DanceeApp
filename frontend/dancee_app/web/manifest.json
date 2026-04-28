@@ -1,6 +1,6 @@
 {
-    "name": "dancee_app",
-    "short_name": "dancee_app",
+    "name": "Dancee",
+    "short_name": "Dancee",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

@@ -1,146 +1,178 @@
-import 'dart:developer' as developer;
-
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+
 import 'config.dart';
 import 'exceptions.dart';
 
-/// HTTP client for communicating with the Directus CMS API.
+/// Dio-based HTTP client for the Directus CMS REST API.
 ///
-/// Handles authentication via Bearer token, the Directus response
-/// envelope (`{ "data": ... }`), and standard error handling.
+/// Handles authentication, Directus envelope unwrapping (`data` field
+/// extraction), and maps HTTP errors and network failures to [ApiException].
 class DirectusClient {
-  final Dio _dio;
-
-  /// Creates a DirectusClient configured for the Directus CMS API.
-  ///
-  /// An optional [dio] instance can be injected for testing purposes.
   DirectusClient({
     required String baseUrl,
     required String accessToken,
+    Future<String?> Function()? idTokenProvider,
     Dio? dio,
-  }) : _dio = dio ?? Dio() {
-    _dio.options.baseUrl = baseUrl;
-    _dio.options.connectTimeout =
-        Duration(milliseconds: AppConfig.connectTimeout);
-    _dio.options.receiveTimeout =
-        Duration(milliseconds: AppConfig.receiveTimeout);
-    _dio.options.sendTimeout = Duration(milliseconds: AppConfig.sendTimeout);
-    _dio.options.headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Authorization': 'Bearer $accessToken',
-    };
-
-    if (kDebugMode) {
-      _dio.interceptors.add(LogInterceptor(
-        requestBody: true,
-        responseBody: true,
-        error: true,
-        logPrint: (obj) => developer.log('$obj', name: 'DirectusClient'),
-      ));
-    }
+  })  : _accessToken = accessToken,
+        _idTokenProvider = idTokenProvider,
+        _dio = dio ??
+            Dio(
+              BaseOptions(
+                baseUrl: baseUrl,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                connectTimeout:
+                    const Duration(milliseconds: AppConfig.connectionTimeoutMs),
+                receiveTimeout:
+                    const Duration(milliseconds: AppConfig.receiveTimeoutMs),
+              ),
+            ) {
+    _dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        String? token;
+        if (_idTokenProvider != null) {
+          try {
+            token = await _idTokenProvider();
+          } catch (_) {
+            // fall back to static token on error
+          }
+        }
+        options.headers['Authorization'] = 'Bearer ${token ?? _accessToken}';
+        handler.next(options);
+      },
+    ));
   }
 
-  /// Extracts the `data` field from a Directus response envelope.
-  dynamic _extractData(dynamic response) {
-    if (response is Map<String, dynamic> && response.containsKey('data')) {
-      return response['data'];
-    }
-    return response;
-  }
+  final Dio _dio;
+  final String _accessToken;
+  final Future<String?> Function()? _idTokenProvider;
 
-  /// Makes a GET request and returns the unwrapped `data` field.
-  Future<dynamic> get(String path,
-      {Map<String, dynamic>? queryParameters}) async {
+  /// Performs a GET request and returns the unwrapped `data` field from the
+  /// Directus response envelope.
+  Future<dynamic> get(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+  }) async {
     try {
-      final response =
-          await _dio.get(path, queryParameters: queryParameters);
-      return _extractData(response.data);
+      final response = await _dio.get<Map<String, dynamic>>(
+        path,
+        queryParameters: queryParameters,
+      );
+      return _unwrap(response);
     } on DioException catch (e) {
-      throw _convertDioException(e);
+      throw _mapDioException(e);
     }
   }
 
-  /// Makes a POST request and returns the unwrapped `data` field.
+  /// Performs a POST request and returns the unwrapped `data` field.
   Future<dynamic> post(String path, {dynamic data}) async {
     try {
-      final response = await _dio.post(path, data: data);
-      return _extractData(response.data);
+      final response = await _dio.post<Map<String, dynamic>>(
+        path,
+        data: data,
+      );
+      return _unwrap(response);
     } on DioException catch (e) {
-      throw _convertDioException(e);
+      throw _mapDioException(e);
     }
   }
 
-  /// Makes a PATCH request and returns the unwrapped `data` field.
-  Future<dynamic> patch(String path, {dynamic data}) async {
+  /// Performs a DELETE request.
+  Future<void> delete(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+  }) async {
     try {
-      final response = await _dio.patch(path, data: data);
-      return _extractData(response.data);
+      await _dio.delete<void>(
+        path,
+        queryParameters: queryParameters,
+      );
     } on DioException catch (e) {
-      throw _convertDioException(e);
+      throw _mapDioException(e);
     }
   }
 
-  /// Makes a DELETE request.
-  Future<void> delete(String path,
-      {Map<String, dynamic>? queryParameters}) async {
-    try {
-      await _dio.delete(path, queryParameters: queryParameters);
-    } on DioException catch (e) {
-      throw _convertDioException(e);
-    }
+  dynamic _unwrap(Response<Map<String, dynamic>> response) {
+    final body = response.data;
+    if (body == null) return null;
+    return body['data'];
   }
 
-  /// Checks if the Directus service is available.
-  Future<bool> checkHealth() async {
-    try {
-      final response = await _dio.get('/server/health');
-      return response.statusCode == 200;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  ApiException _convertDioException(DioException e) {
+  ApiException _mapDioException(DioException e) {
+    final statusCode = e.response?.statusCode;
     switch (e.type) {
       case DioExceptionType.connectionTimeout:
-      case DioExceptionType.sendTimeout:
+        return ApiException(
+          message: 'api.errors.connectionTimeout',
+          originalError: e,
+        );
       case DioExceptionType.receiveTimeout:
         return ApiException(
-          message: 'Request timeout. Please check your connection.',
+          message: 'api.errors.receiveTimeout',
+          originalError: e,
+        );
+      case DioExceptionType.sendTimeout:
+        return ApiException(
+          message: 'api.errors.sendTimeout',
           originalError: e,
         );
       case DioExceptionType.connectionError:
         return ApiException(
-          message: 'Connection error. Please check your internet connection.',
+          message: 'api.errors.noConnection',
           originalError: e,
         );
       case DioExceptionType.badResponse:
-        final statusCode = e.response?.statusCode;
-        final data = e.response?.data;
-        String errorMessage = 'Server error occurred';
-        if (data is Map<String, dynamic>) {
-          final errors = data['errors'];
-          if (errors is List && errors.isNotEmpty) {
-            errorMessage = errors.first['message'] ?? errorMessage;
-          }
-        }
+        // ignore: avoid_print
+        print(
+          '[DirectusClient] badResponse: status=$statusCode '
+          'body=${e.response?.data}',
+        );
         return ApiException(
-          message: errorMessage,
           statusCode: statusCode,
+          message: _keyForStatusCode(statusCode),
           originalError: e,
         );
       case DioExceptionType.cancel:
         return ApiException(
-          message: 'Request was cancelled',
+          message: 'api.errors.requestCancelled',
           originalError: e,
         );
       default:
         return ApiException(
-          message: 'An unexpected error occurred',
+          statusCode: statusCode,
+          message: 'api.errors.generic',
           originalError: e,
         );
+    }
+  }
+
+  String _keyForStatusCode(int? statusCode) {
+    switch (statusCode) {
+      case 400:
+        return 'api.errors.badRequest';
+      case 401:
+        return 'api.errors.unauthorized';
+      case 403:
+        return 'api.errors.forbidden';
+      case 404:
+        return 'api.errors.notFound';
+      case 409:
+        return 'api.errors.conflict';
+      case 500:
+        return 'api.errors.internalServerError';
+      case 502:
+        return 'api.errors.badGateway';
+      case 503:
+        return 'api.errors.serviceUnavailable';
+      default:
+        if (statusCode != null && statusCode >= 400 && statusCode < 500) {
+          return 'api.errors.clientError';
+        }
+        if (statusCode != null && statusCode >= 500) {
+          return 'api.errors.serverError';
+        }
+        return 'api.errors.generic';
     }
   }
 }
