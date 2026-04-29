@@ -1,0 +1,30 @@
+# Version control
+.git/
+.gitignore
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+*.swp
+
+# Build outputs
+build/
+.dart_tool/
+.pub-cache/
+.pub/
+
+# Platform-specific (not needed for web build)
+android/
+ios/
+macos/
+linux/
+windows/
+
+# Test artifacts
+coverage/
+test/
+
+# Documentation
+docs/
+*.md
