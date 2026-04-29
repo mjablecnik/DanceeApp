@@ -78,11 +78,12 @@ class DirectusAuthService {
     required String firebaseUid,
   }) async {
     // Step 1: Link — creates Directus user if it doesn't exist.
-    await _dio.post('/firebase/link', data: {'id_token': firebaseIdToken});
+    await _dio.post('/directus-extension-firebase-auth/link',
+        data: {'id_token': firebaseIdToken});
 
     // Step 2: Authenticate — get Directus tokens.
     final response = await _dio.post(
-      '/firebase/auth',
+      '/directus-extension-firebase-auth/auth',
       data: {'uid': firebaseUid},
     );
 
