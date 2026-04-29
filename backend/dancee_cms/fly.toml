@@ -3,7 +3,7 @@ primary_region = 'fra'
 
 [env]
   CORS_ENABLED = "true"
-  CORS_ORIGIN = "true"
+  CORS_ORIGIN = "https://dancee-app.fly.dev"
   CORS_METHODS = "GET,POST,PATCH,DELETE,OPTIONS"
   CORS_ALLOWED_HEADERS = "Content-Type,Authorization"
   CORS_EXPOSED_HEADERS = "Content-Range"
