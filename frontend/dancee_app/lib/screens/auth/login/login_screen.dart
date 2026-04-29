@@ -38,32 +38,35 @@ class _LoginScreenState extends State<LoginScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: appBg,
-      body: Stack(
-        children: [
-          BackgroundCircles(animation: _floatAnim),
-          SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.xxl,
-                vertical: AppSpacing.xxxl,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: AppSpacing.xxxl),
-                  AuthHeaderSection(
-                    title: t.auth.login.title,
-                    subtitle: t.auth.login.subtitle,
-                  ),
-                  const SizedBox(height: 48),
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        backgroundColor: appBg,
+        body: Stack(
+          children: [
+            BackgroundCircles(animation: _floatAnim),
+            SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.xxl,
+                  vertical: AppSpacing.xxxl,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: AppSpacing.xxxl),
+                    AuthHeaderSection(
+                      title: t.auth.login.title,
+                      subtitle: t.auth.login.subtitle,
+                    ),
+                    const SizedBox(height: 48),
                   const LoginFormSection(),
                 ],
               ),
             ),
           ),
         ],
+      ),
       ),
     );
   }

@@ -93,24 +93,26 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: appBg,
-      body: Stack(
-        children: [
-          BackgroundCircles(animation: _floatAnim),
-          SafeArea(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.xxl,
-                    vertical: AppSpacing.xl,
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        backgroundColor: appBg,
+        body: Stack(
+          children: [
+            BackgroundCircles(animation: _floatAnim),
+            SafeArea(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.xxl,
+                      vertical: AppSpacing.xl,
+                    ),
+                    child: OnboardingHeaderSection(
+                      currentStep: _currentStep,
+                      onSkip: _finish,
+                    ),
                   ),
-                  child: OnboardingHeaderSection(
-                    currentStep: _currentStep,
-                    onSkip: _finish,
-                  ),
-                ),
                 Expanded(
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
@@ -148,6 +150,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             ),
           ),
         ],
+      ),
       ),
     );
   }
