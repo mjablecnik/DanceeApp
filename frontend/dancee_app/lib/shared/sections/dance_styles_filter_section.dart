@@ -1,4 +1,4 @@
-import 'package:dancee_app2/screens/events/events_list/components/dance_style_chips_row.dart';
+import 'package:dancee_app/screens/events/events_list/components/dance_style_chips_row.dart';
 import 'package:flutter/material.dart';
 import '../../core/colors.dart';
 import '../../core/theme.dart';
