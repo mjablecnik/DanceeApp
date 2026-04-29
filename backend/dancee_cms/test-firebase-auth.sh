@@ -20,6 +20,7 @@ set -e
 # ---------------------------------------------------------------------------
 FIREBASE_API_KEY="AIzaSyDVScsqpCulertRQ_actn4dWaT0blKruZ8"
 DIRECTUS_URL="https://dancee-cms.fly.dev"
+FIREBASE_ENDPOINT_PREFIX="/directus-extension-firebase-auth"
 
 # ---------------------------------------------------------------------------
 # Input validation
@@ -61,11 +62,11 @@ echo "ID Token: ${ID_TOKEN:0:50}..."
 echo ""
 
 echo "=== Step 2: Link Firebase user to Directus ==="
-echo "POST $DIRECTUS_URL/firebase/link"
+echo "POST $DIRECTUS_URL${FIREBASE_ENDPOINT_PREFIX}/link"
 echo ""
 
 LINK_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
-  "$DIRECTUS_URL/firebase/link" \
+  "$DIRECTUS_URL${FIREBASE_ENDPOINT_PREFIX}/link" \
   -H "Content-Type: application/json" \
   -d "{\"id_token\":\"${ID_TOKEN}\"}")
 
@@ -83,11 +84,11 @@ fi
 echo ""
 
 echo "=== Step 3: Get Directus tokens ==="
-echo "POST $DIRECTUS_URL/firebase/auth"
+echo "POST $DIRECTUS_URL${FIREBASE_ENDPOINT_PREFIX}/auth"
 echo ""
 
 AUTH_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
-  "$DIRECTUS_URL/firebase/auth" \
+  "$DIRECTUS_URL${FIREBASE_ENDPOINT_PREFIX}/auth" \
   -H "Content-Type: application/json" \
   -d "{\"uid\":\"${LOCAL_ID}\"}")
 
