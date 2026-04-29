@@ -4,4 +4,8 @@ USER root
 RUN corepack enable
 USER node
 
-RUN pnpm install directus-extension-bundle-firebase
+# Install dependencies required by our custom Firebase Auth extension
+RUN pnpm install firebase-admin jsonwebtoken
+
+# Copy custom extension into the extensions directory
+COPY extensions/firebase-auth /directus/extensions/firebase-auth
