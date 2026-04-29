@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get_it/get_it.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -25,7 +26,10 @@ void setupServiceLocator() {
   sl.registerLazySingleton<FirebaseAuthService>(
     () => FirebaseAuthService(
       firebaseAuth: FirebaseAuth.instance,
-      googleSignIn: GoogleSignIn(),
+      googleSignIn: GoogleSignIn(
+        clientId: kIsWeb ? AppConfig.googleWebClientId : null,
+        serverClientId: kIsWeb ? null : AppConfig.googleWebClientId,
+      ),
     ),
   );
   sl.registerLazySingleton<DirectusAuthService>(
