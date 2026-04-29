@@ -32,41 +32,34 @@ class DefaultFirebaseOptions {
     }
   }
 
-  // TODO: Replace with values from `flutterfire configure`
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'YOUR_WEB_API_KEY',
-    appId: '1:000000000000:web:0000000000000000000000',
-    messagingSenderId: '000000000000',
-    projectId: 'your-firebase-project-id',
-    authDomain: 'your-firebase-project-id.firebaseapp.com',
-    storageBucket: 'your-firebase-project-id.appspot.com',
+    apiKey: 'AIzaSyDVScsqpCulertRQ_actn4dWaT0blKruZ8',
+    appId: '1:776014571343:web:665ab22687e6c4bd23873a',
+    messagingSenderId: '776014571343',
+    projectId: 'dancee-b5c0d',
+    authDomain: 'dancee-b5c0d.firebaseapp.com',
+    storageBucket: 'dancee-b5c0d.firebasestorage.app',
+    measurementId: 'G-XL57C7BNHW',
   );
 
+  // TODO: Replace with values from `flutterfire configure`
+
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'YOUR_ANDROID_API_KEY',
-    appId: '1:000000000000:android:0000000000000000000000',
-    messagingSenderId: '000000000000',
-    projectId: 'your-firebase-project-id',
-    storageBucket: 'your-firebase-project-id.appspot.com',
+    apiKey: 'AIzaSyBCUrSxRgoRwOvjzD4xRGN1mZBugmEIjbY',
+    appId: '1:776014571343:android:af3b8ee98d7ab53523873a',
+    messagingSenderId: '776014571343',
+    projectId: 'dancee-b5c0d',
+    storageBucket: 'dancee-b5c0d.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'YOUR_IOS_API_KEY',
-    appId: '1:000000000000:ios:0000000000000000000000',
-    messagingSenderId: '000000000000',
-    projectId: 'your-firebase-project-id',
-    storageBucket: 'your-firebase-project-id.appspot.com',
-    iosClientId: 'YOUR_IOS_CLIENT_ID',
-    iosBundleId: 'com.example.danceeApp2',
+    apiKey: 'AIzaSyApTgYbZwQ31eipF19jf_9IPMqPnLINFBY',
+    appId: '1:776014571343:ios:76322ac84a07816223873a',
+    messagingSenderId: '776014571343',
+    projectId: 'dancee-b5c0d',
+    storageBucket: 'dancee-b5c0d.firebasestorage.app',
+    iosClientId: '776014571343-iin8t2a84h1bc1uka20ijbvngrten4kv.apps.googleusercontent.com',
+    iosBundleId: 'com.jablecnik.dancee-app',
   );
 
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'YOUR_MACOS_API_KEY',
-    appId: '1:000000000000:ios:0000000000000000000000',
-    messagingSenderId: '000000000000',
-    projectId: 'your-firebase-project-id',
-    storageBucket: 'your-firebase-project-id.appspot.com',
-    iosClientId: 'YOUR_MACOS_CLIENT_ID',
-    iosBundleId: 'com.example.danceeApp2',
-  );
 }
