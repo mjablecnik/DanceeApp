@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/app_routes.dart';
 import '../../../core/colors.dart';
 import '../../../core/theme.dart';
 import '../../../i18n/strings.g.dart';
@@ -38,32 +39,38 @@ class _RegisterScreenState extends State<RegisterScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: appBg,
-      body: Stack(
-        children: [
-          BackgroundCircles(animation: _floatAnim),
-          SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.xxl,
-                vertical: AppSpacing.xxxl,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  AuthHeaderSection(
-                    title: t.auth.register.title,
-                    subtitle: t.auth.register.subtitle,
-                    compact: true,
-                  ),
-                  const SizedBox(height: AppSpacing.xxxl),
-                  const RegisterFormSection(),
-                ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) const LoginRoute().go(context);
+      },
+      child: Scaffold(
+        backgroundColor: appBg,
+        body: Stack(
+          children: [
+            BackgroundCircles(animation: _floatAnim),
+            SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.xxl,
+                  vertical: AppSpacing.xxxl,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    AuthHeaderSection(
+                      title: t.auth.register.title,
+                      subtitle: t.auth.register.subtitle,
+                      compact: true,
+                    ),
+                    const SizedBox(height: AppSpacing.xxxl),
+                    const RegisterFormSection(),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

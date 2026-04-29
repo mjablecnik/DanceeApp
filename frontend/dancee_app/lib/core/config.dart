@@ -21,9 +21,4 @@ class AppConfig {
 
   /// HTTP receive timeout in milliseconds.
   static const int receiveTimeoutMs = 15000;
-
-  /// Google OAuth Web Client ID for Google Sign-In.
-  /// This is a public identifier (also present in google-services.json), not a secret.
-  static const String googleWebClientId =
-      '776014571343-4duso423nt0paq85rtja5hsg4m0tieoq.apps.googleusercontent.com';
 }

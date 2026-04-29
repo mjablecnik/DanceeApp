@@ -25,9 +25,7 @@ void setupServiceLocator() {
   sl.registerLazySingleton<FirebaseAuthService>(
     () => FirebaseAuthService(
       firebaseAuth: FirebaseAuth.instance,
-      googleSignIn: GoogleSignIn(
-        serverClientId: AppConfig.googleWebClientId,
-      ),
+      googleSignIn: GoogleSignIn(),
     ),
   );
   sl.registerLazySingleton<DirectusAuthService>(

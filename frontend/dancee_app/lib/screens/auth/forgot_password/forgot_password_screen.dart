@@ -40,7 +40,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) const LoginRoute().go(context);
+      },
+      child: Scaffold(
       backgroundColor: appBg,
       body: Stack(
         children: [
@@ -104,6 +109,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
             ),
           ),
         ],
+      ),
       ),
     );
   }
