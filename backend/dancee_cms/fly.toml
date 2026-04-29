@@ -1,6 +1,15 @@
 app = 'dancee-cms'
 primary_region = 'fra'
 
+[env]
+  CORS_ENABLED = "true"
+  CORS_ORIGIN = "true"
+  CORS_METHODS = "GET,POST,PATCH,DELETE,OPTIONS"
+  CORS_ALLOWED_HEADERS = "Content-Type,Authorization"
+  CORS_EXPOSED_HEADERS = "Content-Range"
+  CORS_CREDENTIALS = "true"
+  CORS_MAX_AGE = "18000"
+
 [build]
   dockerfile = "Dockerfile"
 
