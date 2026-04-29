@@ -1,12 +1,12 @@
 #!/usr/bin/env sh
 
-# Start Directus using the official Docker image with .env configuration.
+# Start Directus using a custom Docker image with .env configuration.
 # Usage: ./start-directus.sh
 
 set -e
 
 CONTAINER_NAME="directus"
-IMAGE="directus/directus:latest"
+IMAGE_NAME="dancee-directus"
 ENV_FILE=".env"
 
 if [ ! -f "$ENV_FILE" ]; then
@@ -20,6 +20,9 @@ if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
   docker rm -f "$CONTAINER_NAME"
 fi
 
+echo "Building custom Directus image..."
+docker build -t "$IMAGE_NAME" .
+
 echo "Starting Directus..."
 
 docker run -d \
@@ -29,7 +32,7 @@ docker run -d \
   -v directus-uploads:/directus/uploads \
   -v directus-extensions:/directus/extensions \
   -v directus-database:/directus/database \
-  "$IMAGE"
+  "$IMAGE_NAME"
 
 echo ""
 echo "Directus is starting at http://localhost:8055"

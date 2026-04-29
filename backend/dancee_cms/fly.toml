@@ -2,7 +2,7 @@ app = 'dancee-cms'
 primary_region = 'fra'
 
 [build]
-  image = 'directus/directus:latest'
+  dockerfile = "Dockerfile"
 
 [http_service]
   internal_port = 8055
