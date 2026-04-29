@@ -7,14 +7,20 @@ import 'exceptions.dart';
 ///
 /// Handles authentication, Directus envelope unwrapping (`data` field
 /// extraction), and maps HTTP errors and network failures to [ApiException].
+///
+/// Token priority:
+///  1. Directus session token from [DirectusAuthService] (obtained via
+///     Firebase token exchange).
+///  2. Static [_accessToken] from config (fallback for unauthenticated or
+///     pre-login requests).
 class DirectusClient {
   DirectusClient({
     required String baseUrl,
     required String accessToken,
-    Future<String?> Function()? idTokenProvider,
+    Future<String?> Function()? directusTokenProvider,
     Dio? dio,
   })  : _accessToken = accessToken,
-        _idTokenProvider = idTokenProvider,
+        _directusTokenProvider = directusTokenProvider,
         _dio = dio ??
             Dio(
               BaseOptions(
@@ -31,9 +37,9 @@ class DirectusClient {
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
         String? token;
-        if (_idTokenProvider != null) {
+        if (_directusTokenProvider != null) {
           try {
-            token = await _idTokenProvider();
+            token = await _directusTokenProvider();
           } catch (_) {
             // fall back to static token on error
           }
@@ -46,7 +52,7 @@ class DirectusClient {
 
   final Dio _dio;
   final String _accessToken;
-  final Future<String?> Function()? _idTokenProvider;
+  final Future<String?> Function()? _directusTokenProvider;
 
   /// Performs a GET request and returns the unwrapped `data` field from the
   /// Directus response envelope.

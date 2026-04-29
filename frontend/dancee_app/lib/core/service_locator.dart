@@ -4,6 +4,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 import 'clients.dart';
 import 'config.dart';
+import 'directus_auth_service.dart';
 import '../data/repositories/auth_repository.dart';
 import '../data/repositories/event_repository.dart';
 import '../data/repositories/course_repository.dart';
@@ -20,11 +21,14 @@ final GetIt sl = GetIt.instance;
 
 void setupServiceLocator() {
   // Core
+  sl.registerLazySingleton<DirectusAuthService>(
+    () => DirectusAuthService(),
+  );
   sl.registerLazySingleton<DirectusClient>(
     () => DirectusClient(
       baseUrl: AppConfig.directusBaseUrl,
       accessToken: AppConfig.directusAccessToken,
-      idTokenProvider: () => sl<AuthRepository>().getIdToken(),
+      directusTokenProvider: () => sl<DirectusAuthService>().getAccessToken(),
     ),
   );
 
@@ -39,6 +43,7 @@ void setupServiceLocator() {
     () => AuthCubit(
       authRepository: sl<AuthRepository>(),
       favoritesRepository: sl<FavoritesRepository>(),
+      directusAuthService: sl<DirectusAuthService>(),
     ),
   );
 

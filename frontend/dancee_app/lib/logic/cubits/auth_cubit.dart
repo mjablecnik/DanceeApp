@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
+import '../../core/directus_auth_service.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/favorites_repository.dart';
 import '../states/auth_state.dart';
@@ -17,8 +18,10 @@ class AuthCubit extends Cubit<AuthState> {
   AuthCubit({
     required AuthRepository authRepository,
     required FavoritesRepository favoritesRepository,
+    required DirectusAuthService directusAuthService,
   })  : _authRepository = authRepository,
         _favoritesRepository = favoritesRepository,
+        _directusAuthService = directusAuthService,
         super(const AuthState.unauthenticated()) {
     _authStateSubscription = authRepository.authStateChanges.listen(
       _onAuthStateChanged,
@@ -27,6 +30,7 @@ class AuthCubit extends Cubit<AuthState> {
 
   final AuthRepository _authRepository;
   final FavoritesRepository _favoritesRepository;
+  final DirectusAuthService _directusAuthService;
   late final StreamSubscription<User?> _authStateSubscription;
 
   final _operationSuccessController =
@@ -57,8 +61,10 @@ class AuthCubit extends Cubit<AuthState> {
 
   void _onAuthStateChanged(User? user) {
     if (user == null) {
+      _directusAuthService.clear();
       emit(const AuthState.unauthenticated());
     } else {
+      _linkDirectus(user);
       emit(AuthState.authenticated(
         uid: user.uid,
         email: user.email,
@@ -66,6 +72,26 @@ class AuthCubit extends Cubit<AuthState> {
         emailVerified: user.emailVerified,
         isNewUser: _checkIsNewUser(user),
       ));
+    }
+  }
+
+  /// Exchanges the Firebase ID token for Directus session tokens.
+  ///
+  /// Runs in the background — a failure here does not block the auth state
+  /// transition. The [DirectusClient] will fall back to the static access
+  /// token if Directus tokens are unavailable.
+  Future<void> _linkDirectus(User user) async {
+    try {
+      final idToken = await user.getIdToken();
+      if (idToken == null) return;
+      await _directusAuthService.linkAndAuthenticate(
+        firebaseIdToken: idToken,
+        firebaseUid: user.uid,
+      );
+    } catch (e) {
+      // Non-fatal: log and continue. The static token fallback keeps the app
+      // functional for public data.
+      debugPrint('[AuthCubit] Directus link failed: $e');
     }
   }
 
@@ -225,6 +251,7 @@ class AuthCubit extends Cubit<AuthState> {
       // Req 11.4 ("clear cached user-specific data") is satisfied by clearing
       // favorites state, which happens via FavoritesCubit reacting to the
       // unauthenticated AuthState emitted by the stream below.
+      _directusAuthService.clear();
       await _authRepository.signOut();
       // authStateChanges stream will emit unauthenticated
     } catch (e) {
