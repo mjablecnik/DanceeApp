@@ -25,7 +25,7 @@
   - Mark task complete when test is written, run, and failure is documented
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8_
 
-- [ ] 2. Write preservation property tests (BEFORE implementing fix)
+- [x] 2. Write preservation property tests (BEFORE implementing fix)
   - **Property 2: Preservation** - Existing Auth Flows, Settings, and Navigation Behavior
   - **IMPORTANT**: Follow observation-first methodology
   - Write Flutter widget tests in `frontend/dancee_app/test/screens/profile/profile_screen_preservation_test.dart`
