@@ -89,7 +89,7 @@
     - **EXPECTED OUTCOME**: Tests PASS (confirms no regressions in logout, delete account, language picker, back navigation, error banner, loading overlay)
     - Confirm all tests still pass after fix (no regressions)
 
-- [ ] 4. Checkpoint - Ensure all tests pass
+- [x] 4. Checkpoint - Ensure all tests pass
   - Run `task test` from `frontend/dancee_app/` to execute all Flutter tests
   - Ensure both exploration test and preservation tests pass
   - Ensure no existing tests are broken by the changes
