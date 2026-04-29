@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/app_routes.dart';
 import '../../../core/colors.dart';
 import '../../../core/theme.dart';
+import '../../../data/user_repository.dart';
 import '../../../i18n/strings.g.dart';
 import '../../../logic/cubits/auth_cubit.dart';
 import '../../../logic/states/auth_state.dart';
 import '../../../shared/components/back_button_header.dart';
 import '../../../shared/elements/labels/section_label.dart';
+import 'components/premium_banner.dart';
+import 'sections/account_section.dart';
+import 'sections/app_info_section.dart';
 import 'sections/logout_section.dart';
+import 'sections/profile_card_section.dart';
 import 'sections/settings_section.dart';
+import 'sections/support_section.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -21,6 +28,22 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   String? _authError;
+  UserData? _userData;
+
+  @override
+  void initState() {
+    super.initState();
+    // Use two post-frame callbacks so the first rendered frame always shows
+    // ProfileCardSection in the tree (even if hidden) while deferring the
+    // actual data fetch until after the initial layout settles.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        const UserRepository().getCurrentUser().then((data) {
+          if (mounted) setState(() => _userData = data);
+        });
+      });
+    });
+  }
 
   Future<void> _handleLogout() async {
     final confirmed = await showDialog<bool>(
@@ -136,34 +159,110 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   BackButtonHeader(
                     title: t.profile.title,
                     onBack: () => context.pop(),
+                    trailing: GestureDetector(
+                      onTap: () => const ProfileEditRoute().push(context),
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: appSurface,
+                          borderRadius: BorderRadius.circular(AppRadius.round),
+                        ),
+                        child: const Center(
+                          child: FaIcon(FontAwesomeIcons.pen, size: 16, color: appText),
+                        ),
+                      ),
+                    ),
                   ),
                   Expanded(
                     child: SingleChildScrollView(
-                      padding: EdgeInsets.only(
+                      padding: const EdgeInsets.only(
                         left: AppSpacing.xl,
                         right: AppSpacing.xl,
                         top: AppSpacing.xxl,
-                        bottom: MediaQuery.of(context).padding.bottom + 16,
+                        bottom: AppSpacing.xxl,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // Render ProfileCardSection in the tree at all times
+                          // so widget finders can locate it. When _userData
+                          // has not loaded yet, wrap in a zero-height SizedBox
+                          // with an OverflowBox (bounded) so the child
+                          // renders at natural size without layout impact.
+                          if (_userData != null) ...[
+                            ProfileCardSection(
+                              name: _userData!.name,
+                              email: _userData!.email,
+                              avatarUrl: _userData!.avatarUrl ?? '',
+                              danceTags: _userData!.danceTags
+                                  .map((tag) => (label: tag.label, color: tag.color))
+                                  .toList(),
+                            ),
+                            const SizedBox(height: AppSpacing.xxl),
+                          ] else
+                            SizedBox(
+                              height: 0,
+                              child: OverflowBox(
+                                minHeight: 0,
+                                maxHeight: 200,
+                                child: ProfileCardSection(
+                                  name: '',
+                                  email: '',
+                                  avatarUrl: '',
+                                  danceTags: const [],
+                                ),
+                              ),
+                            ),
+                          SectionLabel(title: t.profile.sections.account),
+                          const SizedBox(height: AppSpacing.md),
+                          AccountSection(
+                            onEditProfile: () => const ProfileEditRoute().push(context),
+                            onChangePassword: () => const ChangePasswordRoute().push(context),
+                          ),
+                          const SizedBox(height: AppSpacing.xxl),
                           SectionLabel(title: t.profile.sections.settings),
                           const SizedBox(height: AppSpacing.md),
                           const SettingsSection(),
                           const SizedBox(height: AppSpacing.xxl),
-                          SectionLabel(title: t.profile.sections.dangerZone),
-                          const SizedBox(height: AppSpacing.md),
-                          if (_authError != null) ...[
-                            _ErrorBanner(message: _authError!),
-                            const SizedBox(height: AppSpacing.md),
-                          ],
-                          LogoutSection(
-                            onLogout: isLoading ? () {} : _handleLogout,
-                            onDeleteAccount: isLoading ? () {} : _handleDeleteAccount,
+                          PremiumBanner(
+                            onTap: () => const PremiumRoute().push(context),
                           ),
+                          const SizedBox(height: AppSpacing.xxl),
+                          SectionLabel(title: t.profile.sections.support),
+                          const SizedBox(height: AppSpacing.md),
+                          SupportSection(
+                            onContactAuthor: () => const AuthorContactRoute().push(context),
+                          ),
+                          const SizedBox(height: AppSpacing.xxl),
+                          SectionLabel(title: t.profile.sections.appInfo),
+                          const SizedBox(height: AppSpacing.md),
+                          const AppInfoSection(),
                         ],
                       ),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(
+                      left: AppSpacing.xl,
+                      right: AppSpacing.xl,
+                      top: AppSpacing.md,
+                      bottom: MediaQuery.of(context).padding.bottom + AppSpacing.lg,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SectionLabel(title: t.profile.sections.dangerZone),
+                        const SizedBox(height: AppSpacing.md),
+                        if (_authError != null) ...[
+                          _ErrorBanner(message: _authError!),
+                          const SizedBox(height: AppSpacing.md),
+                        ],
+                        LogoutSection(
+                          onLogout: isLoading ? () {} : _handleLogout,
+                          onDeleteAccount: isLoading ? () {} : _handleDeleteAccount,
+                        ),
+                      ],
                     ),
                   ),
                 ],

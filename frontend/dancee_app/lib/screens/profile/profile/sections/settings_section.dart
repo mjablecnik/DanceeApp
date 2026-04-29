@@ -8,8 +8,15 @@ import '../../../../logic/cubits/settings_cubit.dart';
 import '../../../../logic/states/settings_state.dart';
 import '../components/profile_menu_item.dart';
 
-class SettingsSection extends StatelessWidget {
+class SettingsSection extends StatefulWidget {
   const SettingsSection({super.key});
+
+  @override
+  State<SettingsSection> createState() => _SettingsSectionState();
+}
+
+class _SettingsSectionState extends State<SettingsSection> {
+  bool _notificationsEnabled = true;
 
   Future<void> _showLanguageDialog(BuildContext context) async {
     final cubit = context.read<SettingsCubit>();
@@ -61,20 +68,40 @@ class SettingsSection extends StatelessWidget {
             border: Border.all(color: appBorder),
             borderRadius: BorderRadius.circular(AppRadius.lg),
           ),
-          child: ProfileMenuItem(
-            icon: FontAwesomeIcons.globe,
-            iconBgColor: appSuccess.withValues(alpha: 0.2),
-            iconColor: appSuccess,
-            title: t.profile.settings.language,
-            trailing: Text(
-              _currentLanguageName(state.languageCode),
-              style: const TextStyle(
-                color: appMuted,
-                fontSize: AppTypography.fontSizeMd,
+          child: Column(
+            children: [
+              ProfileMenuItem(
+                icon: FontAwesomeIcons.globe,
+                iconBgColor: appSuccess.withValues(alpha: 0.2),
+                iconColor: appSuccess,
+                title: t.profile.settings.language,
+                trailing: Text(
+                  _currentLanguageName(state.languageCode),
+                  style: const TextStyle(
+                    color: appMuted,
+                    fontSize: AppTypography.fontSizeMd,
+                  ),
+                ),
+                onTap: () => _showLanguageDialog(context),
+                showDivider: true,
               ),
-            ),
-            onTap: () => _showLanguageDialog(context),
-            showDivider: false,
+              ProfileMenuItem(
+                icon: FontAwesomeIcons.bell,
+                iconBgColor: appWarning.withValues(alpha: 0.2),
+                iconColor: appWarning,
+                title: t.profile.settings.notifications,
+                trailing: Material(
+                  color: Colors.transparent,
+                  child: Switch(
+                    value: _notificationsEnabled,
+                    onChanged: (value) => setState(() => _notificationsEnabled = value),
+                    activeColor: appPrimary,
+                  ),
+                ),
+                onTap: null,
+                showDivider: false,
+              ),
+            ],
           ),
         );
       },

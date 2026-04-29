@@ -44,9 +44,9 @@
   - Mark task complete when tests are written, run, and passing on unfixed code
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6_
 
-- [ ] 3. Fix for ProfileScreen missing sections, header edit icon, and notifications toggle
+- [x] 3. Fix for ProfileScreen missing sections, header edit icon, and notifications toggle
 
-  - [ ] 3.1 Implement the fix in `profile_screen.dart`
+  - [x] 3.1 Implement the fix in `profile_screen.dart`
     - Add missing imports: `profile_card_section.dart`, `account_section.dart`, `support_section.dart`, `app_info_section.dart`, `premium_banner.dart`, and `user_repository.dart`
     - Add `UserData? _userData` field to `_ProfileScreenState`
     - Add `initState()` override that calls `UserRepository().getCurrentUser()` and sets `_userData` via `setState`
@@ -64,7 +64,7 @@
     - _Preservation: Logout, delete account, language picker, back navigation, error banner, and loading overlay behavior unchanged_
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.8_
 
-  - [ ] 3.2 Add notifications toggle to `settings_section.dart`
+  - [x] 3.2 Add notifications toggle to `settings_section.dart`
     - Change the `Container` child from a single `ProfileMenuItem` to a `Column` containing both the language row and a notifications toggle row
     - Set `showDivider: true` on the existing language `ProfileMenuItem`
     - Add a second `ProfileMenuItem` with `FontAwesomeIcons.bell` icon, `appWarning` color scheme, title `t.profile.settings.notifications`, and a `Switch` widget as `trailing`
@@ -73,7 +73,7 @@
     - _Expected_Behavior: SettingsSection renders both language picker row and notifications toggle row_
     - _Requirements: 2.7_
 
-  - [ ] 3.3 Verify bug condition exploration test now passes
+  - [x] 3.3 Verify bug condition exploration test now passes
     - **Property 1: Expected Behavior** - All Profile Sections Rendered
     - **IMPORTANT**: Re-run the SAME test from task 1 - do NOT write a new test
     - The test from task 1 encodes the expected behavior
@@ -82,7 +82,7 @@
     - **EXPECTED OUTCOME**: Test PASSES (confirms all 7 sections render, edit icon present, notifications toggle present)
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8_
 
-  - [ ] 3.4 Verify preservation tests still pass
+  - [x] 3.4 Verify preservation tests still pass
     - **Property 2: Preservation** - Existing Auth Flows, Settings, and Navigation Behavior
     - **IMPORTANT**: Re-run the SAME tests from task 2 - do NOT write new tests
     - Run preservation property tests from step 2
