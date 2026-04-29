@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 
-import 'config.dart';
+import '../core/config.dart';
 
 /// Holds Directus session tokens obtained via Firebase token exchange.
 class DirectusTokens {
@@ -21,13 +21,14 @@ class DirectusTokens {
 /// `directus-extension-bundle-firebase` endpoints and manages token refresh.
 ///
 /// Lifecycle:
-///  1. After Firebase sign-in, call [linkAndAuthenticate] with the Firebase
-///     ID token. This calls `/firebase/link` (creates Directus user if needed)
-///     then `/firebase/auth` to obtain Directus access + refresh tokens.
+///  1. After Firebase sign-in, [AuthRepository] calls [linkAndAuthenticate]
+///     with the Firebase ID token. This calls `/firebase/link` (creates
+///     Directus user if needed) then `/firebase/auth` to obtain Directus
+///     access + refresh tokens.
 ///  2. [DirectusClient] calls [getAccessToken] on every request. If the token
 ///     is about to expire, it is refreshed transparently via Directus
 ///     `/auth/refresh`.
-///  3. On sign-out, call [clear] to discard stored tokens.
+///  3. On sign-out, [AuthRepository] calls [clear] to discard stored tokens.
 class DirectusAuthService {
   DirectusAuthService({Dio? dio})
       : _dio = dio ??
@@ -58,8 +59,7 @@ class DirectusAuthService {
 
     // Refresh if token expires within the next 60 seconds.
     final now = DateTime.now();
-    if (_expiresAt != null &&
-        _expiresAt!.difference(now).inSeconds < 60) {
+    if (_expiresAt != null && _expiresAt!.difference(now).inSeconds < 60) {
       await _refresh();
     }
 
@@ -68,9 +68,11 @@ class DirectusAuthService {
 
   /// Links a Firebase user to Directus and obtains session tokens.
   ///
-  /// [firebaseIdToken] — a fresh Firebase ID token from
-  /// `FirebaseAuth.currentUser.getIdToken()`.
+  /// [firebaseIdToken] — a fresh Firebase ID token.
   /// [firebaseUid] — the Firebase user UID.
+  ///
+  /// Throws on network or server errors — the caller ([AuthRepository])
+  /// decides how to handle the failure.
   Future<void> linkAndAuthenticate({
     required String firebaseIdToken,
     required String firebaseUid,
@@ -114,8 +116,6 @@ class DirectusAuthService {
   }
 
   void _storeTokens(dynamic responseData) {
-    // The extension returns `{ data: { access_token, refresh_token, expires } }`.
-    // Directus refresh returns the same shape.
     final data = responseData is Map && responseData.containsKey('data')
         ? responseData['data'] as Map<String, dynamic>
         : responseData as Map<String, dynamic>;

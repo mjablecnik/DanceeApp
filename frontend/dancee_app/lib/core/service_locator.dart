@@ -4,7 +4,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 import 'clients.dart';
 import 'config.dart';
-import 'directus_auth_service.dart';
+import '../services/directus_auth_service.dart';
+import '../services/firebase_auth_service.dart';
 import '../data/repositories/auth_repository.dart';
 import '../data/repositories/event_repository.dart';
 import '../data/repositories/course_repository.dart';
@@ -20,10 +21,18 @@ import '../logic/cubits/settings_cubit.dart';
 final GetIt sl = GetIt.instance;
 
 void setupServiceLocator() {
-  // Core
+  // Services
+  sl.registerLazySingleton<FirebaseAuthService>(
+    () => FirebaseAuthService(
+      firebaseAuth: FirebaseAuth.instance,
+      googleSignIn: GoogleSignIn(),
+    ),
+  );
   sl.registerLazySingleton<DirectusAuthService>(
     () => DirectusAuthService(),
   );
+
+  // Core
   sl.registerLazySingleton<DirectusClient>(
     () => DirectusClient(
       baseUrl: AppConfig.directusBaseUrl,
@@ -35,15 +44,14 @@ void setupServiceLocator() {
   // Auth
   sl.registerLazySingleton<AuthRepository>(
     () => AuthRepository(
-      firebaseAuth: FirebaseAuth.instance,
-      googleSignIn: GoogleSignIn(),
+      firebaseAuthService: sl<FirebaseAuthService>(),
+      directusAuthService: sl<DirectusAuthService>(),
     ),
   );
   sl.registerLazySingleton<AuthCubit>(
     () => AuthCubit(
       authRepository: sl<AuthRepository>(),
       favoritesRepository: sl<FavoritesRepository>(),
-      directusAuthService: sl<DirectusAuthService>(),
     ),
   );
 

@@ -6,7 +6,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
-import '../../core/directus_auth_service.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/favorites_repository.dart';
 import '../states/auth_state.dart';
@@ -18,10 +17,8 @@ class AuthCubit extends Cubit<AuthState> {
   AuthCubit({
     required AuthRepository authRepository,
     required FavoritesRepository favoritesRepository,
-    required DirectusAuthService directusAuthService,
   })  : _authRepository = authRepository,
         _favoritesRepository = favoritesRepository,
-        _directusAuthService = directusAuthService,
         super(const AuthState.unauthenticated()) {
     _authStateSubscription = authRepository.authStateChanges.listen(
       _onAuthStateChanged,
@@ -30,7 +27,6 @@ class AuthCubit extends Cubit<AuthState> {
 
   final AuthRepository _authRepository;
   final FavoritesRepository _favoritesRepository;
-  final DirectusAuthService _directusAuthService;
   late final StreamSubscription<User?> _authStateSubscription;
 
   final _operationSuccessController =
@@ -61,10 +57,8 @@ class AuthCubit extends Cubit<AuthState> {
 
   void _onAuthStateChanged(User? user) {
     if (user == null) {
-      _directusAuthService.clear();
       emit(const AuthState.unauthenticated());
     } else {
-      _linkDirectus(user);
       emit(AuthState.authenticated(
         uid: user.uid,
         email: user.email,
@@ -72,26 +66,6 @@ class AuthCubit extends Cubit<AuthState> {
         emailVerified: user.emailVerified,
         isNewUser: _checkIsNewUser(user),
       ));
-    }
-  }
-
-  /// Exchanges the Firebase ID token for Directus session tokens.
-  ///
-  /// Runs in the background — a failure here does not block the auth state
-  /// transition. The [DirectusClient] will fall back to the static access
-  /// token if Directus tokens are unavailable.
-  Future<void> _linkDirectus(User user) async {
-    try {
-      final idToken = await user.getIdToken();
-      if (idToken == null) return;
-      await _directusAuthService.linkAndAuthenticate(
-        firebaseIdToken: idToken,
-        firebaseUid: user.uid,
-      );
-    } catch (e) {
-      // Non-fatal: log and continue. The static token fallback keeps the app
-      // functional for public data.
-      debugPrint('[AuthCubit] Directus link failed: $e');
     }
   }
 
@@ -117,13 +91,9 @@ class AuthCubit extends Cubit<AuthState> {
   /// Returns a translation key from [e].
   ///
   /// If [e] is a [String] it is assumed to be a translation key already
-  /// emitted by [AuthRepository.mapFirebaseError] and is returned as-is.
+  /// emitted by [FirebaseAuthService.mapFirebaseError] and is returned as-is.
   /// Otherwise the generic error key is used to avoid exposing raw exception
-  /// class names to the user (Req 3.7, 14.7).
-  ///
-  /// The key is stored in [AuthState.error.message] and resolved to a
-  /// translated string in the UI via [resolveAuthErrorKey] from
-  /// `shared/utils/auth_translations.dart`.
+  /// class names to the user.
   String _errorMessage(Object e) =>
       e is String ? e : 'auth.errors.generic';
 
@@ -206,10 +176,6 @@ class AuthCubit extends Cubit<AuthState> {
     operationInProgress.value = true;
     try {
       await _authRepository.reloadAndCheckVerified();
-      // Emit the updated user state (email verification status may have changed).
-      // This is always called — but if emailVerified status is unchanged, the
-      // AuthState is the same object and BlocConsumer.listenWhen won't fire.
-      // Emit userReloaded via operationSuccess so the screen can react regardless.
       _onAuthStateChanged(_authRepository.currentUser);
       _operationSuccessController.add(AuthOperation.userReloaded);
     } catch (e) {
@@ -245,13 +211,6 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> signOut() async {
     emit(const AuthState.loading());
     try {
-      // Onboarding preferences are NOT cleared on sign-out so that returning
-      // users who sign out and back in keep their locally cached preferences.
-      // Preferences are only cleared on full account deletion (see deleteAccount).
-      // Req 11.4 ("clear cached user-specific data") is satisfied by clearing
-      // favorites state, which happens via FavoritesCubit reacting to the
-      // unauthenticated AuthState emitted by the stream below.
-      _directusAuthService.clear();
       await _authRepository.signOut();
       // authStateChanges stream will emit unauthenticated
     } catch (e) {
@@ -265,15 +224,6 @@ class AuthCubit extends Cubit<AuthState> {
       await _authRepository.reauthenticate(email: email, password: password);
       final uid = currentUid;
       if (uid != null) {
-        // CMS data is deleted before the Firebase account (per design doc).
-        // PARTIAL FAILURE SCENARIO: if deleteAllFavoritesForUser succeeds but
-        // deleteAccount() below fails, the user's CMS favorites are already
-        // gone while their Firebase account remains intact. The user stays
-        // signed in and sees an error (correct per design: "keep user signed
-        // in"). This is an accepted trade-off — the user can retry and the
-        // CMS delete is idempotent (deleting already-deleted records is a
-        // no-op). Reversing the order (Firebase first) would be harder to
-        // roll back since Firebase account deletion cannot be undone.
         await _favoritesRepository.deleteAllFavoritesForUser(uid);
       }
       await _clearOnboardingPrefs();
