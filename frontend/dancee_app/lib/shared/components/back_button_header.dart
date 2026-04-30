@@ -5,13 +5,13 @@ import '../../core/theme.dart';
 
 class BackButtonHeader extends StatelessWidget {
   final String title;
-  final VoidCallback onBack;
+  final VoidCallback? onBack;
   final Widget? trailing;
 
   const BackButtonHeader({
     super.key,
     required this.title,
-    required this.onBack,
+    this.onBack,
     this.trailing,
   });
 
@@ -31,32 +31,34 @@ class BackButtonHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          GestureDetector(
-            onTap: onBack,
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: appSurface,
-                borderRadius: BorderRadius.circular(AppRadius.round),
+          if (onBack != null)
+            GestureDetector(
+              onTap: onBack,
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: appSurface,
+                  borderRadius: BorderRadius.circular(AppRadius.round),
+                ),
+                child: const Center(
+                  child: FaIcon(FontAwesomeIcons.arrowLeft,
+                      size: 16, color: appText),
+                ),
               ),
-              child: const Center(
-                child: FaIcon(FontAwesomeIcons.arrowLeft, size: 16, color: appText),
+            ),
+          Expanded(
+            child: Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: appText,
+                fontSize: AppTypography.fontSize2xl,
+                fontWeight: AppTypography.fontWeightSemiBold,
               ),
             ),
           ),
-          Text(
-            title,
-            style: const TextStyle(
-              color: appText,
-              fontSize: AppTypography.fontSize2xl,
-              fontWeight: AppTypography.fontWeightSemiBold,
-            ),
-          ),
-          if (trailing != null)
-            trailing!
-          else
-            const SizedBox(width: 40),
+          if (trailing != null) trailing!,
         ],
       ),
     );
