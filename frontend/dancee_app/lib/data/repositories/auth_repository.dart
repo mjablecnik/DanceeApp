@@ -94,6 +94,14 @@ class AuthRepository {
   Future<void> reauthenticate({String? email, String? password}) =>
       _firebase.reauthenticate(email: email, password: password);
 
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) => _firebase.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+
   Future<void> deleteAccount() => _firebase.deleteAccount();
 
   // ---------------------------------------------------------------------------

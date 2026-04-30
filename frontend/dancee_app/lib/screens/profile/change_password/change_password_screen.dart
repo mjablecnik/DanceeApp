@@ -33,9 +33,7 @@ class ChangePasswordScreen extends StatelessWidget {
                 children: [
                   const SecurityBannerSection(),
                   const SizedBox(height: AppSpacing.xxl),
-                  PasswordFormSection(
-                    onCancel: () => context.pop(),
-                  ),
+                  const PasswordFormSection(),
                 ],
               ),
             ),

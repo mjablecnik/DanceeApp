@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/app_routes.dart';
 import '../../../../core/colors.dart';
 import '../../../../core/theme.dart';
 import '../../../../i18n/strings.g.dart';
+import '../../../../logic/cubits/auth_cubit.dart';
 import '../components/password_strength_bar.dart';
 import '../components/password_requirement_row.dart';
 
 class PasswordFormSection extends StatefulWidget {
-  final VoidCallback? onSave;
   final VoidCallback? onCancel;
 
   const PasswordFormSection({
     super.key,
-    this.onSave,
     this.onCancel,
   });
 
@@ -33,6 +32,8 @@ class _PasswordFormSectionState extends State<PasswordFormSection> {
 
   int _passwordStrength = 0;
   bool _passwordMismatch = false;
+  bool _isLoading = false;
+  String? _errorMessage;
 
   @override
   void dispose() {
@@ -47,7 +48,6 @@ class _PasswordFormSectionState extends State<PasswordFormSection> {
     if (password.length >= 8) strength++;
     if (password.contains(RegExp(r'[a-z]')) && password.contains(RegExp(r'[A-Z]'))) strength++;
     if (password.contains(RegExp(r'\d'))) strength++;
-    if (password.contains(RegExp(r'[!@#\$%^&*(),.?":{}|<>]'))) strength++;
     setState(() {
       _passwordStrength = password.isEmpty ? 0 : strength;
     });
@@ -58,6 +58,57 @@ class _PasswordFormSectionState extends State<PasswordFormSection> {
       _passwordMismatch =
           confirm.isNotEmpty && confirm != _newPasswordController.text;
     });
+  }
+
+  bool _isPasswordValid(String password) {
+    return password.length >= 8 &&
+        password.contains(RegExp(r'[A-Z]')) &&
+        password.contains(RegExp(r'[a-z]')) &&
+        password.contains(RegExp(r'\d'));
+  }
+
+  Future<void> _onSave() async {
+    final currentPassword = _currentPasswordController.text;
+    final newPassword = _newPasswordController.text;
+    final confirmPassword = _confirmPasswordController.text;
+
+    if (currentPassword.isEmpty || newPassword.isEmpty || confirmPassword.isEmpty) {
+      return;
+    }
+    if (!_isPasswordValid(newPassword)) {
+      return;
+    }
+    if (newPassword != confirmPassword) {
+      setState(() => _passwordMismatch = true);
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    final authCubit = context.read<AuthCubit>();
+    final errorKey = await authCubit.changePassword(
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+    );
+
+    if (!mounted) return;
+
+    if (errorKey == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(t.profile.changePassword.success)),
+      );
+      context.pop();
+    } else {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = errorKey == 'auth.errors.invalidCredential'
+            ? t.profile.changePassword.incorrectPassword
+            : t.profile.changePassword.error;
+      });
+    }
   }
 
   @override
@@ -92,15 +143,24 @@ class _PasswordFormSectionState extends State<PasswordFormSection> {
               () => _confirmPasswordVisible = !_confirmPasswordVisible),
           onCheckMatch: _checkMatch,
         ),
+        if (_errorMessage != null) ...[
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            _errorMessage!,
+            style: const TextStyle(
+              color: appError,
+              fontSize: AppTypography.fontSizeSm,
+            ),
+          ),
+        ],
         const SizedBox(height: 28),
         PasswordActionButtons(
-          onSave: widget.onSave,
-          onCancel: widget.onCancel,
+          isLoading: _isLoading,
+          onSave: _isLoading ? null : _onSave,
+          onCancel: _isLoading ? null : widget.onCancel,
         ),
         const SizedBox(height: AppSpacing.sm),
         const PasswordRequirementsSection(),
-        const SizedBox(height: AppSpacing.xxl),
-        const ForgotPasswordLink(),
         const SizedBox(height: AppSpacing.xxl),
       ],
     );
@@ -365,11 +425,13 @@ class ConfirmPasswordField extends StatelessWidget {
 }
 
 class PasswordActionButtons extends StatelessWidget {
+  final bool isLoading;
   final VoidCallback? onSave;
   final VoidCallback? onCancel;
 
   const PasswordActionButtons({
     super.key,
+    this.isLoading = false,
     this.onSave,
     this.onCancel,
   });
@@ -381,7 +443,7 @@ class PasswordActionButtons extends StatelessWidget {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: onSave ?? () {},
+            onPressed: onSave,
             style: ElevatedButton.styleFrom(
               backgroundColor: appPrimary,
               foregroundColor: Colors.white,
@@ -391,20 +453,29 @@ class PasswordActionButtons extends StatelessWidget {
               elevation: 4,
               shadowColor: appPrimary.withValues(alpha: 0.4),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const FaIcon(FontAwesomeIcons.check, size: 14, color: Colors.white),
-                const SizedBox(width: AppSpacing.sm),
-                Text(
-                  t.profile.changePassword.save,
-                  style: const TextStyle(
-                    fontSize: AppTypography.fontSizeLg,
-                    fontWeight: AppTypography.fontWeightSemiBold,
+            child: isLoading
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const FaIcon(FontAwesomeIcons.check, size: 14, color: Colors.white),
+                      const SizedBox(width: AppSpacing.sm),
+                      Text(
+                        t.profile.changePassword.save,
+                        style: const TextStyle(
+                          fontSize: AppTypography.fontSizeLg,
+                          fontWeight: AppTypography.fontWeightSemiBold,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
           ),
         ),
         const SizedBox(height: AppSpacing.md),
@@ -460,37 +531,7 @@ class PasswordRequirementsSection extends StatelessWidget {
         PasswordRequirementRow(text: t.profile.changePassword.reqLowercase),
         const SizedBox(height: 10),
         PasswordRequirementRow(text: t.profile.changePassword.reqNumber),
-        const SizedBox(height: 10),
-        PasswordRequirementRow(text: t.profile.changePassword.reqSpecial),
       ],
-    );
-  }
-}
-
-class ForgotPasswordLink extends StatelessWidget {
-  const ForgotPasswordLink({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: TextButton(
-        onPressed: () => const ForgotPasswordRoute().push(context),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const FaIcon(FontAwesomeIcons.circleQuestion, size: 14, color: appPrimary),
-            const SizedBox(width: 6),
-            Text(
-              t.profile.changePassword.forgotPassword,
-              style: const TextStyle(
-                color: appPrimary,
-                fontSize: AppTypography.fontSizeMd,
-                fontWeight: AppTypography.fontWeightMedium,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

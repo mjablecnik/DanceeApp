@@ -218,6 +218,27 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
+  /// Changes the password for the current email/password user.
+  ///
+  /// Returns `null` on success, or a translation key string on failure.
+  Future<String?> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    operationInProgress.value = true;
+    try {
+      await _authRepository.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+      return null;
+    } catch (e) {
+      return _errorMessage(e);
+    } finally {
+      operationInProgress.value = false;
+    }
+  }
+
   Future<void> deleteAccount({String? email, String? password}) async {
     emit(const AuthState.loading());
     try {

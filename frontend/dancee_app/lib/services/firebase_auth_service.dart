@@ -178,6 +178,27 @@ class FirebaseAuthService {
     }
   }
 
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) throw 'auth.errors.generic';
+      final email = user.email;
+      if (email == null) throw 'auth.errors.generic';
+
+      final credential = EmailAuthProvider.credential(
+        email: email,
+        password: currentPassword,
+      );
+      await user.reauthenticateWithCredential(credential);
+      await user.updatePassword(newPassword);
+    } on FirebaseAuthException catch (e) {
+      throw mapFirebaseError(e);
+    }
+  }
+
   Future<void> deleteAccount() async {
     try {
       await _auth.currentUser?.delete();
