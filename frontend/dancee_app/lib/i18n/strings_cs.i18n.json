@@ -278,6 +278,13 @@
   },
   "profile": {
     "title": "Profil",
+    "loading": "Načítání profilu...",
+    "error": "Nepodařilo se načíst profil. Zkuste to prosím znovu.",
+    "legalPage": {
+      "loading": "Načítání obsahu...",
+      "error": "Nepodařilo se načíst obsah. Zkuste to prosím znovu.",
+      "retry": "Zkusit znovu"
+    },
     "sections": {
       "account": "Účet",
       "settings": "Nastavení",
@@ -331,7 +338,10 @@
       "strengthVeryWeak": "Síla hesla: Velmi slabé",
       "strengthWeak": "Síla hesla: Slabé",
       "strengthMedium": "Síla hesla: Střední",
-      "strengthStrong": "Síla hesla: Silné"
+      "strengthStrong": "Síla hesla: Silné",
+      "success": "Heslo bylo úspěšně změněno.",
+      "error": "Nepodařilo se změnit heslo. Zkuste to prosím znovu.",
+      "incorrectPassword": "Současné heslo je nesprávné."
     },
     "editProfile": {
       "title": "Upravit profil",
@@ -361,7 +371,10 @@
         "newEvents": "Dostávejte upozornění o nových akcích ve vašem okolí",
         "eventReminders": "Připomínky před vašimi uloženými akcemi",
         "marketing": "Propagační zprávy a nabídky"
-      }
+      },
+      "save": "Uložit změny",
+      "updateSuccess": "Profil byl úspěšně aktualizován.",
+      "updateError": "Nepodařilo se aktualizovat profil. Zkuste to prosím znovu."
     }
   },
   "premium": {
@@ -404,7 +417,13 @@
       "replyEmail": "Váš e-mail pro odpověď",
       "sending": "Odesílání...",
       "sent": "Odesláno!",
-      "submit": "Odeslat zprávu"
+      "submit": "Odeslat zprávu",
+      "success": "Vaše zpráva byla odeslána. Brzy se vám ozveme!",
+      "error": "Nepodařilo se odeslat zprávu. Zkuste to prosím znovu.",
+      "typeRequired": "Vyberte prosím typ zprávy",
+      "titleRequired": "Zadejte prosím název zprávy",
+      "messageRequired": "Zadejte prosím zprávu",
+      "emailRequired": "Zadejte prosím svůj e-mail pro odpověď"
     },
     "deviceInfoLabels": {
       "app": "Aplikace:",

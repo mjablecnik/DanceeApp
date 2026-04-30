@@ -278,6 +278,13 @@
   },
   "profile": {
     "title": "Profile",
+    "loading": "Loading profile...",
+    "error": "Failed to load profile. Please try again.",
+    "legalPage": {
+      "loading": "Loading content...",
+      "error": "Failed to load content. Please try again.",
+      "retry": "Try again"
+    },
     "sections": {
       "account": "Account",
       "settings": "Settings",
@@ -331,7 +338,10 @@
       "strengthVeryWeak": "Password strength: Very weak",
       "strengthWeak": "Password strength: Weak",
       "strengthMedium": "Password strength: Medium",
-      "strengthStrong": "Password strength: Strong"
+      "strengthStrong": "Password strength: Strong",
+      "success": "Password changed successfully.",
+      "error": "Failed to change password. Please try again.",
+      "incorrectPassword": "Current password is incorrect."
     },
     "editProfile": {
       "title": "Edit profile",
@@ -361,7 +371,10 @@
         "newEvents": "Get notified about new events in your area",
         "eventReminders": "Reminders before your saved events",
         "marketing": "Promotional messages and offers"
-      }
+      },
+      "save": "Save changes",
+      "updateSuccess": "Profile updated successfully.",
+      "updateError": "Failed to update profile. Please try again."
     }
   },
   "premium": {
@@ -404,7 +417,13 @@
       "replyEmail": "Your reply email",
       "sending": "Sending...",
       "sent": "Sent!",
-      "submit": "Send message"
+      "submit": "Send message",
+      "success": "Your message has been sent. We'll get back to you soon!",
+      "error": "Failed to send message. Please try again.",
+      "typeRequired": "Please select a message type",
+      "titleRequired": "Please enter a title",
+      "messageRequired": "Please enter a message",
+      "emailRequired": "Please enter your reply email"
     },
     "deviceInfoLabels": {
       "app": "App:",

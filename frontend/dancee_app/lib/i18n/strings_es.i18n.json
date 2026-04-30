@@ -278,6 +278,13 @@
   },
   "profile": {
     "title": "Perfil",
+    "loading": "Cargando perfil...",
+    "error": "Error al cargar el perfil. Por favor, inténtalo de nuevo.",
+    "legalPage": {
+      "loading": "Cargando contenido...",
+      "error": "Error al cargar el contenido. Por favor, inténtalo de nuevo.",
+      "retry": "Reintentar"
+    },
     "sections": {
       "account": "Cuenta",
       "settings": "Ajustes",
@@ -331,7 +338,10 @@
       "strengthVeryWeak": "Seguridad de contraseña: Muy débil",
       "strengthWeak": "Seguridad de contraseña: Débil",
       "strengthMedium": "Seguridad de contraseña: Media",
-      "strengthStrong": "Seguridad de contraseña: Fuerte"
+      "strengthStrong": "Seguridad de contraseña: Fuerte",
+      "success": "Contraseña cambiada con éxito.",
+      "error": "Error al cambiar la contraseña. Por favor, inténtalo de nuevo.",
+      "incorrectPassword": "La contraseña actual es incorrecta."
     },
     "editProfile": {
       "title": "Editar perfil",
@@ -361,7 +371,10 @@
         "newEvents": "Recibe notificaciones sobre nuevos eventos en tu zona",
         "eventReminders": "Recordatorios antes de tus eventos guardados",
         "marketing": "Mensajes promocionales y ofertas"
-      }
+      },
+      "save": "Guardar cambios",
+      "updateSuccess": "Perfil actualizado con éxito.",
+      "updateError": "Error al actualizar el perfil. Por favor, inténtalo de nuevo."
     }
   },
   "premium": {
@@ -404,7 +417,13 @@
       "replyEmail": "Tu e-mail de respuesta",
       "sending": "Enviando...",
       "sent": "¡Enviado!",
-      "submit": "Enviar mensaje"
+      "submit": "Enviar mensaje",
+      "success": "Tu mensaje ha sido enviado. ¡Nos pondremos en contacto contigo pronto!",
+      "error": "Error al enviar el mensaje. Por favor, inténtalo de nuevo.",
+      "typeRequired": "Por favor, selecciona un tipo de mensaje",
+      "titleRequired": "Por favor, ingresa un título",
+      "messageRequired": "Por favor, ingresa un mensaje",
+      "emailRequired": "Por favor, ingresa tu e-mail de respuesta"
     },
     "deviceInfoLabels": {
       "app": "App:",
