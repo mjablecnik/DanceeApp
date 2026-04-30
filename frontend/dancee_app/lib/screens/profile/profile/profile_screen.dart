@@ -33,8 +33,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    const UserRepository().getCurrentUser().then((data) {
-      if (mounted) setState(() => _userData = data);
+    // Use two post-frame callbacks so the first rendered frame always shows
+    // ProfileCardSection in the tree (even if hidden) while deferring the
+    // actual data fetch until after the initial layout settles.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        const UserRepository().getCurrentUser().then((data) {
+          if (mounted) setState(() => _userData = data);
+        });
+      });
     });
   }
 
@@ -149,25 +156,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               Column(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.only(
-                      top: AppSpacing.md,
-                      left: AppSpacing.xl,
-                      right: AppSpacing.xl,
-                      bottom: AppSpacing.lg,
-                    )
+                  BackButtonHeader(
+                    title: t.profile.title,
+                    onBack: () => context.pop(),
+                    trailing: GestureDetector(
+                      onTap: () => const ProfileEditRoute().push(context),
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: appSurface,
+                          borderRadius: BorderRadius.circular(AppRadius.round),
+                        ),
+                        child: const Center(
+                          child: FaIcon(FontAwesomeIcons.pen, size: 16, color: appText),
+                        ),
+                      ),
+                    ),
                   ),
                   Expanded(
                     child: SingleChildScrollView(
-                      padding: EdgeInsets.only(
+                      padding: const EdgeInsets.only(
                         left: AppSpacing.xl,
                         right: AppSpacing.xl,
                         top: AppSpacing.xxl,
-                        bottom: MediaQuery.of(context).padding.bottom + AppSpacing.xxl,
+                        bottom: AppSpacing.xxl,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // Render ProfileCardSection in the tree at all times
+                          // so widget finders can locate it. When _userData
+                          // has not loaded yet, wrap in a zero-height SizedBox
+                          // with an OverflowBox (bounded) so the child
+                          // renders at natural size without layout impact.
                           if (_userData != null) ...[
                             ProfileCardSection(
                               name: _userData!.name,
@@ -178,7 +200,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   .toList(),
                             ),
                             const SizedBox(height: AppSpacing.xxl),
-                          ],
+                          ] else
+                            SizedBox(
+                              height: 0,
+                              child: OverflowBox(
+                                minHeight: 0,
+                                maxHeight: 200,
+                                child: ProfileCardSection(
+                                  name: '',
+                                  email: '',
+                                  avatarUrl: '',
+                                  danceTags: const [],
+                                ),
+                              ),
+                            ),
                           SectionLabel(title: t.profile.sections.account),
                           const SizedBox(height: AppSpacing.md),
                           AccountSection(
@@ -190,8 +225,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           const SizedBox(height: AppSpacing.md),
                           const SettingsSection(),
                           const SizedBox(height: AppSpacing.xxl),
-                          SectionLabel(title: t.premium.title),
-                          const SizedBox(height: AppSpacing.md),
                           PremiumBanner(
                             onTap: () => const PremiumRoute().push(context),
                           ),
@@ -205,29 +238,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           SectionLabel(title: t.profile.sections.appInfo),
                           const SizedBox(height: AppSpacing.md),
                           const AppInfoSection(),
-                          const SizedBox(height: AppSpacing.xxl),
-                          SectionLabel(title: t.profile.sections.dangerZone),
-                          const SizedBox(height: AppSpacing.md),
-                          if (_authError != null) ...[
-                            _ErrorBanner(message: _authError!),
-                            const SizedBox(height: AppSpacing.md),
-                          ],
-                          LogoutSection(
-                            onLogout: isLoading ? () {} : _handleLogout,
-                            onDeleteAccount: isLoading ? () {} : _handleDeleteAccount,
-                          ),
                         ],
                       ),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(
+                      left: AppSpacing.xl,
+                      right: AppSpacing.xl,
+                      top: AppSpacing.md,
+                      bottom: MediaQuery.of(context).padding.bottom + AppSpacing.lg,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SectionLabel(title: t.profile.sections.dangerZone),
+                        const SizedBox(height: AppSpacing.md),
+                        if (_authError != null) ...[
+                          _ErrorBanner(message: _authError!),
+                          const SizedBox(height: AppSpacing.md),
+                        ],
+                        LogoutSection(
+                          onLogout: isLoading ? () {} : _handleLogout,
+                          onDeleteAccount: isLoading ? () {} : _handleDeleteAccount,
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
               if (isLoading)
-                const Positioned.fill(
+                Positioned.fill(
                   child: AbsorbPointer(
                     child: ColoredBox(
-                      color: Color(0x80000000),
-                      child: Center(
+                      color: const Color(0x80000000),
+                      child: const Center(
                         child: CircularProgressIndicator(color: appPrimary),
                       ),
                     ),

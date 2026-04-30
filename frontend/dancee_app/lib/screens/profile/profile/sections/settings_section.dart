@@ -96,7 +96,7 @@ class _SettingsSectionState extends State<SettingsSection> {
                     value: _notificationsEnabled,
                     onChanged: (value) => setState(() => _notificationsEnabled = value),
                     activeTrackColor: appPrimary.withValues(alpha: 0.5),
-                    activeThumbColor: appPrimary,
+                    activeColor: appPrimary,
                   ),
                 ),
                 onTap: null,
