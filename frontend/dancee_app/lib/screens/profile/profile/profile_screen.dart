@@ -5,13 +5,14 @@ import 'package:go_router/go_router.dart';
 import '../../../core/app_routes.dart';
 import '../../../core/colors.dart';
 import '../../../core/theme.dart';
-import '../../../data/user_repository.dart';
 import '../../../i18n/strings.g.dart';
 import '../../../logic/cubits/auth_cubit.dart';
+import '../../../logic/cubits/profile_cubit.dart';
 import '../../../logic/states/auth_state.dart';
+import '../../../logic/states/profile_state.dart';
 import '../../../shared/components/back_button_header.dart';
 import '../../../shared/elements/labels/section_label.dart';
-import 'components/premium_banner.dart';
+// import 'components/premium_banner.dart';
 import 'sections/account_section.dart';
 import 'sections/app_info_section.dart';
 import 'sections/logout_section.dart';
@@ -28,20 +29,14 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   String? _authError;
-  UserData? _userData;
 
   @override
   void initState() {
     super.initState();
-    // Use two post-frame callbacks so the first rendered frame always shows
-    // ProfileCardSection in the tree (even if hidden) while deferring the
-    // actual data fetch until after the initial layout settles.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        const UserRepository().getCurrentUser().then((data) {
-          if (mounted) setState(() => _userData = data);
-        });
-      });
+      if (mounted) {
+        context.read<ProfileCubit>().loadProfile();
+      }
     });
   }
 
@@ -185,35 +180,88 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Render ProfileCardSection in the tree at all times
-                          // so widget finders can locate it. When _userData
-                          // has not loaded yet, wrap in a zero-height SizedBox
-                          // with an OverflowBox (bounded) so the child
-                          // renders at natural size without layout impact.
-                          if (_userData != null) ...[
-                            ProfileCardSection(
-                              name: _userData!.name,
-                              email: _userData!.email,
-                              avatarUrl: _userData!.avatarUrl ?? '',
-                              danceTags: _userData!.danceTags
-                                  .map((tag) => (label: tag.label, color: tag.color))
-                                  .toList(),
-                            ),
-                            const SizedBox(height: AppSpacing.xxl),
-                          ] else
-                            SizedBox(
-                              height: 0,
-                              child: OverflowBox(
-                                minHeight: 0,
-                                maxHeight: 200,
-                                child: ProfileCardSection(
-                                  name: '',
-                                  email: '',
-                                  avatarUrl: '',
-                                  danceTags: const [],
+                          BlocBuilder<ProfileCubit, ProfileState>(
+                            builder: (context, profileState) {
+                              return profileState.map(
+                                initial: (_) => const SizedBox.shrink(),
+                                loading: (_) => Column(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(AppSpacing.lg),
+                                      decoration: BoxDecoration(
+                                        color: appSurface,
+                                        border: Border.all(color: appBorder),
+                                        borderRadius: BorderRadius.circular(AppRadius.lg),
+                                      ),
+                                      child: const Center(
+                                        child: Padding(
+                                          padding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                                          child: CircularProgressIndicator(color: appPrimary),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: AppSpacing.xxl),
+                                  ],
                                 ),
-                              ),
-                            ),
+                                loaded: (s) => Column(
+                                  children: [
+                                    ProfileCardSection(
+                                      name: s.profile.fullName,
+                                      email: s.profile.email,
+                                      avatarUrl: s.profile.avatarUrl ?? '',
+                                      danceTags: s.profile.danceTags
+                                          .map((tag) => (label: tag, color: appPrimary))
+                                          .toList(),
+                                    ),
+                                    const SizedBox(height: AppSpacing.xxl),
+                                  ],
+                                ),
+                                updating: (s) => Column(
+                                  children: [
+                                    ProfileCardSection(
+                                      name: s.profile.fullName,
+                                      email: s.profile.email,
+                                      avatarUrl: s.profile.avatarUrl ?? '',
+                                      danceTags: s.profile.danceTags
+                                          .map((tag) => (label: tag, color: appPrimary))
+                                          .toList(),
+                                    ),
+                                    const SizedBox(height: AppSpacing.xxl),
+                                  ],
+                                ),
+                                error: (_) => Column(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(AppSpacing.lg),
+                                      decoration: BoxDecoration(
+                                        color: appError.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(AppRadius.lg),
+                                        border: Border.all(color: appError.withValues(alpha: 0.3)),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Text(
+                                            t.profile.error,
+                                            style: const TextStyle(color: appError),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          const SizedBox(height: AppSpacing.md),
+                                          TextButton(
+                                            onPressed: () => context.read<ProfileCubit>().loadProfile(),
+                                            child: Text(
+                                              t.common.retry,
+                                              style: const TextStyle(color: appPrimary),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: AppSpacing.xxl),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
                           SectionLabel(title: t.profile.sections.account),
                           const SizedBox(height: AppSpacing.md),
                           AccountSection(
@@ -225,10 +273,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           const SizedBox(height: AppSpacing.md),
                           const SettingsSection(),
                           const SizedBox(height: AppSpacing.xxl),
-                          PremiumBanner(
-                            onTap: () => const PremiumRoute().push(context),
-                          ),
-                          const SizedBox(height: AppSpacing.xxl),
+                          // PremiumBanner(
+                          //   onTap: () => const PremiumRoute().push(context),
+                          // ),
+                          // const SizedBox(height: AppSpacing.xxl),
                           SectionLabel(title: t.profile.sections.support),
                           const SizedBox(height: AppSpacing.md),
                           SupportSection(

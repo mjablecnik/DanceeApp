@@ -17,6 +17,7 @@ import '../screens/events/filter_dance/filter_dance_screen.dart';
 import '../screens/events/filter_location/filter_location_screen.dart';
 import '../screens/profile/author_contact/author_contact_screen.dart';
 import '../screens/profile/change_password/change_password_screen.dart';
+import '../screens/profile/legal/legal_page_screen.dart';
 import '../screens/profile/premium/premium_screen.dart';
 import '../screens/profile/profile/profile_screen.dart';
 import '../screens/profile/profile_edit/profile_edit_screen.dart';
@@ -242,4 +243,17 @@ class AuthorContactRoute extends GoRouteData {
   @override
   Page<void> buildPage(BuildContext context, GoRouterState state) =>
       const NoTransitionPage(child: AuthorContactScreen());
+}
+
+@TypedGoRoute<LegalPageRoute>(path: '/profile/legal')
+@immutable
+class LegalPageRoute extends GoRouteData {
+  const LegalPageRoute({required this.slug, required this.title});
+
+  final String slug;
+  final String title;
+
+  @override
+  Page<void> buildPage(BuildContext context, GoRouterState state) =>
+      NoTransitionPage(child: LegalPageScreen(slug: slug, title: title));
 }

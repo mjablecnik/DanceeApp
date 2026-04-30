@@ -21,6 +21,7 @@ List<RouteBase> get $appRoutes => [
       $changePasswordRoute,
       $premiumRoute,
       $authorContactRoute,
+      $legalPageRoute,
     ];
 
 RouteBase get $loginRoute => GoRouteData.$route(
@@ -419,6 +420,35 @@ extension $AuthorContactRouteExtension on AuthorContactRoute {
 
   String get location => GoRouteData.$location(
         '/profile/author-contact',
+      );
+
+  void go(BuildContext context) => context.go(location);
+
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  void replace(BuildContext context) => context.replace(location);
+}
+
+RouteBase get $legalPageRoute => GoRouteData.$route(
+      path: '/profile/legal',
+      factory: $LegalPageRouteExtension._fromState,
+    );
+
+extension $LegalPageRouteExtension on LegalPageRoute {
+  static LegalPageRoute _fromState(GoRouterState state) => LegalPageRoute(
+        slug: state.uri.queryParameters['slug']!,
+        title: state.uri.queryParameters['title']!,
+      );
+
+  String get location => GoRouteData.$location(
+        '/profile/legal',
+        queryParams: {
+          'slug': slug,
+          'title': title,
+        },
       );
 
   void go(BuildContext context) => context.go(location);

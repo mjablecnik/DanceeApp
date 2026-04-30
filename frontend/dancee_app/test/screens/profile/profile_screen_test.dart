@@ -25,11 +25,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:dancee_app/core/service_locator.dart';
+import 'package:dancee_app/data/entities/user_profile.dart';
 import 'package:dancee_app/data/repositories/auth_repository.dart';
 import 'package:dancee_app/data/repositories/favorites_repository.dart';
+import 'package:dancee_app/data/repositories/profile_repository.dart';
 import 'package:dancee_app/i18n/strings.g.dart';
 import 'package:dancee_app/logic/cubits/auth_cubit.dart';
+import 'package:dancee_app/logic/cubits/profile_cubit.dart';
 import 'package:dancee_app/logic/cubits/settings_cubit.dart';
+import 'package:dancee_app/logic/states/profile_state.dart';
 import 'package:dancee_app/screens/profile/profile/profile_screen.dart';
 import 'package:dancee_app/screens/profile/profile/sections/account_section.dart';
 import 'package:dancee_app/screens/profile/profile/sections/app_info_section.dart';
@@ -84,13 +89,49 @@ class _FakeAuthRepository extends Fake implements AuthRepository {
 
 class _FakeFavoritesRepository extends Fake implements FavoritesRepository {}
 
+class _FakeProfileRepository extends Fake implements ProfileRepository {
+  @override
+  Future<String> getAppVersion() async => '1.0.0+1';
+}
+
+const _kFakeProfile = UserProfile(
+  directusUserId: 'dir-1',
+  firebaseUid: 'test-uid',
+  firstName: 'Test',
+  lastName: 'User',
+  email: 'test@example.com',
+  danceTags: [],
+  experienceLevel: 'beginner',
+);
+
+/// Stub [ProfileCubit] that immediately emits a loaded profile — avoids real API calls in tests.
+class _StubProfileCubit extends ProfileCubit {
+  _StubProfileCubit()
+      : super(
+          profileRepository: _FakeProfileRepository(),
+          authCubit: AuthCubit(
+            authRepository: _FakeAuthRepository(),
+            favoritesRepository: _FakeFavoritesRepository(),
+          ),
+        );
+
+  @override
+  Future<void> loadProfile() async {
+    emit(const ProfileState.loaded(profile: _kFakeProfile));
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 /// Builds a [GoRouter] that hosts [ProfileScreen] at `/` with all referenced
 /// named routes defined as no-op stubs so GoRouter does not throw on navigate.
-GoRouter _buildRouter(AuthCubit authCubit, SettingsCubit settingsCubit) {
+GoRouter _buildRouter(
+  AuthCubit authCubit,
+  SettingsCubit settingsCubit,
+  ProfileCubit profileCubit,
+) {
   return GoRouter(
     routes: [
       GoRoute(
@@ -99,6 +140,7 @@ GoRouter _buildRouter(AuthCubit authCubit, SettingsCubit settingsCubit) {
           providers: [
             BlocProvider<AuthCubit>.value(value: authCubit),
             BlocProvider<SettingsCubit>.value(value: settingsCubit),
+            BlocProvider<ProfileCubit>.value(value: profileCubit),
           ],
           child: const ProfileScreen(),
         ),
@@ -112,6 +154,7 @@ GoRouter _buildRouter(AuthCubit authCubit, SettingsCubit settingsCubit) {
       GoRoute(
           path: '/profile/author-contact',
           builder: (_, __) => const Scaffold()),
+      GoRoute(path: '/profile/legal', builder: (_, __) => const Scaffold()),
     ],
   );
 }
@@ -125,6 +168,14 @@ void main() {
     // Set a default locale so slang translation getters return strings
     // instead of throwing during widget build.
     LocaleSettings.setLocale(AppLocale.en);
+    // Register fakes in service locator for widgets that access sl<> directly.
+    if (!sl.isRegistered<ProfileRepository>()) {
+      sl.registerLazySingleton<ProfileRepository>(() => _FakeProfileRepository());
+    }
+  });
+
+  tearDownAll(() async {
+    await sl.reset();
   });
 
   group('ProfileScreen — bug condition exploration (task 1)', () {
@@ -132,6 +183,7 @@ void main() {
     late _FakeFavoritesRepository fakeFavoritesRepo;
     late AuthCubit authCubit;
     late SettingsCubit settingsCubit;
+    late _StubProfileCubit profileCubit;
 
     setUp(() {
       fakeAuthRepo = _FakeAuthRepository();
@@ -141,18 +193,20 @@ void main() {
         favoritesRepository: fakeFavoritesRepo,
       );
       settingsCubit = SettingsCubit();
+      profileCubit = _StubProfileCubit();
     });
 
     tearDown(() async {
       await authCubit.close();
       await settingsCubit.close();
+      await profileCubit.close();
       await fakeAuthRepo.dispose();
     });
 
     testWidgets(
       'renders all 7 required sections, a trailing edit icon, and a notifications toggle',
       (tester) async {
-        final router = _buildRouter(authCubit, settingsCubit);
+        final router = _buildRouter(authCubit, settingsCubit, profileCubit);
 
         await tester.pumpWidget(MaterialApp.router(routerConfig: router));
 
@@ -176,10 +230,12 @@ void main() {
           reason: 'Counterexample: AccountSection not in widget tree',
         );
 
+        // PremiumBanner is intentionally commented out (task 7.3 / Requirement 9):
+        // the Premium section is hidden until the feature is ready.
         expect(
           find.byType(PremiumBanner),
-          findsOneWidget,
-          reason: 'Counterexample: PremiumBanner not in widget tree',
+          findsNothing,
+          reason: 'PremiumBanner must be absent from the widget tree (commented out per Requirement 9)',
         );
 
         expect(

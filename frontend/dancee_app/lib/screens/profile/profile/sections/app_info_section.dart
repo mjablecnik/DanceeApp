@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../../../../core/app_routes.dart';
 import '../../../../core/colors.dart';
+import '../../../../core/service_locator.dart';
 import '../../../../core/theme.dart';
-import '../../../../data/user_repository.dart';
+import '../../../../data/repositories/profile_repository.dart';
 import '../../../../i18n/strings.g.dart';
 import '../components/profile_menu_item.dart';
 
@@ -20,7 +22,7 @@ class AppInfoSection extends StatelessWidget {
       child: Column(
         children: [
           FutureBuilder<String>(
-            future: const UserRepository().getAppVersion(),
+            future: sl<ProfileRepository>().getAppVersion(),
             builder: (context, snapshot) {
               return ProfileMenuItem(
                 icon: FontAwesomeIcons.circleInfo,
@@ -41,7 +43,10 @@ class AppInfoSection extends StatelessWidget {
             iconBgColor: appBorder,
             iconColor: appMuted,
             title: t.profile.appInfo.termsOfUse,
-            onTap: null,
+            onTap: () => LegalPageRoute(
+              slug: 'terms-of-use',
+              title: t.profile.appInfo.termsOfUse,
+            ).push(context),
             showDivider: true,
           ),
           ProfileMenuItem(
@@ -49,7 +54,10 @@ class AppInfoSection extends StatelessWidget {
             iconBgColor: appBorder,
             iconColor: appMuted,
             title: t.profile.appInfo.privacy,
-            onTap: null,
+            onTap: () => LegalPageRoute(
+              slug: 'privacy-policy',
+              title: t.profile.appInfo.privacy,
+            ).push(context),
             showDivider: false,
           ),
         ],
