@@ -84,6 +84,19 @@ class DirectusClient {
     }
   }
 
+  /// Performs a PATCH request and returns the unwrapped `data` field.
+  Future<dynamic> patch(String path, {dynamic data}) async {
+    try {
+      final response = await _dio.patch<Map<String, dynamic>>(
+        path,
+        data: data,
+      );
+      return _unwrap(response);
+    } on DioException catch (e) {
+      throw _mapDioException(e);
+    }
+  }
+
   /// Performs a DELETE request.
   Future<void> delete(
     String path, {
