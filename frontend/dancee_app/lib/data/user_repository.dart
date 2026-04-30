@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../core/colors.dart';
+import 'entities/user_profile.dart';
+
+export 'entities/user_profile.dart' show DeviceInfoData;
 
 // ─── Model classes ───────────────────────────────────────────────────────────
 
@@ -33,18 +36,6 @@ class UserData {
     required this.experienceLevel,
     this.instagram,
     this.facebook,
-  });
-}
-
-class DeviceInfoData {
-  final String appVersion;
-  final String device;
-  final String os;
-
-  const DeviceInfoData({
-    required this.appVersion,
-    required this.device,
-    required this.os,
   });
 }
 
