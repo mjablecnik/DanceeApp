@@ -4,11 +4,13 @@ import '../../../../core/theme.dart';
 import '../../../../i18n/strings.g.dart';
 
 class SaveButtonSection extends StatelessWidget {
-  final VoidCallback onSave;
+  final VoidCallback? onSave;
+  final bool isLoading;
 
   const SaveButtonSection({
     super.key,
     required this.onSave,
+    this.isLoading = false,
   });
 
   @override
@@ -19,7 +21,7 @@ class SaveButtonSection extends StatelessWidget {
         left: AppSpacing.xl,
         right: AppSpacing.xl,
         top: AppSpacing.md,
-        bottom: MediaQuery.of(context).padding.bottom + 80,
+        bottom: MediaQuery.of(context).padding.bottom + AppSpacing.md,
       ),
       child: SizedBox(
         width: double.infinity,
@@ -32,13 +34,22 @@ class SaveButtonSection extends StatelessWidget {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.lg)),
             elevation: 0,
           ),
-          child: Text(
-            t.common.saveChanges,
-            style: const TextStyle(
-              fontSize: AppTypography.fontSizeXl,
-              fontWeight: AppTypography.fontWeightSemiBold,
-            ),
-          ),
+          child: isLoading
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : Text(
+                  t.common.saveChanges,
+                  style: const TextStyle(
+                    fontSize: AppTypography.fontSizeXl,
+                    fontWeight: AppTypography.fontWeightSemiBold,
+                  ),
+                ),
         ),
       ),
     );
