@@ -18,6 +18,7 @@ import '../logic/cubits/event_cubit.dart';
 import '../logic/cubits/course_cubit.dart';
 import '../logic/cubits/favorites_cubit.dart';
 import '../logic/cubits/filter_cubit.dart';
+import '../logic/cubits/profile_cubit.dart';
 import '../logic/cubits/settings_cubit.dart';
 
 final GetIt sl = GetIt.instance;
@@ -91,6 +92,12 @@ void setupServiceLocator() {
   sl.registerLazySingleton<FavoritesCubit>(
     () => FavoritesCubit(
       favoritesRepository: sl<FavoritesRepository>(),
+      authCubit: sl<AuthCubit>(),
+    ),
+  );
+  sl.registerLazySingleton<ProfileCubit>(
+    () => ProfileCubit(
+      profileRepository: sl<ProfileRepository>(),
       authCubit: sl<AuthCubit>(),
     ),
   );

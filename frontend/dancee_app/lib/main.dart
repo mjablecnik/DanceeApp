@@ -16,6 +16,7 @@ import 'logic/cubits/event_cubit.dart';
 import 'logic/cubits/course_cubit.dart';
 import 'logic/cubits/favorites_cubit.dart';
 import 'logic/cubits/filter_cubit.dart';
+import 'logic/cubits/profile_cubit.dart';
 import 'logic/cubits/settings_cubit.dart';
 import 'logic/states/course_state.dart';
 import 'shared/utils/auth_translations.dart';
@@ -142,6 +143,7 @@ class DanceeApp extends StatelessWidget {
         BlocProvider<EventCubit>(create: (_) => sl<EventCubit>()),
         BlocProvider<CourseCubit>(create: (_) => sl<CourseCubit>()),
         BlocProvider<FavoritesCubit>(create: (_) => sl<FavoritesCubit>()),
+        BlocProvider<ProfileCubit>(create: (_) => sl<ProfileCubit>()),
       ],
       child: _AppListeners(
         child: MaterialApp.router(
