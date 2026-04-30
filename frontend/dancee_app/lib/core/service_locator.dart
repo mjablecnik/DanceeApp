@@ -12,6 +12,7 @@ import '../data/repositories/event_repository.dart';
 import '../data/repositories/course_repository.dart';
 import '../data/repositories/favorites_repository.dart';
 import '../data/repositories/dance_style_repository.dart';
+import '../data/repositories/profile_repository.dart';
 import '../logic/cubits/auth_cubit.dart';
 import '../logic/cubits/event_cubit.dart';
 import '../logic/cubits/course_cubit.dart';
@@ -71,6 +72,9 @@ void setupServiceLocator() {
   );
   sl.registerLazySingleton<DanceStyleRepository>(
     () => DanceStyleRepository(client: sl<DirectusClient>()),
+  );
+  sl.registerLazySingleton<ProfileRepository>(
+    () => ProfileRepository(client: sl<DirectusClient>()),
   );
 
   // Cubits
