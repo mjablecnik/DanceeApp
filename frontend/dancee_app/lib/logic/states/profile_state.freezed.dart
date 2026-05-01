@@ -22,6 +22,7 @@ mixin _$ProfileState {
     required TResult Function() loading,
     required TResult Function(UserProfile profile) loaded,
     required TResult Function(UserProfile profile) updating,
+    required TResult Function(UserProfile profile) uploadingAvatar,
     required TResult Function(String message) error,
   }) =>
       throw _privateConstructorUsedError;
@@ -31,6 +32,7 @@ mixin _$ProfileState {
     TResult? Function()? loading,
     TResult? Function(UserProfile profile)? loaded,
     TResult? Function(UserProfile profile)? updating,
+    TResult? Function(UserProfile profile)? uploadingAvatar,
     TResult? Function(String message)? error,
   }) =>
       throw _privateConstructorUsedError;
@@ -40,6 +42,7 @@ mixin _$ProfileState {
     TResult Function()? loading,
     TResult Function(UserProfile profile)? loaded,
     TResult Function(UserProfile profile)? updating,
+    TResult Function(UserProfile profile)? uploadingAvatar,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) =>
@@ -50,6 +53,7 @@ mixin _$ProfileState {
     required TResult Function(_Loading value) loading,
     required TResult Function(_Loaded value) loaded,
     required TResult Function(_Updating value) updating,
+    required TResult Function(_UploadingAvatar value) uploadingAvatar,
     required TResult Function(_Error value) error,
   }) =>
       throw _privateConstructorUsedError;
@@ -59,6 +63,7 @@ mixin _$ProfileState {
     TResult? Function(_Loading value)? loading,
     TResult? Function(_Loaded value)? loaded,
     TResult? Function(_Updating value)? updating,
+    TResult? Function(_UploadingAvatar value)? uploadingAvatar,
     TResult? Function(_Error value)? error,
   }) =>
       throw _privateConstructorUsedError;
@@ -68,6 +73,7 @@ mixin _$ProfileState {
     TResult Function(_Loading value)? loading,
     TResult Function(_Loaded value)? loaded,
     TResult Function(_Updating value)? updating,
+    TResult Function(_UploadingAvatar value)? uploadingAvatar,
     TResult Function(_Error value)? error,
     required TResult orElse(),
   }) =>
@@ -140,6 +146,7 @@ class _$InitialImpl implements _Initial {
     required TResult Function() loading,
     required TResult Function(UserProfile profile) loaded,
     required TResult Function(UserProfile profile) updating,
+    required TResult Function(UserProfile profile) uploadingAvatar,
     required TResult Function(String message) error,
   }) {
     return initial();
@@ -152,6 +159,7 @@ class _$InitialImpl implements _Initial {
     TResult? Function()? loading,
     TResult? Function(UserProfile profile)? loaded,
     TResult? Function(UserProfile profile)? updating,
+    TResult? Function(UserProfile profile)? uploadingAvatar,
     TResult? Function(String message)? error,
   }) {
     return initial?.call();
@@ -164,6 +172,7 @@ class _$InitialImpl implements _Initial {
     TResult Function()? loading,
     TResult Function(UserProfile profile)? loaded,
     TResult Function(UserProfile profile)? updating,
+    TResult Function(UserProfile profile)? uploadingAvatar,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -180,6 +189,7 @@ class _$InitialImpl implements _Initial {
     required TResult Function(_Loading value) loading,
     required TResult Function(_Loaded value) loaded,
     required TResult Function(_Updating value) updating,
+    required TResult Function(_UploadingAvatar value) uploadingAvatar,
     required TResult Function(_Error value) error,
   }) {
     return initial(this);
@@ -192,6 +202,7 @@ class _$InitialImpl implements _Initial {
     TResult? Function(_Loading value)? loading,
     TResult? Function(_Loaded value)? loaded,
     TResult? Function(_Updating value)? updating,
+    TResult? Function(_UploadingAvatar value)? uploadingAvatar,
     TResult? Function(_Error value)? error,
   }) {
     return initial?.call(this);
@@ -204,6 +215,7 @@ class _$InitialImpl implements _Initial {
     TResult Function(_Loading value)? loading,
     TResult Function(_Loaded value)? loaded,
     TResult Function(_Updating value)? updating,
+    TResult Function(_UploadingAvatar value)? uploadingAvatar,
     TResult Function(_Error value)? error,
     required TResult orElse(),
   }) {
@@ -263,6 +275,7 @@ class _$LoadingImpl implements _Loading {
     required TResult Function() loading,
     required TResult Function(UserProfile profile) loaded,
     required TResult Function(UserProfile profile) updating,
+    required TResult Function(UserProfile profile) uploadingAvatar,
     required TResult Function(String message) error,
   }) {
     return loading();
@@ -275,6 +288,7 @@ class _$LoadingImpl implements _Loading {
     TResult? Function()? loading,
     TResult? Function(UserProfile profile)? loaded,
     TResult? Function(UserProfile profile)? updating,
+    TResult? Function(UserProfile profile)? uploadingAvatar,
     TResult? Function(String message)? error,
   }) {
     return loading?.call();
@@ -287,6 +301,7 @@ class _$LoadingImpl implements _Loading {
     TResult Function()? loading,
     TResult Function(UserProfile profile)? loaded,
     TResult Function(UserProfile profile)? updating,
+    TResult Function(UserProfile profile)? uploadingAvatar,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -303,6 +318,7 @@ class _$LoadingImpl implements _Loading {
     required TResult Function(_Loading value) loading,
     required TResult Function(_Loaded value) loaded,
     required TResult Function(_Updating value) updating,
+    required TResult Function(_UploadingAvatar value) uploadingAvatar,
     required TResult Function(_Error value) error,
   }) {
     return loading(this);
@@ -315,6 +331,7 @@ class _$LoadingImpl implements _Loading {
     TResult? Function(_Loading value)? loading,
     TResult? Function(_Loaded value)? loaded,
     TResult? Function(_Updating value)? updating,
+    TResult? Function(_UploadingAvatar value)? uploadingAvatar,
     TResult? Function(_Error value)? error,
   }) {
     return loading?.call(this);
@@ -327,6 +344,7 @@ class _$LoadingImpl implements _Loading {
     TResult Function(_Loading value)? loading,
     TResult Function(_Loaded value)? loaded,
     TResult Function(_Updating value)? updating,
+    TResult Function(_UploadingAvatar value)? uploadingAvatar,
     TResult Function(_Error value)? error,
     required TResult orElse(),
   }) {
@@ -413,6 +431,7 @@ class _$LoadedImpl implements _Loaded {
     required TResult Function() loading,
     required TResult Function(UserProfile profile) loaded,
     required TResult Function(UserProfile profile) updating,
+    required TResult Function(UserProfile profile) uploadingAvatar,
     required TResult Function(String message) error,
   }) {
     return loaded(profile);
@@ -425,6 +444,7 @@ class _$LoadedImpl implements _Loaded {
     TResult? Function()? loading,
     TResult? Function(UserProfile profile)? loaded,
     TResult? Function(UserProfile profile)? updating,
+    TResult? Function(UserProfile profile)? uploadingAvatar,
     TResult? Function(String message)? error,
   }) {
     return loaded?.call(profile);
@@ -437,6 +457,7 @@ class _$LoadedImpl implements _Loaded {
     TResult Function()? loading,
     TResult Function(UserProfile profile)? loaded,
     TResult Function(UserProfile profile)? updating,
+    TResult Function(UserProfile profile)? uploadingAvatar,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -453,6 +474,7 @@ class _$LoadedImpl implements _Loaded {
     required TResult Function(_Loading value) loading,
     required TResult Function(_Loaded value) loaded,
     required TResult Function(_Updating value) updating,
+    required TResult Function(_UploadingAvatar value) uploadingAvatar,
     required TResult Function(_Error value) error,
   }) {
     return loaded(this);
@@ -465,6 +487,7 @@ class _$LoadedImpl implements _Loaded {
     TResult? Function(_Loading value)? loading,
     TResult? Function(_Loaded value)? loaded,
     TResult? Function(_Updating value)? updating,
+    TResult? Function(_UploadingAvatar value)? uploadingAvatar,
     TResult? Function(_Error value)? error,
   }) {
     return loaded?.call(this);
@@ -477,6 +500,7 @@ class _$LoadedImpl implements _Loaded {
     TResult Function(_Loading value)? loading,
     TResult Function(_Loaded value)? loaded,
     TResult Function(_Updating value)? updating,
+    TResult Function(_UploadingAvatar value)? uploadingAvatar,
     TResult Function(_Error value)? error,
     required TResult orElse(),
   }) {
@@ -571,6 +595,7 @@ class _$UpdatingImpl implements _Updating {
     required TResult Function() loading,
     required TResult Function(UserProfile profile) loaded,
     required TResult Function(UserProfile profile) updating,
+    required TResult Function(UserProfile profile) uploadingAvatar,
     required TResult Function(String message) error,
   }) {
     return updating(profile);
@@ -583,6 +608,7 @@ class _$UpdatingImpl implements _Updating {
     TResult? Function()? loading,
     TResult? Function(UserProfile profile)? loaded,
     TResult? Function(UserProfile profile)? updating,
+    TResult? Function(UserProfile profile)? uploadingAvatar,
     TResult? Function(String message)? error,
   }) {
     return updating?.call(profile);
@@ -595,6 +621,7 @@ class _$UpdatingImpl implements _Updating {
     TResult Function()? loading,
     TResult Function(UserProfile profile)? loaded,
     TResult Function(UserProfile profile)? updating,
+    TResult Function(UserProfile profile)? uploadingAvatar,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -611,6 +638,7 @@ class _$UpdatingImpl implements _Updating {
     required TResult Function(_Loading value) loading,
     required TResult Function(_Loaded value) loaded,
     required TResult Function(_Updating value) updating,
+    required TResult Function(_UploadingAvatar value) uploadingAvatar,
     required TResult Function(_Error value) error,
   }) {
     return updating(this);
@@ -623,6 +651,7 @@ class _$UpdatingImpl implements _Updating {
     TResult? Function(_Loading value)? loading,
     TResult? Function(_Loaded value)? loaded,
     TResult? Function(_Updating value)? updating,
+    TResult? Function(_UploadingAvatar value)? uploadingAvatar,
     TResult? Function(_Error value)? error,
   }) {
     return updating?.call(this);
@@ -635,6 +664,7 @@ class _$UpdatingImpl implements _Updating {
     TResult Function(_Loading value)? loading,
     TResult Function(_Loaded value)? loaded,
     TResult Function(_Updating value)? updating,
+    TResult Function(_UploadingAvatar value)? uploadingAvatar,
     TResult Function(_Error value)? error,
     required TResult orElse(),
   }) {
@@ -655,6 +685,172 @@ abstract class _Updating implements ProfileState {
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$UpdatingImplCopyWith<_$UpdatingImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$UploadingAvatarImplCopyWith<$Res> {
+  factory _$$UploadingAvatarImplCopyWith(_$UploadingAvatarImpl value,
+          $Res Function(_$UploadingAvatarImpl) then) =
+      __$$UploadingAvatarImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({UserProfile profile});
+}
+
+/// @nodoc
+class __$$UploadingAvatarImplCopyWithImpl<$Res>
+    extends _$ProfileStateCopyWithImpl<$Res, _$UploadingAvatarImpl>
+    implements _$$UploadingAvatarImplCopyWith<$Res> {
+  __$$UploadingAvatarImplCopyWithImpl(
+      _$UploadingAvatarImpl _value, $Res Function(_$UploadingAvatarImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of ProfileState
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? profile = null,
+  }) {
+    return _then(_$UploadingAvatarImpl(
+      profile: null == profile
+          ? _value.profile
+          : profile // ignore: cast_nullable_to_non_nullable
+              as UserProfile,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$UploadingAvatarImpl implements _UploadingAvatar {
+  const _$UploadingAvatarImpl({required this.profile});
+
+  @override
+  final UserProfile profile;
+
+  @override
+  String toString() {
+    return 'ProfileState.uploadingAvatar(profile: $profile)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$UploadingAvatarImpl &&
+            (identical(other.profile, profile) || other.profile == profile));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, profile);
+
+  /// Create a copy of ProfileState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$UploadingAvatarImplCopyWith<_$UploadingAvatarImpl> get copyWith =>
+      __$$UploadingAvatarImplCopyWithImpl<_$UploadingAvatarImpl>(
+          this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(UserProfile profile) loaded,
+    required TResult Function(UserProfile profile) updating,
+    required TResult Function(UserProfile profile) uploadingAvatar,
+    required TResult Function(String message) error,
+  }) {
+    return uploadingAvatar(profile);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(UserProfile profile)? loaded,
+    TResult? Function(UserProfile profile)? updating,
+    TResult? Function(UserProfile profile)? uploadingAvatar,
+    TResult? Function(String message)? error,
+  }) {
+    return uploadingAvatar?.call(profile);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(UserProfile profile)? loaded,
+    TResult Function(UserProfile profile)? updating,
+    TResult Function(UserProfile profile)? uploadingAvatar,
+    TResult Function(String message)? error,
+    required TResult orElse(),
+  }) {
+    if (uploadingAvatar != null) {
+      return uploadingAvatar(profile);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_Initial value) initial,
+    required TResult Function(_Loading value) loading,
+    required TResult Function(_Loaded value) loaded,
+    required TResult Function(_Updating value) updating,
+    required TResult Function(_UploadingAvatar value) uploadingAvatar,
+    required TResult Function(_Error value) error,
+  }) {
+    return uploadingAvatar(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_Initial value)? initial,
+    TResult? Function(_Loading value)? loading,
+    TResult? Function(_Loaded value)? loaded,
+    TResult? Function(_Updating value)? updating,
+    TResult? Function(_UploadingAvatar value)? uploadingAvatar,
+    TResult? Function(_Error value)? error,
+  }) {
+    return uploadingAvatar?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_Initial value)? initial,
+    TResult Function(_Loading value)? loading,
+    TResult Function(_Loaded value)? loaded,
+    TResult Function(_Updating value)? updating,
+    TResult Function(_UploadingAvatar value)? uploadingAvatar,
+    TResult Function(_Error value)? error,
+    required TResult orElse(),
+  }) {
+    if (uploadingAvatar != null) {
+      return uploadingAvatar(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _UploadingAvatar implements ProfileState {
+  const factory _UploadingAvatar({required final UserProfile profile}) =
+      _$UploadingAvatarImpl;
+
+  UserProfile get profile;
+
+  /// Create a copy of ProfileState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$UploadingAvatarImplCopyWith<_$UploadingAvatarImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -730,6 +926,7 @@ class _$ErrorImpl implements _Error {
     required TResult Function() loading,
     required TResult Function(UserProfile profile) loaded,
     required TResult Function(UserProfile profile) updating,
+    required TResult Function(UserProfile profile) uploadingAvatar,
     required TResult Function(String message) error,
   }) {
     return error(message);
@@ -742,6 +939,7 @@ class _$ErrorImpl implements _Error {
     TResult? Function()? loading,
     TResult? Function(UserProfile profile)? loaded,
     TResult? Function(UserProfile profile)? updating,
+    TResult? Function(UserProfile profile)? uploadingAvatar,
     TResult? Function(String message)? error,
   }) {
     return error?.call(message);
@@ -754,6 +952,7 @@ class _$ErrorImpl implements _Error {
     TResult Function()? loading,
     TResult Function(UserProfile profile)? loaded,
     TResult Function(UserProfile profile)? updating,
+    TResult Function(UserProfile profile)? uploadingAvatar,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -770,6 +969,7 @@ class _$ErrorImpl implements _Error {
     required TResult Function(_Loading value) loading,
     required TResult Function(_Loaded value) loaded,
     required TResult Function(_Updating value) updating,
+    required TResult Function(_UploadingAvatar value) uploadingAvatar,
     required TResult Function(_Error value) error,
   }) {
     return error(this);
@@ -782,6 +982,7 @@ class _$ErrorImpl implements _Error {
     TResult? Function(_Loading value)? loading,
     TResult? Function(_Loaded value)? loaded,
     TResult? Function(_Updating value)? updating,
+    TResult? Function(_UploadingAvatar value)? uploadingAvatar,
     TResult? Function(_Error value)? error,
   }) {
     return error?.call(this);
@@ -794,6 +995,7 @@ class _$ErrorImpl implements _Error {
     TResult Function(_Loading value)? loading,
     TResult Function(_Loaded value)? loaded,
     TResult Function(_Updating value)? updating,
+    TResult Function(_UploadingAvatar value)? uploadingAvatar,
     TResult Function(_Error value)? error,
     required TResult orElse(),
   }) {

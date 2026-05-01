@@ -11,5 +11,7 @@ class ProfileState with _$ProfileState {
   const factory ProfileState.loaded({required UserProfile profile}) = _Loaded;
   const factory ProfileState.updating({required UserProfile profile}) =
       _Updating;
+  const factory ProfileState.uploadingAvatar({required UserProfile profile}) =
+      _UploadingAvatar;
   const factory ProfileState.error({required String message}) = _Error;
 }

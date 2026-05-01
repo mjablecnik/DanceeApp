@@ -1,4 +1,5 @@
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -85,6 +86,24 @@ class ProfileRepository {
     await _client.post(
       '/items/contact_messages',
       data: message.toDirectus(),
+    );
+  }
+
+  /// Uploads an avatar image to Directus and links it to the current user's profile.
+  /// Returns the updated [UserProfile] with the new avatar URL.
+  Future<UserProfile> uploadAvatar(String filePath, String fileName) async {
+    // Step 1: Upload file to /files
+    final formData = FormData.fromMap({
+      'file': await MultipartFile.fromFile(filePath, filename: fileName),
+    });
+    final fileData = await _client.uploadFile('/files', formData: formData);
+    final fileId = (fileData as Map<String, dynamic>)['id'] as String;
+
+    // Step 2: Link avatar to user profile
+    final userData = await _client.patch('/users/me', data: {'avatar': fileId});
+    return UserProfile.fromDirectus(
+      userData as Map<String, dynamic>,
+      directusBaseUrl: AppConfig.directusBaseUrl,
     );
   }
 
