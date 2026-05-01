@@ -7,6 +7,7 @@ class AppCachedImage extends StatelessWidget {
   final double? width;
   final double? height;
   final BoxFit fit;
+  final Widget? errorChild;
 
   const AppCachedImage({
     super.key,
@@ -14,6 +15,7 @@ class AppCachedImage extends StatelessWidget {
     this.width,
     this.height,
     this.fit = BoxFit.cover,
+    this.errorChild,
   });
 
   @override
@@ -38,7 +40,7 @@ class AppCachedImage extends StatelessWidget {
         height: height,
         color: appSurface,
       ),
-      errorWidget: (context, url, error) => Container(
+      errorWidget: (context, url, error) => errorChild ?? Container(
         width: width,
         height: height,
         color: appSurface,

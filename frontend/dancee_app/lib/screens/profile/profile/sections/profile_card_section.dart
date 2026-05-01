@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/colors.dart';
 import '../../../../core/theme.dart';
 import '../../../../shared/components/app_cached_image.dart';
+import '../../../../shared/utils/initials.dart';
 import '../components/dance_tag.dart';
 
 class ProfileCardSection extends StatelessWidget {
@@ -17,13 +18,6 @@ class ProfileCardSection extends StatelessWidget {
     required this.avatarUrl,
     required this.danceTags,
   });
-
-  String _initials(String name) {
-    final parts = name.trim().split(RegExp(r'\s+'));
-    if (parts.isEmpty || parts.first.isEmpty) return '?';
-    if (parts.length == 1) return parts.first[0].toUpperCase();
-    return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +39,23 @@ class ProfileCardSection extends StatelessWidget {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(32),
-              child: AppCachedImage(imageUrl: avatarUrl, fit: BoxFit.cover),
+              child: AppCachedImage(
+                imageUrl: avatarUrl,
+                fit: BoxFit.cover,
+                errorChild: Container(
+                  color: appPrimary.withValues(alpha: 0.15),
+                  child: Center(
+                    child: Text(
+                      getInitials(name),
+                      style: const TextStyle(
+                        color: appPrimary,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
           const SizedBox(width: AppSpacing.lg),

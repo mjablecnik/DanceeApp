@@ -10,6 +10,7 @@ import '../../../../core/theme.dart';
 import '../../../../i18n/strings.g.dart';
 import '../../../../logic/cubits/profile_cubit.dart';
 import '../../../../shared/components/app_cached_image.dart';
+import '../../../../shared/utils/initials.dart';
 
 class ProfilePhotoSection extends StatefulWidget {
   final String avatarUrl;
@@ -28,13 +29,6 @@ class ProfilePhotoSection extends StatefulWidget {
 }
 
 class _ProfilePhotoSectionState extends State<ProfilePhotoSection> {
-  String _initials(String name) {
-    final parts = name.trim().split(RegExp(r'\s+'));
-    if (parts.isEmpty || parts.first.isEmpty) return '?';
-    if (parts.length == 1) return parts.first[0].toUpperCase();
-    return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
-  }
-
   Future<void> _showSourceSelection() async {
     if (widget.isUploading) return;
     await showModalBottomSheet<void>(
@@ -264,12 +258,25 @@ class _ProfilePhotoSectionState extends State<ProfilePhotoSection> {
                               ? AppCachedImage(
                                   imageUrl: widget.avatarUrl,
                                   fit: BoxFit.cover,
+                                  errorChild: Container(
+                                    color: appPrimary.withValues(alpha: 0.15),
+                                    child: Center(
+                                      child: Text(
+                                        getInitials(widget.name),
+                                        style: const TextStyle(
+                                          color: appPrimary,
+                                          fontSize: 32,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                 )
                               : Container(
                                   color: appPrimary.withValues(alpha: 0.15),
                                   child: Center(
                                     child: Text(
-                                      _initials(widget.name),
+                                      getInitials(widget.name),
                                       style: const TextStyle(
                                         color: appPrimary,
                                         fontSize: 32,
