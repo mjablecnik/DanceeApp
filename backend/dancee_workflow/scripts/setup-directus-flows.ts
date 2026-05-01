@@ -159,7 +159,7 @@ async function createContactMessageEmailFlow(): Promise<void> {
 
 <p><strong>Reply to:</strong> {{$trigger.payload.reply_email}}</p>
 <p><strong>Phone:</strong> {{$trigger.payload.phone}}</p>
-<p><strong>Submitted at:</strong> {{$trigger.payload.date_created}}</p>
+<p><strong>Submitted at:</strong> {{$now}}</p>
 
 <hr>
 <p><em>Device Info:</em> {{$trigger.payload.device_info}}</p>`,
