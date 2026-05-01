@@ -64,14 +64,21 @@ export default (router, { services, env, database, getSchema, logger }) => {
 
       if (existingUsers.length > 0) {
         const user = existingUsers[0];
+        const updates = {};
         // Always update external_identifier to current Firebase UID
-        // (handles re-registration after account deletion with new Firebase account)
         if (user.external_identifier !== uid) {
-          await usersService.updateOne(user.id, {
-            external_identifier: uid,
-            provider: "firebase",
-          });
-          logger.info(`[Firebase Auth] Updated external_identifier for ${email} to ${uid}`);
+          updates.external_identifier = uid;
+          updates.provider = "firebase";
+        }
+        // Update name from Firebase token if available and Directus name is empty
+        if (name && (!user.first_name || user.first_name === email.split("@")[0])) {
+          const parts = name.split(" ");
+          updates.first_name = parts[0] || name;
+          updates.last_name = parts.slice(1).join(" ") || null;
+        }
+        if (Object.keys(updates).length > 0) {
+          await usersService.updateOne(user.id, updates);
+          logger.info(`[Firebase Auth] Updated user ${email}: ${JSON.stringify(updates)}`);
         }
         return res.json({ data: { id: user.id, email: user.email, role: user.role } });
       }
@@ -89,9 +96,14 @@ export default (router, { services, env, database, getSchema, logger }) => {
 
       const role = roles[0];
 
+      const nameParts = name ? name.split(" ") : [];
+      const firstName = nameParts[0] || email.split("@")[0];
+      const lastName = nameParts.slice(1).join(" ") || null;
+
       const userId = await usersService.createOne({
         email,
-        first_name: name || email.split("@")[0],
+        first_name: firstName,
+        last_name: lastName,
         external_identifier: uid,
         provider: "firebase",
         role: role.id,

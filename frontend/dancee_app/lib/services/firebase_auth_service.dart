@@ -53,6 +53,8 @@ class FirebaseAuthService {
         password: password,
       );
       await credential.user?.updateDisplayName('$firstName $lastName');
+      // Force refresh ID token so it includes the updated displayName
+      await credential.user?.getIdToken(true);
       return credential;
     } on FirebaseAuthException catch (e) {
       throw mapFirebaseError(e);
