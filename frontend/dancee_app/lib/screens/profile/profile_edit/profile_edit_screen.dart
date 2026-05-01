@@ -253,19 +253,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     ),
                 name: _nameController.text,
               ),
-              Padding(
-                padding: const EdgeInsets.only(left: AppSpacing.xl, right: AppSpacing.xl, bottom: AppSpacing.md),
-                child: SectionLabel(title: t.profile.editProfile.sections.personalInfo),
-              ),
               PersonalInfoSection(
                 nameController: _nameController,
                 emailController: _emailController,
                 phoneController: _phoneController,
                 cityController: _cityController,
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: AppSpacing.xl, right: AppSpacing.xl, bottom: AppSpacing.md),
-                child: SectionLabel(title: t.profile.editProfile.sections.aboutMe),
               ),
               BioSection(
                 bioController: _bioController,

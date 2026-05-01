@@ -60,49 +60,54 @@ class _PersonalInfoField extends StatelessWidget {
   final String label;
   final TextEditingController controller;
   final TextInputType keyboardType;
+  final String? placeholder;
 
   const _PersonalInfoField({
     required this.label,
     required this.controller,
     required this.keyboardType,
+    this.placeholder,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: appSurface,
-        border: Border.all(color: appBorder),
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: appMuted,
-              fontSize: AppTypography.fontSizeSm,
-              fontWeight: AppTypography.fontWeightMedium,
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: appText,
+            fontSize: AppTypography.fontSizeMd,
+            fontWeight: AppTypography.fontWeightMedium,
           ),
-          const SizedBox(height: AppSpacing.sm),
-          TextField(
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Container(
+          decoration: BoxDecoration(
+            color: appSurface,
+            border: Border.all(color: appBorder),
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+          ),
+          child: TextField(
             controller: controller,
             keyboardType: keyboardType,
             style: const TextStyle(
               color: appText,
-              fontWeight: AppTypography.fontWeightMedium,
+              fontSize: AppTypography.fontSizeMd,
             ),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
+              hintText: placeholder ?? label,
+              hintStyle: TextStyle(color: appMuted.withValues(alpha: 0.6)),
               border: InputBorder.none,
-              isDense: true,
-              contentPadding: EdgeInsets.zero,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg,
+                vertical: 14,
+              ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

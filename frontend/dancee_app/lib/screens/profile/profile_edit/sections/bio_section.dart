@@ -19,39 +19,43 @@ class BioSection extends StatelessWidget {
         right: AppSpacing.xl,
         bottom: AppSpacing.xxl,
       ),
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        decoration: BoxDecoration(
-          color: appSurface,
-          border: Border.all(color: appBorder),
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              t.profile.editProfile.bio,
-              style: const TextStyle(
-                color: appMuted,
-                fontSize: AppTypography.fontSizeSm,
-                fontWeight: AppTypography.fontWeightMedium,
-              ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            t.profile.editProfile.bio,
+            style: const TextStyle(
+              color: appText,
+              fontSize: AppTypography.fontSizeMd,
+              fontWeight: AppTypography.fontWeightMedium,
             ),
-            const SizedBox(height: AppSpacing.sm),
-            TextField(
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Container(
+            decoration: BoxDecoration(
+              color: appSurface,
+              border: Border.all(color: appBorder),
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+            ),
+            child: TextField(
               controller: bioController,
               maxLines: 3,
-              style: const TextStyle(color: appText),
+              style: const TextStyle(
+                color: appText,
+                fontSize: AppTypography.fontSizeMd,
+              ),
               decoration: InputDecoration(
                 border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
                 hintText: t.profile.editProfile.bioHint,
-                hintStyle: const TextStyle(color: appMuted),
+                hintStyle: TextStyle(color: appMuted.withValues(alpha: 0.6)),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.lg,
+                  vertical: 14,
+                ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
