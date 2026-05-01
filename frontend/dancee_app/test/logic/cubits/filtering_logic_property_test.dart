@@ -10,13 +10,13 @@ import 'dart:math';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:dancee_app2/core/clients.dart';
-import 'package:dancee_app2/data/entities/dance_style.dart';
-import 'package:dancee_app2/data/entities/event.dart';
-import 'package:dancee_app2/data/entities/venue.dart';
-import 'package:dancee_app2/data/repositories/event_repository.dart';
-import 'package:dancee_app2/logic/cubits/event_cubit.dart';
-import 'package:dancee_app2/logic/states/filter_state.dart';
+import 'package:dancee_app/core/clients.dart';
+import 'package:dancee_app/data/entities/dance_style.dart';
+import 'package:dancee_app/data/entities/event.dart';
+import 'package:dancee_app/data/entities/venue.dart';
+import 'package:dancee_app/data/repositories/event_repository.dart';
+import 'package:dancee_app/logic/cubits/event_cubit.dart';
+import 'package:dancee_app/logic/states/filter_state.dart';
 
 // ---------------------------------------------------------------------------
 // Helpers / Generators

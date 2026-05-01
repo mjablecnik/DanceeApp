@@ -10,12 +10,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:dancee_app2/data/repositories/auth_repository.dart';
-import 'package:dancee_app2/data/repositories/favorites_repository.dart';
-import 'package:dancee_app2/i18n/strings.g.dart';
-import 'package:dancee_app2/logic/cubits/auth_cubit.dart';
-import 'package:dancee_app2/logic/states/auth_state.dart';
-import 'package:dancee_app2/screens/auth/email_verification/email_verification_screen.dart';
+import 'package:dancee_app/data/repositories/auth_repository.dart';
+import 'package:dancee_app/data/repositories/favorites_repository.dart';
+import 'package:dancee_app/i18n/strings.g.dart';
+import 'package:dancee_app/logic/cubits/auth_cubit.dart';
+import 'package:dancee_app/logic/states/auth_state.dart';
+import 'package:dancee_app/screens/auth/email_verification/email_verification_screen.dart';
 
 // ---------------------------------------------------------------------------
 // Fakes / Helpers

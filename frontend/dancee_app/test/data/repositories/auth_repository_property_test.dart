@@ -7,11 +7,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-import 'package:dancee_app2/data/repositories/auth_repository.dart';
+import 'package:dancee_app/data/repositories/auth_repository.dart';
+import 'package:dancee_app/services/directus_auth_service.dart';
+import 'package:dancee_app/services/firebase_auth_service.dart';
 
 class _FakeFirebaseAuth extends Fake implements FirebaseAuth {}
 
 class _FakeGoogleSignIn extends Fake implements GoogleSignIn {}
+
+class _FakeDirectusAuthService extends Fake implements DirectusAuthService {
+  @override
+  void clear() {}
+}
 
 // ---------------------------------------------------------------------------
 // Property 1: Error code mapping always returns a non-empty translation key
@@ -23,8 +30,11 @@ void _propertyErrorCodeMapping() {
 
   setUp(() {
     repository = AuthRepository(
-      firebaseAuth: _FakeFirebaseAuth(),
-      googleSignIn: _FakeGoogleSignIn(),
+      firebaseAuthService: FirebaseAuthService(
+        firebaseAuth: _FakeFirebaseAuth(),
+        googleSignIn: _FakeGoogleSignIn(),
+      ),
+      directusAuthService: _FakeDirectusAuthService(),
     );
   });
 

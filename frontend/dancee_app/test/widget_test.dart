@@ -7,12 +7,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:dancee_app2/core/clients.dart';
-import 'package:dancee_app2/core/service_locator.dart';
-import 'package:dancee_app2/i18n/strings.g.dart';
-import 'package:dancee_app2/logic/cubits/auth_cubit.dart';
-import 'package:dancee_app2/logic/cubits/settings_cubit.dart';
-import 'package:dancee_app2/main.dart';
+import 'package:dancee_app/core/clients.dart';
+import 'package:dancee_app/core/service_locator.dart';
+import 'package:dancee_app/i18n/strings.g.dart';
+import 'package:dancee_app/logic/cubits/auth_cubit.dart';
+import 'package:dancee_app/logic/cubits/settings_cubit.dart';
+import 'package:dancee_app/main.dart';
 
 /// Inject a fake Firebase app into the MethodChannelFirebase platform and mock
 /// all Firebase plugin channels so that tests can run without a real Firebase

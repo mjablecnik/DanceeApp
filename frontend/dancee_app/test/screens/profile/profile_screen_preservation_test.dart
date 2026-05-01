@@ -27,12 +27,17 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:dancee_app/core/service_locator.dart';
+import 'package:dancee_app/data/entities/user_profile.dart';
 import 'package:dancee_app/data/repositories/auth_repository.dart';
 import 'package:dancee_app/data/repositories/favorites_repository.dart';
+import 'package:dancee_app/data/repositories/profile_repository.dart';
 import 'package:dancee_app/i18n/strings.g.dart';
 import 'package:dancee_app/logic/cubits/auth_cubit.dart';
+import 'package:dancee_app/logic/cubits/profile_cubit.dart';
 import 'package:dancee_app/logic/cubits/settings_cubit.dart';
 import 'package:dancee_app/logic/states/auth_state.dart';
+import 'package:dancee_app/logic/states/profile_state.dart';
 import 'package:dancee_app/screens/profile/profile/profile_screen.dart';
 import 'package:dancee_app/screens/profile/profile/sections/settings_section.dart';
 
@@ -110,13 +115,49 @@ class _FakeFavoritesRepository extends Fake implements FavoritesRepository {
   Future<void> deleteAllFavoritesForUser(String uid) async {}
 }
 
+class _FakeProfileRepository extends Fake implements ProfileRepository {
+  @override
+  Future<String> getAppVersion() async => '1.0.0+1';
+}
+
+const _kFakeProfile = UserProfile(
+  directusUserId: 'dir-1',
+  firebaseUid: 'test-uid',
+  firstName: 'Test',
+  lastName: 'User',
+  email: 'test@example.com',
+  danceTags: [],
+  experienceLevel: 'beginner',
+);
+
+class _StubProfileCubit extends ProfileCubit {
+  _StubProfileCubit()
+      : super(
+          profileRepository: _FakeProfileRepository(),
+          authCubit: AuthCubit(
+            authRepository: _FakeAuthRepository(),
+            favoritesRepository: _FakeFavoritesRepository(),
+          ),
+        );
+
+  @override
+  Future<void> loadProfile() async {
+    emit(const ProfileState.loaded(profile: _kFakeProfile));
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 /// Builds a [GoRouter] that hosts [ProfileScreen] at `/` with referenced
 /// named routes as no-op stubs.
-GoRouter _buildRouter(AuthCubit authCubit, SettingsCubit settingsCubit) {
+GoRouter _buildRouter(
+  AuthCubit authCubit,
+  SettingsCubit settingsCubit, [
+  ProfileCubit? profileCubit,
+]) {
+  final pc = profileCubit ?? _StubProfileCubit();
   return GoRouter(
     routes: [
       GoRoute(
@@ -125,6 +166,7 @@ GoRouter _buildRouter(AuthCubit authCubit, SettingsCubit settingsCubit) {
           providers: [
             BlocProvider<AuthCubit>.value(value: authCubit),
             BlocProvider<SettingsCubit>.value(value: settingsCubit),
+            BlocProvider<ProfileCubit>.value(value: pc),
           ],
           child: const ProfileScreen(),
         ),
@@ -138,6 +180,7 @@ GoRouter _buildRouter(AuthCubit authCubit, SettingsCubit settingsCubit) {
       GoRoute(
           path: '/profile/author-contact',
           builder: (_, __) => const Scaffold()),
+      GoRoute(path: '/profile/legal', builder: (_, __) => const Scaffold()),
     ],
   );
 }
@@ -163,6 +206,14 @@ void main() {
     LocaleSettings.setLocale(AppLocale.en);
     // Provide a mock SharedPreferences for SettingsCubit.setLanguage()
     SharedPreferences.setMockInitialValues({});
+    // Register fake ProfileRepository in service locator (AppInfoSection uses sl<ProfileRepository>())
+    if (!sl.isRegistered<ProfileRepository>()) {
+      sl.registerLazySingleton<ProfileRepository>(() => _FakeProfileRepository());
+    }
+  });
+
+  tearDownAll(() async {
+    await sl.reset();
   });
 
   group('ProfileScreen — preservation tests (task 2)', () {
@@ -170,6 +221,7 @@ void main() {
     late _FakeFavoritesRepository fakeFavoritesRepo;
     late AuthCubit authCubit;
     late SettingsCubit settingsCubit;
+    late _StubProfileCubit profileCubit;
     late GoRouter router;
 
     setUp(() {
@@ -180,12 +232,14 @@ void main() {
         favoritesRepository: fakeFavoritesRepo,
       );
       settingsCubit = SettingsCubit();
-      router = _buildRouter(authCubit, settingsCubit);
+      profileCubit = _StubProfileCubit();
+      router = _buildRouter(authCubit, settingsCubit, profileCubit);
     });
 
     tearDown(() async {
       await authCubit.close();
       await settingsCubit.close();
+      await profileCubit.close();
       await fakeAuthRepo.dispose();
     });
 
@@ -333,6 +387,10 @@ void main() {
           reason: 'Language row must be present inside SettingsSection',
         );
 
+        // Scroll to make the language row visible (profile card may push it below viewport)
+        await tester.ensureVisible(languageRow);
+        await tester.pump();
+
         // Tapping it opens the language selection dialog
         await tester.tap(languageRow);
         await tester.pumpAndSettle();
@@ -367,6 +425,8 @@ void main() {
           of: find.byType(SettingsSection),
           matching: find.text(t.profile.settings.language),
         );
+        await tester.ensureVisible(languageRow);
+        await tester.pump();
         await tester.tap(languageRow);
         await tester.pumpAndSettle();
 
@@ -408,6 +468,7 @@ void main() {
                 providers: [
                   BlocProvider<AuthCubit>.value(value: authCubit),
                   BlocProvider<SettingsCubit>.value(value: settingsCubit),
+                  BlocProvider<ProfileCubit>(create: (_) => _StubProfileCubit()),
                 ],
                 child: const ProfileScreen(),
               ),

@@ -8,8 +8,8 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:dancee_app2/core/clients.dart';
-import 'package:dancee_app2/core/exceptions.dart';
+import 'package:dancee_app/core/clients.dart';
+import 'package:dancee_app/core/exceptions.dart';
 
 // ---------------------------------------------------------------------------
 // Fake adapters
@@ -95,7 +95,7 @@ void _propertyErrorMapping() {
         predicate<ApiException>(
           (e) =>
               e.statusCode == null &&
-              e.message.toLowerCase().contains('timed out'),
+              e.message.contains('connectionTimeout'),
           'should map connectionTimeout to ApiException with null statusCode',
         ),
       ),
@@ -118,7 +118,7 @@ void _propertyErrorMapping() {
         predicate<ApiException>(
           (e) =>
               e.statusCode == null &&
-              e.message.toLowerCase().contains('respond'),
+              e.message.contains('receiveTimeout'),
           'should map receiveTimeout to ApiException with null statusCode',
         ),
       ),
@@ -141,7 +141,7 @@ void _propertyErrorMapping() {
         predicate<ApiException>(
           (e) =>
               e.statusCode == null &&
-              e.message.toLowerCase().contains('sending'),
+              e.message.contains('sendTimeout'),
           'should map sendTimeout to ApiException with null statusCode',
         ),
       ),
@@ -164,7 +164,7 @@ void _propertyErrorMapping() {
         predicate<ApiException>(
           (e) =>
               e.statusCode == null &&
-              e.message.toLowerCase().contains('internet'),
+              e.message.contains('noConnection'),
           'should map connectionError to ApiException about network',
         ),
       ),
@@ -236,7 +236,7 @@ void _propertyErrorMapping() {
           predicate<ApiException>(
             (e) =>
                 e.statusCode == 404 &&
-                e.message.toLowerCase().contains('not found'),
+                e.message.contains('notFound'),
             'should include not found info in 404 message',
           ),
         ),

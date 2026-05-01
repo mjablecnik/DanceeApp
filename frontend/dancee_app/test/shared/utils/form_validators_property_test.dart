@@ -8,7 +8,7 @@
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:dancee_app2/shared/utils/form_validators.dart';
+import 'package:dancee_app/shared/utils/form_validators.dart';
 
 // ---------------------------------------------------------------------------
 // Property 5: Email format validation

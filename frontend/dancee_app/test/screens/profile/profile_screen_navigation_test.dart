@@ -20,11 +20,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:dancee_app/core/service_locator.dart';
+import 'package:dancee_app/data/entities/user_profile.dart';
 import 'package:dancee_app/data/repositories/auth_repository.dart';
 import 'package:dancee_app/data/repositories/favorites_repository.dart';
+import 'package:dancee_app/data/repositories/profile_repository.dart';
 import 'package:dancee_app/i18n/strings.g.dart';
 import 'package:dancee_app/logic/cubits/auth_cubit.dart';
+import 'package:dancee_app/logic/cubits/profile_cubit.dart';
 import 'package:dancee_app/logic/cubits/settings_cubit.dart';
+import 'package:dancee_app/logic/states/profile_state.dart';
 import 'package:dancee_app/screens/profile/profile/profile_screen.dart';
 import 'package:dancee_app/screens/profile/profile/components/premium_banner.dart';
 import 'package:dancee_app/screens/profile/profile/sections/support_section.dart';
@@ -75,6 +80,37 @@ class _FakeAuthRepository extends Fake implements AuthRepository {
 
 class _FakeFavoritesRepository extends Fake implements FavoritesRepository {}
 
+class _FakeProfileRepository extends Fake implements ProfileRepository {
+  @override
+  Future<String> getAppVersion() async => '1.0.0+1';
+}
+
+const _kFakeProfile = UserProfile(
+  directusUserId: 'dir-1',
+  firebaseUid: 'test-uid',
+  firstName: 'Test',
+  lastName: 'User',
+  email: 'test@example.com',
+  danceTags: [],
+  experienceLevel: 'beginner',
+);
+
+class _StubProfileCubit extends ProfileCubit {
+  _StubProfileCubit()
+      : super(
+          profileRepository: _FakeProfileRepository(),
+          authCubit: AuthCubit(
+            authRepository: _FakeAuthRepository(),
+            favoritesRepository: _FakeFavoritesRepository(),
+          ),
+        );
+
+  @override
+  Future<void> loadProfile() async {
+    emit(const ProfileState.loaded(profile: _kFakeProfile));
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -82,7 +118,8 @@ class _FakeFavoritesRepository extends Fake implements FavoritesRepository {}
 /// Builds a [GoRouter] with [ProfileScreen] at `/` and stub destinations for
 /// all push targets. Each destination renders a unique sentinel text so tests
 /// can verify navigation succeeded by checking `find.text(sentinel)`.
-GoRouter _buildRouter(AuthCubit authCubit, SettingsCubit settingsCubit) {
+GoRouter _buildRouter(AuthCubit authCubit, SettingsCubit settingsCubit, [ProfileCubit? profileCubit]) {
+  final pc = profileCubit ?? _StubProfileCubit();
   return GoRouter(
     routes: [
       GoRoute(
@@ -91,6 +128,7 @@ GoRouter _buildRouter(AuthCubit authCubit, SettingsCubit settingsCubit) {
           providers: [
             BlocProvider<AuthCubit>.value(value: authCubit),
             BlocProvider<SettingsCubit>.value(value: settingsCubit),
+            BlocProvider<ProfileCubit>.value(value: pc),
           ],
           child: const ProfileScreen(),
         ),
@@ -155,12 +193,20 @@ Future<void> _scrollDown(WidgetTester tester, double dy) async {
 void main() {
   setUpAll(() {
     LocaleSettings.setLocale(AppLocale.en);
+    if (!sl.isRegistered<ProfileRepository>()) {
+      sl.registerLazySingleton<ProfileRepository>(() => _FakeProfileRepository());
+    }
+  });
+
+  tearDownAll(() async {
+    await sl.reset();
   });
 
   group('ProfileScreen — navigation tests (optional unit tests)', () {
     late _FakeAuthRepository fakeAuthRepo;
     late AuthCubit authCubit;
     late SettingsCubit settingsCubit;
+    late _StubProfileCubit profileCubit;
     late GoRouter router;
 
     setUp(() {
@@ -170,12 +216,14 @@ void main() {
         favoritesRepository: _FakeFavoritesRepository(),
       );
       settingsCubit = SettingsCubit();
-      router = _buildRouter(authCubit, settingsCubit);
+      profileCubit = _StubProfileCubit();
+      router = _buildRouter(authCubit, settingsCubit, profileCubit);
     });
 
     tearDown(() async {
       await authCubit.close();
       await settingsCubit.close();
+      await profileCubit.close();
       await fakeAuthRepo.dispose();
     });
 
@@ -259,31 +307,19 @@ void main() {
     );
 
     // ── PremiumBanner ─────────────────────────────────────────────────────
+    // Requirement 9: PremiumBanner is commented out (task 7.3) — must NOT be visible
 
     testWidgets(
-      'tapping PremiumBanner navigates to PremiumRoute',
+      'PremiumBanner is NOT displayed (commented out per Requirement 9)',
       (tester) async {
         await _pumpAndAuthenticate(tester, router, fakeAuthRepo);
 
-        // Scroll down to bring PremiumBanner into the viewport.
+        // Scroll down to check for PremiumBanner.
         await _scrollDown(tester, 400);
 
         final premiumBanner = find.byType(PremiumBanner);
-        expect(premiumBanner, findsOneWidget,
-            reason: 'PremiumBanner must be present in the widget tree');
-
-        await tester.ensureVisible(premiumBanner);
-        await tester.pump();
-        await tester.tap(premiumBanner);
-        await tester.pumpAndSettle();
-
-        expect(
-          find.text('DEST_PREMIUM'),
-          findsOneWidget,
-          reason:
-              'Tapping PremiumBanner should push to /profile/premium '
-              '(DEST_PREMIUM sentinel text should appear)',
-        );
+        expect(premiumBanner, findsNothing,
+            reason: 'PremiumBanner must NOT be present in the widget tree (commented out per Requirement 9)');
       },
     );
 

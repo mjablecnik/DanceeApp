@@ -6,8 +6,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:dancee_app2/i18n/strings.g.dart';
-import 'package:dancee_app2/logic/cubits/settings_cubit.dart';
+import 'package:dancee_app/i18n/strings.g.dart';
+import 'package:dancee_app/logic/cubits/settings_cubit.dart';
 
 // ---------------------------------------------------------------------------
 // Property 16: Language persistence round-trip

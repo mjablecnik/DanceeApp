@@ -9,7 +9,7 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:dancee_app2/data/entities/event.dart';
+import 'package:dancee_app/data/entities/event.dart';
 
 // ---------------------------------------------------------------------------
 // Helpers / Generators

@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../services/directus_auth_service.dart';
 import '../../services/firebase_auth_service.dart';
 
+
 /// Orchestrates authentication across Firebase and Directus.
 ///
 /// Every sign-in / register method:
@@ -103,6 +104,10 @@ class AuthRepository {
       );
 
   Future<void> deleteAccount() => _firebase.deleteAccount();
+
+  /// Maps a [FirebaseAuthException] to a translation key string.
+  String mapFirebaseError(FirebaseAuthException e) =>
+      _firebase.mapFirebaseError(e);
 
   // ---------------------------------------------------------------------------
   // Sign-out

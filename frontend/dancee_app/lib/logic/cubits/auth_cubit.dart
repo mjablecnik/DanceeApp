@@ -201,11 +201,15 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> _clearOnboardingPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('onboarding_dance_styles');
-    await prefs.remove('onboarding_level');
-    await prefs.remove('onboarding_radius');
-    await prefs.remove('onboarding_completed');
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('onboarding_dance_styles');
+      await prefs.remove('onboarding_level');
+      await prefs.remove('onboarding_radius');
+      await prefs.remove('onboarding_completed');
+    } catch (_) {
+      // Non-critical cleanup; ignore if SharedPreferences is unavailable.
+    }
   }
 
   Future<void> signOut() async {

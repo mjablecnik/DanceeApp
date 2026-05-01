@@ -10,10 +10,10 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:dancee_app2/core/clients.dart';
-import 'package:dancee_app2/data/repositories/event_repository.dart';
-import 'package:dancee_app2/data/repositories/course_repository.dart';
-import 'package:dancee_app2/data/repositories/dance_style_repository.dart';
+import 'package:dancee_app/core/clients.dart';
+import 'package:dancee_app/data/repositories/event_repository.dart';
+import 'package:dancee_app/data/repositories/course_repository.dart';
+import 'package:dancee_app/data/repositories/dance_style_repository.dart';
 
 // ---------------------------------------------------------------------------
 // Capturing adapter

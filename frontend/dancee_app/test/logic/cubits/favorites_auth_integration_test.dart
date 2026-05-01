@@ -14,13 +14,13 @@ import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:dancee_app2/core/clients.dart';
-import 'package:dancee_app2/data/entities/favorite.dart';
-import 'package:dancee_app2/data/repositories/auth_repository.dart';
-import 'package:dancee_app2/data/repositories/favorites_repository.dart';
-import 'package:dancee_app2/logic/cubits/auth_cubit.dart';
-import 'package:dancee_app2/logic/cubits/favorites_cubit.dart';
-import 'package:dancee_app2/logic/states/favorites_state.dart';
+import 'package:dancee_app/core/clients.dart';
+import 'package:dancee_app/data/entities/favorite.dart';
+import 'package:dancee_app/data/repositories/auth_repository.dart';
+import 'package:dancee_app/data/repositories/favorites_repository.dart';
+import 'package:dancee_app/logic/cubits/auth_cubit.dart';
+import 'package:dancee_app/logic/cubits/favorites_cubit.dart';
+import 'package:dancee_app/logic/states/favorites_state.dart';
 
 // ---------------------------------------------------------------------------
 // Fakes for FirebaseAuth / AuthCubit
@@ -131,7 +131,7 @@ DirectusClient _makeClientWithCapture(
   return DirectusClient(
     baseUrl: 'https://test.local',
     accessToken: accessToken,
-    idTokenProvider: idTokenProvider,
+    directusTokenProvider: idTokenProvider,
     dio: dio,
   );
 }

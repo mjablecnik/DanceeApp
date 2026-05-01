@@ -10,10 +10,10 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:dancee_app2/data/repositories/auth_repository.dart';
-import 'package:dancee_app2/data/repositories/favorites_repository.dart';
-import 'package:dancee_app2/logic/cubits/auth_cubit.dart';
-import 'package:dancee_app2/logic/states/auth_state.dart';
+import 'package:dancee_app/data/repositories/auth_repository.dart';
+import 'package:dancee_app/data/repositories/favorites_repository.dart';
+import 'package:dancee_app/logic/cubits/auth_cubit.dart';
+import 'package:dancee_app/logic/states/auth_state.dart';
 
 // ---------------------------------------------------------------------------
 // Fakes / Helpers
@@ -401,8 +401,10 @@ void _propertyLoadingStateFirst() {
     expect(wasFalse, isTrue, reason: 'operationInProgress must be reset to false');
   });
 
-  test('P3g: sendPasswordReset (failure) sets operationInProgress and emits error',
+  test('P3g: sendPasswordReset (failure) sets operationInProgress but suppresses error (email enumeration protection)',
       () async {
+    // sendPasswordReset always suppresses errors to prevent email enumeration
+    // (Req 9.3), so no error state is emitted on failure.
     repo.throwOnSendPasswordReset = true;
     bool wasTrue = false;
     void listener() {
@@ -414,9 +416,10 @@ void _propertyLoadingStateFirst() {
     expect(wasTrue, isTrue, reason: 'operationInProgress must be set to true');
     expect(cubit.operationInProgress.value, isFalse,
         reason: 'operationInProgress must be reset to false after completion');
+    // No error state emitted — errors are suppressed for email enumeration protection
     cubit.state.maybeMap(
-      error: (_) {}, // expected
-      orElse: () => fail('Expected error state, got ${cubit.state}'),
+      error: (_) => fail('sendPasswordReset must not emit error state (email enumeration protection)'),
+      orElse: () {},
     );
   });
 
@@ -516,6 +519,7 @@ void _propertyFailedOperationsEmitError() {
     final successEvents = <AuthOperation>[];
     final sub = cubit.operationSuccess.listen(successEvents.add);
     await cubit.sendPasswordReset('a@b.com');
+    await Future.delayed(Duration.zero); // allow stream events to propagate
     await sub.cancel();
     // Errors are suppressed — the success signal is always emitted (Req 9.3)
     expect(successEvents, contains(AuthOperation.passwordReset),
@@ -565,6 +569,8 @@ void _propertyFailedOperationsEmitError() {
   test(
       'P4i: every known error code produces a distinct, non-empty error message',
       () async {
+    // Use signInWithEmail (which propagates errors) instead of sendPasswordReset
+    // (which suppresses errors for email enumeration protection).
     final errorCodes = [
       'auth.errors.invalidCredential',
       'auth.errors.userDisabled',
@@ -577,11 +583,11 @@ void _propertyFailedOperationsEmitError() {
 
     for (final code in errorCodes) {
       final testRepo = _FakeAuthRepository()
-        ..throwOnSendPasswordReset = true
+        ..throwOnSignInWithEmail = true
         ..errorMessage = code;
       final testCubit = AuthCubit(authRepository: testRepo, favoritesRepository: _FakeFavoritesRepository());
 
-      await testCubit.sendPasswordReset('a@b.com');
+      await testCubit.signInWithEmail('a@b.com', 'password');
 
       testCubit.state.maybeMap(
         error: (e) => expect(e.message, isNotEmpty,

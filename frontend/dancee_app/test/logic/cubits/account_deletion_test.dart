@@ -11,10 +11,10 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:dancee_app2/data/repositories/auth_repository.dart';
-import 'package:dancee_app2/data/repositories/favorites_repository.dart';
-import 'package:dancee_app2/logic/cubits/auth_cubit.dart';
-import 'package:dancee_app2/logic/states/auth_state.dart';
+import 'package:dancee_app/data/repositories/auth_repository.dart';
+import 'package:dancee_app/data/repositories/favorites_repository.dart';
+import 'package:dancee_app/logic/cubits/auth_cubit.dart';
+import 'package:dancee_app/logic/states/auth_state.dart';
 
 // ---------------------------------------------------------------------------
 // Fakes / Helpers

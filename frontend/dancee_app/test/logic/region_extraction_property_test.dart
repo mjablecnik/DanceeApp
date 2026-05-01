@@ -7,9 +7,9 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:dancee_app2/data/entities/course.dart';
-import 'package:dancee_app2/data/entities/event.dart';
-import 'package:dancee_app2/data/entities/venue.dart';
+import 'package:dancee_app/data/entities/course.dart';
+import 'package:dancee_app/data/entities/event.dart';
+import 'package:dancee_app/data/entities/venue.dart';
 
 // ---------------------------------------------------------------------------
 // Region extraction helper (mirrors _deriveRegions logic in FilterLocationScreen)

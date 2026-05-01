@@ -33,20 +33,13 @@ String? routerGuard(BuildContext context, GoRouterState state) {
       if (!s.emailVerified) {
         // Allow /verify-email for all unverified users.
         if (location == '/verify-email') return null;
-        // INTENTIONAL DEVIATION from Req 10.3:
-        // Social sign-in providers (Google, Apple) perform their own identity
-        // verification before issuing credentials, so their users arrive with
-        // emailVerified=false only in rare edge cases (e.g. Apple "Hide My
-        // Email" relay). Forcing those users through /verify-email would break
-        // the onboarding flow for the vast majority of social sign-ins.
-        // Req 10.3 ("allow unverified users to access only /verify-email") was
-        // written with email/password accounts in mind. Social sign-in users
-        // are therefore allowed to proceed directly to /onboarding.
-        // If Apple or Google ever return an unverified credential we accept the
-        // minor security trade-off in exchange for a smooth onboarding UX.
-        if (location == '/onboarding' && !sl<AuthCubit>().isEmailProvider) return null;
-        // Redirect all other routes (and email/password users on /onboarding)
-        // to email verification.
+        // Allow /onboarding for all authenticated users regardless of email
+        // verification status. Social sign-in users (Google, Apple) skip email
+        // verification and go straight to onboarding, so the guard must let
+        // them through. Email/password users who just registered also need to
+        // reach the onboarding flow before being redirected to /verify-email.
+        if (location == '/onboarding') return null;
+        // Redirect all other unverified routes to email verification.
         return '/verify-email';
       }
       // Email is verified — redirect away from auth screens

@@ -1,4 +1,5 @@
 # This is a generated file; do not edit or check into version control.
+device_info_plus=/home/agent/.pub-cache/hosted/pub.dev/device_info_plus-10.1.2/
 firebase_auth=/home/agent/.pub-cache/hosted/pub.dev/firebase_auth-5.7.0/
 firebase_auth_web=/home/agent/.pub-cache/hosted/pub.dev/firebase_auth_web-5.15.3/
 firebase_core=/home/agent/.pub-cache/hosted/pub.dev/firebase_core-3.15.2/
@@ -7,6 +8,7 @@ google_sign_in=/home/agent/.pub-cache/hosted/pub.dev/google_sign_in-6.3.0/
 google_sign_in_android=/home/agent/.pub-cache/hosted/pub.dev/google_sign_in_android-6.2.1/
 google_sign_in_ios=/home/agent/.pub-cache/hosted/pub.dev/google_sign_in_ios-5.9.0/
 google_sign_in_web=/home/agent/.pub-cache/hosted/pub.dev/google_sign_in_web-0.12.4+4/
+package_info_plus=/home/agent/.pub-cache/hosted/pub.dev/package_info_plus-8.3.1/
 path_provider=/home/agent/.pub-cache/hosted/pub.dev/path_provider-2.1.5/
 path_provider_android=/home/agent/.pub-cache/hosted/pub.dev/path_provider_android-2.2.17/
 path_provider_foundation=/home/agent/.pub-cache/hosted/pub.dev/path_provider_foundation-2.4.1/

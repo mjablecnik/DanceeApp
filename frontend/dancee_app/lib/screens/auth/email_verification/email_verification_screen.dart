@@ -25,7 +25,6 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen>
   late Animation<double> _floatAnim;
 
   bool _notVerifiedYet = false;
-  bool _initialEmailSent = false;
   StreamSubscription<AuthOperation>? _operationSuccessSub;
 
   AuthCubit get _authCubit => context.read<AuthCubit>();
@@ -45,12 +44,6 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
-    // Send verification email automatically when the screen is first shown.
-    if (!_initialEmailSent) {
-      _initialEmailSent = true;
-      _authCubit.sendEmailVerification();
-    }
 
     _operationSuccessSub?.cancel();
     // Listen for userReloaded events. When reloadUser() completes and the email
