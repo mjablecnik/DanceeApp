@@ -33,6 +33,9 @@ dependencies:
   package_info_plus: ^8.0.0
   device_info_plus: ^10.0.0
   flutter_markdown: ^0.7.0
+  image_picker: ^1.1.0
+  image_cropper: ^8.0.0
+  permission_handler: ^11.3.0
 
 dev_dependencies:
   flutter_test:

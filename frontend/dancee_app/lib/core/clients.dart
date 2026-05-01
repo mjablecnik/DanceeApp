@@ -97,6 +97,20 @@ class DirectusClient {
     }
   }
 
+  /// Uploads a file via multipart/form-data and returns the unwrapped response.
+  Future<dynamic> uploadFile(String path, {required FormData formData}) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        path,
+        data: formData,
+        options: Options(contentType: 'multipart/form-data'),
+      );
+      return _unwrap(response);
+    } on DioException catch (e) {
+      throw _mapDioException(e);
+    }
+  }
+
   /// Performs a DELETE request.
   Future<void> delete(
     String path, {
