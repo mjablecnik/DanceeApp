@@ -259,6 +259,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       orElse: () => '',
                     ),
                 name: _nameController.text,
+                isUploading: context.read<ProfileCubit>().state.maybeMap(
+                      uploadingAvatar: (_) => true,
+                      orElse: () => false,
+                    ),
               ),
               PersonalInfoSection(
                 nameController: _nameController,
