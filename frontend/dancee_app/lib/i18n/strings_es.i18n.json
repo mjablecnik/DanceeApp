@@ -25,6 +25,7 @@
     "back": "Volver",
     "finish": "Finalizar",
     "cancel": "Cancelar",
+    "allow": "Permitir",
     "support": "Soporte",
     "faq": "FAQ",
     "clear": "Limpiar",
@@ -380,6 +381,17 @@
         "slightlyAdvanced": "Ligeramente avanzado",
         "advanced": "Avanzado",
         "expert": "Experto"
+      },
+      "avatar": {
+        "sourceTitle": "Cambiar foto de perfil",
+        "takePhoto": "Tomar una foto",
+        "chooseFromGallery": "Elegir de la galería",
+        "uploadError": "Error al subir la foto. Por favor, inténtalo de nuevo.",
+        "linkError": "Error al actualizar la foto de perfil. Por favor, inténtalo de nuevo.",
+        "permissionRequired": "Se requiere permiso de cámara o galería para cambiar tu foto.",
+        "permissionDeniedTitle": "Permiso requerido",
+        "permissionDeniedMessage": "Has denegado el acceso permanentemente. Por favor, actívalo en la configuración de tu dispositivo para cambiar tu foto de perfil.",
+        "openSettings": "Abrir configuración"
       }
     }
   },

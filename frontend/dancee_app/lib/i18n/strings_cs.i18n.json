@@ -25,6 +25,7 @@
     "back": "Zpět",
     "finish": "Dokončit",
     "cancel": "Zrušit",
+    "allow": "Povolit",
     "support": "Podpora",
     "faq": "FAQ",
     "clear": "Vymazat",
@@ -380,6 +381,17 @@
         "slightlyAdvanced": "Mírně pokročilý",
         "advanced": "Pokročilý",
         "expert": "Expert"
+      },
+      "avatar": {
+        "sourceTitle": "Změnit profilovou fotku",
+        "takePhoto": "Pořídit fotografii",
+        "chooseFromGallery": "Vybrat z galerie",
+        "uploadError": "Nepodařilo se nahrát fotografii. Zkuste to prosím znovu.",
+        "linkError": "Nepodařilo se aktualizovat profilovou fotku. Zkuste to prosím znovu.",
+        "permissionRequired": "Pro změnu fotky je vyžadováno oprávnění ke kameře nebo galerii.",
+        "permissionDeniedTitle": "Vyžadováno oprávnění",
+        "permissionDeniedMessage": "Přístup jste trvale zamítli. Pro změnu profilové fotky jej prosím povolte v nastavení zařízení.",
+        "openSettings": "Otevřít nastavení"
       }
     }
   },

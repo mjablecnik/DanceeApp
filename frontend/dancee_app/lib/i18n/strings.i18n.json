@@ -25,6 +25,7 @@
     "back": "Back",
     "finish": "Finish",
     "cancel": "Cancel",
+    "allow": "Allow",
     "support": "Support",
     "faq": "FAQ",
     "clear": "Clear",
@@ -380,6 +381,17 @@
         "slightlyAdvanced": "Slightly advanced",
         "advanced": "Advanced",
         "expert": "Expert"
+      },
+      "avatar": {
+        "sourceTitle": "Change profile photo",
+        "takePhoto": "Take a photo",
+        "chooseFromGallery": "Choose from gallery",
+        "uploadError": "Failed to upload photo. Please try again.",
+        "linkError": "Failed to update profile photo. Please try again.",
+        "permissionRequired": "Camera or gallery permission is required to change your photo.",
+        "permissionDeniedTitle": "Permission required",
+        "permissionDeniedMessage": "You have permanently denied access. Please enable it in your device settings to change your profile photo.",
+        "openSettings": "Open Settings"
       }
     }
   },
