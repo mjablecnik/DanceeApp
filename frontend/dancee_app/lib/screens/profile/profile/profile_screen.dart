@@ -8,8 +8,10 @@ import '../../../core/theme.dart';
 import '../../../i18n/strings.g.dart';
 import '../../../logic/cubits/auth_cubit.dart';
 import '../../../logic/cubits/profile_cubit.dart';
+import '../../../logic/cubits/settings_cubit.dart';
 import '../../../logic/states/auth_state.dart';
 import '../../../logic/states/profile_state.dart';
+import '../../../logic/states/settings_state.dart';
 import '../../../shared/components/back_button_header.dart';
 import '../../../shared/elements/labels/section_label.dart';
 // import 'components/premium_banner.dart';
@@ -128,7 +130,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<AuthCubit, AuthState>(
+    return BlocBuilder<SettingsCubit, SettingsState>(
+      builder: (context, _) {
+        return BlocConsumer<AuthCubit, AuthState>(
       listenWhen: (prev, curr) => curr.maybeMap(
         error: (_) => true,
         unauthenticated: (_) => true,
@@ -317,6 +321,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ],
           ),
         );
+      },
+    );
       },
     );
   }
