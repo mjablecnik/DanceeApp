@@ -251,6 +251,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       updating: (s) => s.profile.avatarUrl ?? '',
                       orElse: () => '',
                     ),
+                name: _nameController.text,
               ),
               Padding(
                 padding: const EdgeInsets.only(left: AppSpacing.xl, right: AppSpacing.xl, bottom: AppSpacing.md),

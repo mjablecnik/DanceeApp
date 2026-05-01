@@ -7,13 +7,22 @@ import '../../../../shared/components/app_cached_image.dart';
 
 class ProfilePhotoSection extends StatelessWidget {
   final String avatarUrl;
+  final String name;
   final VoidCallback? onChangeTap;
 
   const ProfilePhotoSection({
     super.key,
     required this.avatarUrl,
+    this.name = '',
     this.onChangeTap,
   });
+
+  String _initials(String name) {
+    final parts = name.trim().split(RegExp(r'\s+'));
+    if (parts.isEmpty || parts.first.isEmpty) return '?';
+    if (parts.length == 1) return parts.first[0].toUpperCase();
+    return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +42,21 @@ class ProfilePhotoSection extends StatelessWidget {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(48),
-                    child: AppCachedImage(imageUrl: avatarUrl, fit: BoxFit.cover),
+                    child: avatarUrl.isNotEmpty
+                        ? AppCachedImage(imageUrl: avatarUrl, fit: BoxFit.cover)
+                        : Container(
+                            color: appPrimary.withValues(alpha: 0.15),
+                            child: Center(
+                              child: Text(
+                                _initials(name),
+                                style: const TextStyle(
+                                  color: appPrimary,
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
                   ),
                 ),
                 Positioned(
