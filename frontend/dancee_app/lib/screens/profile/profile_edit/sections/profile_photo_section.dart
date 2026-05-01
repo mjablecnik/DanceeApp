@@ -1,11 +1,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../../../core/colors.dart';
 import '../../../../core/theme.dart';
 import '../../../../i18n/strings.g.dart';
+import '../../../../logic/cubits/profile_cubit.dart';
 import '../../../../shared/components/app_cached_image.dart';
 
 class ProfilePhotoSection extends StatefulWidget {
@@ -199,10 +202,39 @@ class _ProfilePhotoSectionState extends State<ProfilePhotoSection> {
     );
   }
 
-  /// Picks and crops an image from the given [source].
-  /// Actual implementation is added in task 7.
+  /// Picks and crops an image from the given [source], then uploads it.
   Future<void> _pickAndCropImage(ImageSource source) async {
-    // TODO(task-7): implement image picking, cropping, and upload
+    try {
+      final pickedFile = await ImagePicker().pickImage(source: source);
+      if (pickedFile == null) return;
+
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: pickedFile.path,
+        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarColor: appPrimary,
+            backgroundColor: appBg,
+            toolbarWidgetColor: Colors.white,
+            lockAspectRatio: true,
+          ),
+          IOSUiSettings(
+            aspectRatioLockEnabled: true,
+          ),
+          if (kIsWeb) WebUiSettings(context: context),
+        ],
+      );
+      if (croppedFile == null) return;
+
+      if (!mounted) return;
+      await context.read<ProfileCubit>().uploadAvatar(croppedFile.path, pickedFile.name);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(t.profile.editProfile.avatar.uploadError)),
+        );
+      }
+    }
   }
 
   @override
