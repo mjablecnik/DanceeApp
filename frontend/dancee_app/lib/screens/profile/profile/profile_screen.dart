@@ -256,6 +256,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     const SizedBox(height: AppSpacing.xxl),
                                   ],
                                 ),
+                                uploadingAvatar: (s) => Column(
+                                  children: [
+                                    ProfileCardSection(
+                                      name: s.profile.fullName,
+                                      email: s.profile.email,
+                                      avatarUrl: s.profile.avatarUrl ?? '',
+                                      danceTags: s.profile.danceTags
+                                          .map((tag) => (label: tag, color: appPrimary))
+                                          .toList(),
+                                    ),
+                                    const SizedBox(height: AppSpacing.xxl),
+                                  ],
+                                ),
                                 error: (_) => Column(
                                   children: [
                                     Container(

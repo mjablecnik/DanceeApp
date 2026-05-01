@@ -45,21 +45,7 @@ class ProfileCardSection extends StatelessWidget {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(32),
-              child: avatarUrl.isNotEmpty
-                  ? AppCachedImage(imageUrl: avatarUrl, fit: BoxFit.cover)
-                  : Container(
-                      color: appPrimary.withValues(alpha: 0.15),
-                      child: Center(
-                        child: Text(
-                          _initials(name),
-                          style: const TextStyle(
-                            color: appPrimary,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
+              child: AppCachedImage(imageUrl: avatarUrl, fit: BoxFit.cover),
             ),
           ),
           const SizedBox(width: AppSpacing.lg),
