@@ -81,27 +81,46 @@ class DirectusAuthService {
     await _dio.post('/directus-extension-firebase-auth/link',
         data: {'id_token': firebaseIdToken});
 
-    // Step 2: Authenticate — get Directus tokens.
+    // Step 2: Reactivate if previously deleted (suspended) account.
+    // Uses the static admin token because a suspended user can't auth.
+    try {
+      // Find user by firebase_uid
+      final searchResponse = await _dio.get(
+        '/users',
+        queryParameters: {
+          'filter[firebase_uid][_eq]': firebaseUid,
+          'fields': 'id,status',
+          'limit': '1',
+        },
+        options: Options(headers: {
+          'Authorization': 'Bearer ${AppConfig.directusAccessToken}',
+        }),
+      );
+      final users = (searchResponse.data?['data'] as List?) ?? [];
+      if (users.isNotEmpty) {
+        final user = users.first as Map<String, dynamic>;
+        if (user['status'] == 'suspended') {
+          final userId = user['id'];
+          await _dio.patch(
+            '/users/$userId',
+            data: {'status': 'active'},
+            options: Options(headers: {
+              'Authorization': 'Bearer ${AppConfig.directusAccessToken}',
+            }),
+          );
+        }
+      }
+    } catch (_) {
+      // Best effort — continue with auth even if reactivation fails
+    }
+
+    // Step 3: Authenticate — get Directus tokens.
     final response = await _dio.post(
       '/directus-extension-firebase-auth/auth',
       data: {'uid': firebaseUid},
     );
 
     _storeTokens(response.data);
-
-    // Step 3: Reactivate if previously deleted (suspended) account.
-    try {
-      final token = _tokens?.accessToken;
-      if (token != null) {
-        await _dio.patch(
-          '/users/me',
-          data: {'status': 'active'},
-          options: Options(headers: {'Authorization': 'Bearer $token'}),
-        );
-      }
-    } catch (_) {
-      // Best effort — user may already be active
-    }
   }
 
   /// Discards stored tokens. Call on sign-out.
