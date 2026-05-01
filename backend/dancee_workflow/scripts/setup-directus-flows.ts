@@ -40,6 +40,7 @@ async function api(method: string, path: string, body?: unknown) {
 const FLOW_NAMES = [
   "Reprocess All", "Retranslate", "Re-extract Parts", "Re-extract Info",
   "Retranslate This Language",
+  "Notify Author on Contact Message",
 ];
 
 async function clean() {
@@ -107,6 +108,69 @@ async function createFlow(def: FlowDef) {
   console.log(`  Operation linked: ${opId}`);
 }
 
+// ---- Contact message email notification flow ----
+
+const AUTHOR_EMAIL = process.env.AUTHOR_EMAIL ?? "admin@dancee.app";
+
+async function createContactMessageEmailFlow(): Promise<void> {
+  // Check if it already exists
+  const res = await api("GET", "/flows?fields=id,name&limit=-1");
+  const flows = (res.data as unknown) as { id: string; name: string }[];
+  if (flows.some((f) => f.name === "Notify Author on Contact Message")) {
+    console.log("Flow 'Notify Author on Contact Message' already exists, skipping.");
+    return;
+  }
+
+  console.log("Creating flow: Notify Author on Contact Message...");
+
+  const flowRes = await api("POST", "/flows", {
+    name: "Notify Author on Contact Message",
+    description: "Send email to author when a new contact message is submitted",
+    icon: "mail",
+    color: "#FF6B6B",
+    status: "active",
+    trigger: "event",
+    options: {
+      type: "filter",
+      scope: ["items.create"],
+      collections: ["contact_messages"],
+    },
+  });
+
+  const flowId = flowRes.data.id as string;
+  console.log(`  Flow created: ${flowId}`);
+
+  const opRes = await api("POST", "/operations", {
+    name: "Send Email Notification",
+    key: "send_contact_email",
+    type: "mail",
+    flow: flowId,
+    position_x: 19,
+    position_y: 1,
+    options: {
+      to: [AUTHOR_EMAIL],
+      subject: "[Dancee Contact] {{$trigger.payload.type}}: {{$trigger.payload.title}}",
+      body: `<p>A new contact message has been submitted on Dancee.</p>
+
+<p><strong>Type:</strong> {{$trigger.payload.type}}</p>
+<p><strong>Title:</strong> {{$trigger.payload.title}}</p>
+<p><strong>Message:</strong></p>
+<blockquote>{{$trigger.payload.message}}</blockquote>
+
+<p><strong>Reply to:</strong> {{$trigger.payload.reply_email}}</p>
+<p><strong>Phone:</strong> {{$trigger.payload.phone}}</p>
+<p><strong>Submitted at:</strong> {{$trigger.payload.date_created}}</p>
+
+<hr>
+<p><em>Device Info:</em> {{$trigger.payload.device_info}}</p>`,
+    },
+  });
+
+  const opId = opRes.data.id as string;
+  await api("PATCH", `/flows/${flowId}`, { operation: opId });
+  console.log(`  Operation linked: ${opId}`);
+}
+
 async function main() {
   if (process.argv.includes("--clean")) {
     await clean();
@@ -160,6 +224,8 @@ async function main() {
   for (const flow of flows) {
     await createFlow(flow);
   }
+
+  await createContactMessageEmailFlow();
 
   console.log("\nDone. Flows are available in the Events detail view toolbar.");
 }
