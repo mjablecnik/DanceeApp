@@ -34,7 +34,7 @@ sequenceDiagram
     alt Permission granted
         ProfilePhotoSection->>ImagePicker: pickImage(source)
     else Permission denied (not permanent)
-        ProfilePhotoSection->>ProfilePhotoSection: Show rationale dialog
+        ProfilePhotoSection->>ProfilePhotoSection: Show rationale dialog with explanation
         User->>ProfilePhotoSection: Tap "Allow"
         ProfilePhotoSection->>PermissionHandler: Request permission
         alt Granted after request
@@ -166,7 +166,7 @@ Before launching `ImagePicker`, the UI checks the permission status for the sele
 
 **a) Permission already granted** — proceed directly to `ImagePicker`.
 
-**b) Permission denied (not permanent)** — show a rationale dialog explaining why the app needs access, with an "Allow" button that triggers `Permission.request()`. If the user grants it, proceed to `ImagePicker`. If denied again, show a snackbar error.
+**b) Permission denied (not permanent)** — show a rationale dialog explaining why the app needs access, with "Allow" and "Cancel" buttons. If the user taps "Allow", call `Permission.request()`. If the user grants it, proceed to `ImagePicker`. If denied again, show a snackbar error. If the user taps "Cancel", return without action.
 
 **c) Permission permanently denied** — show a dialog explaining that the permission was permanently denied, with an "Open Settings" button that calls `openAppSettings()` to navigate the user to the system app settings page where they can manually enable the permission. A "Cancel" button dismisses the dialog.
 
@@ -183,7 +183,10 @@ Future<bool> _ensurePermission(Permission permission, BuildContext context) asyn
     return false;
   }
 
-  // Show rationale, then request
+  // Show rationale dialog, then request permission if user taps "Allow"
+  final shouldRequest = await _showRationaleDialog(context);
+  if (!shouldRequest) return false;
+
   status = await permission.request();
   if (status.isGranted || status.isLimited) return true;
 
@@ -191,6 +194,27 @@ Future<bool> _ensurePermission(Permission permission, BuildContext context) asyn
     await _showOpenSettingsDialog(context);
   }
   return false;
+}
+
+Future<bool> _showRationaleDialog(BuildContext context) async {
+  return await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      backgroundColor: AppColors.appSurface,
+      title: Text(t.profile.editProfile.avatar.permissionDeniedTitle),
+      content: Text(t.profile.editProfile.avatar.permissionRequired),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, false),
+          child: Text(t.common.cancel),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, true),
+          child: Text(t.common.allow),
+        ),
+      ],
+    ),
+  ) ?? false;
 }
 
 Future<void> _showOpenSettingsDialog(BuildContext context) async {
@@ -265,6 +289,8 @@ New translation keys under `profile.editProfile.avatar`:
 ```
 
 These keys are added to all three language files (en, cs, es).
+
+Additionally, a `common.allow` key is added (if not already present) for the rationale dialog "Allow" button.
 
 ## Data Models
 
