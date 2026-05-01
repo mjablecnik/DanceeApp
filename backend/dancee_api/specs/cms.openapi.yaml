@@ -39,6 +39,12 @@ tags:
     description: Dance style translation CRUD
   - name: Favorites
     description: User-saved events and courses
+  - name: User Profiles
+    description: Directus user profile management
+  - name: Legal Pages
+    description: Terms of Use and Privacy Policy content
+  - name: Contact Messages
+    description: User-submitted contact/feedback messages
 
 paths:
   /server/health:
@@ -640,6 +646,138 @@ paths:
         '204':
           description: Deleted
 
+  /users:
+    get:
+      tags:
+        - User Profiles
+      summary: List users (filter by firebase_uid)
+      description: |
+        Retrieve Directus user records. Filter by `firebase_uid` to look up the current user's profile.
+        Example filter: `{"firebase_uid":{"_eq":"<uid>"}}`.
+      operationId: cmsListUsers
+      parameters:
+        - $ref: '#/components/parameters/DirectusFilter'
+        - $ref: '#/components/parameters/DirectusFields'
+        - $ref: '#/components/parameters/DirectusLimit'
+      responses:
+        '200':
+          description: List of user records
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DirectusUserProfile'
+
+  /users/{id}:
+    patch:
+      tags:
+        - User Profiles
+      summary: Update user profile
+      description: |
+        Partially update the Directus user record identified by `id` (UUID).
+        Supports updating custom profile fields: `first_name`, `last_name`, `phone`, `city`, `bio`,
+        `dance_tags`, and `experience_level`.
+      operationId: cmsUpdateUserProfile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Directus user UUID
+          schema:
+            type: string
+            format: uuid
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DirectusUserProfileUpdate'
+      responses:
+        '200':
+          description: Updated user profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/DirectusUserProfile'
+        '403':
+          description: Forbidden — token does not have permission to update this user
+        '404':
+          description: User not found
+
+  /items/legal_pages:
+    get:
+      tags:
+        - Legal Pages
+      summary: Get legal page content
+      description: |
+        Fetch a legal page (Terms of Use or Privacy Policy) by slug with translated content.
+        Use filter `{"slug":{"_eq":"terms-of-use"}}` or `{"slug":{"_eq":"privacy-policy"}}`.
+        Include deep translations with `fields=*,translations.*`.
+      operationId: cmsGetLegalPages
+      parameters:
+        - $ref: '#/components/parameters/DirectusFilter'
+        - $ref: '#/components/parameters/DirectusFields'
+        - $ref: '#/components/parameters/DirectusLimit'
+      responses:
+        '200':
+          description: List of legal pages (typically one item matching the slug filter)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LegalPage'
+
+  /items/contact_messages:
+    post:
+      tags:
+        - Contact Messages
+      summary: Submit a contact message
+      description: |
+        Creates a new contact message record. Triggers a Directus Flow that sends an
+        email notification to the configured author email address.
+      operationId: cmsCreateContactMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactMessageCreate'
+            example:
+              type: feedback
+              title: "Great app!"
+              message: "I love the event discovery feature."
+              reply_email: "user@example.com"
+              phone: "+420 123 456 789"
+              device_info:
+                app_version: "1.0.0+1"
+                device_model: "iPhone 15 Pro"
+                os_version: "iOS 17.4"
+                firebase_uid: "abc123xyz"
+      responses:
+        '200':
+          description: Created contact message record
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ContactMessage'
+        '400':
+          description: Validation error — missing required fields
+
 components:
   parameters:
     DirectusId:
@@ -1178,3 +1316,239 @@ components:
           format: date-time
           description: Timestamp when the favorite was created (auto-set)
           example: "2024-02-15T20:00:00.000Z"
+
+    DirectusUserProfile:
+      type: object
+      description: Directus user record with custom profile fields
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Directus user UUID (primary key)
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        firebase_uid:
+          type: string
+          description: Firebase Auth UID used to look up this record
+          example: "abc123xyz"
+        first_name:
+          type: string
+          nullable: true
+          example: "Jana"
+        last_name:
+          type: string
+          nullable: true
+          example: "Nováková"
+        email:
+          type: string
+          format: email
+          example: "jana@example.com"
+        phone:
+          type: string
+          nullable: true
+          example: "+420 123 456 789"
+        city:
+          type: string
+          nullable: true
+          example: "Prague"
+        bio:
+          type: string
+          nullable: true
+          example: "Passionate salsa dancer since 2018."
+        avatar:
+          oneOf:
+            - type: string
+              format: uuid
+            - type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+            - type: 'null'
+          description: Directus file UUID of the avatar image, or expanded file object
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        dance_tags:
+          type: array
+          items:
+            type: string
+          description: Dance style tags selected by the user
+          example: ["salsa", "bachata"]
+        experience_level:
+          type: string
+          nullable: true
+          example: "intermediate"
+
+    DirectusUserProfileUpdate:
+      type: object
+      description: Fields that can be updated on a Directus user profile via PATCH
+      properties:
+        first_name:
+          type: string
+          example: "Jana"
+        last_name:
+          type: string
+          example: "Nováková"
+        phone:
+          type: string
+          nullable: true
+          example: "+420 123 456 789"
+        city:
+          type: string
+          nullable: true
+          example: "Prague"
+        bio:
+          type: string
+          nullable: true
+          example: "Passionate salsa dancer since 2018."
+        dance_tags:
+          type: array
+          items:
+            type: string
+          example: ["salsa", "bachata"]
+        experience_level:
+          type: string
+          nullable: true
+          example: "intermediate"
+
+    LegalPage:
+      type: object
+      description: A legal content page (Terms of Use or Privacy Policy) with translations
+      properties:
+        id:
+          oneOf:
+            - type: integer
+            - type: string
+          example: 1
+        slug:
+          type: string
+          description: Unique identifier for the page content
+          enum: [terms-of-use, privacy-policy]
+          example: "terms-of-use"
+        status:
+          type: string
+          enum: [published, draft]
+          example: "published"
+        translations:
+          type: array
+          items:
+            $ref: '#/components/schemas/LegalPageTranslation'
+
+    LegalPageTranslation:
+      type: object
+      description: Translated content for a legal page in a specific language
+      required:
+        - languages_code
+        - title
+        - content
+      properties:
+        id:
+          type: integer
+          example: 1
+        legal_pages_id:
+          oneOf:
+            - type: integer
+            - type: string
+          description: FK to the parent legal_pages record
+          example: 1
+        languages_code:
+          type: string
+          description: BCP 47 language code
+          example: "en"
+        title:
+          type: string
+          example: "Terms of Use"
+        content:
+          type: string
+          description: Full Markdown content of the legal page
+          example: "# Terms of Use\n\nWelcome to Dancee..."
+
+    ContactMessage:
+      type: object
+      description: A contact/feedback message submitted by a user
+      properties:
+        id:
+          oneOf:
+            - type: integer
+            - type: string
+          example: 1
+        type:
+          type: string
+          enum: [bug, feature, feedback, other]
+          example: "feedback"
+        title:
+          type: string
+          example: "Great app!"
+        message:
+          type: string
+          example: "I love the event discovery feature."
+        reply_email:
+          type: string
+          format: email
+          example: "user@example.com"
+        phone:
+          type: string
+          nullable: true
+          example: "+420 123 456 789"
+        device_info:
+          $ref: '#/components/schemas/ContactMessageDeviceInfo'
+        date_created:
+          type: string
+          format: date-time
+          description: Auto-set creation timestamp
+          example: "2024-02-15T20:00:00.000Z"
+
+    ContactMessageCreate:
+      type: object
+      description: Payload for creating a new contact message
+      required:
+        - type
+        - title
+        - message
+        - reply_email
+        - device_info
+      properties:
+        type:
+          type: string
+          enum: [bug, feature, feedback, other]
+          example: "feedback"
+        title:
+          type: string
+          example: "Great app!"
+        message:
+          type: string
+          example: "I love the event discovery feature."
+        reply_email:
+          type: string
+          format: email
+          example: "user@example.com"
+        phone:
+          type: string
+          nullable: true
+          example: "+420 123 456 789"
+        device_info:
+          $ref: '#/components/schemas/ContactMessageDeviceInfo'
+
+    ContactMessageDeviceInfo:
+      type: object
+      description: Device and app context captured at submission time
+      required:
+        - app_version
+        - device_model
+        - os_version
+        - firebase_uid
+      properties:
+        app_version:
+          type: string
+          description: App version and build number
+          example: "1.0.0+1"
+        device_model:
+          type: string
+          description: Device model name
+          example: "iPhone 15 Pro"
+        os_version:
+          type: string
+          description: Operating system version
+          example: "iOS 17.4"
+        firebase_uid:
+          type: string
+          description: Firebase Auth UID of the submitting user
+          example: "abc123xyz"
