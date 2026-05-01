@@ -4,17 +4,17 @@ import '../../../../core/theme.dart';
 import '../../../../i18n/strings.g.dart';
 
 class PersonalInfoSection extends StatelessWidget {
-  final String initialName;
-  final String initialEmail;
-  final String initialPhone;
-  final String initialCity;
+  final TextEditingController nameController;
+  final TextEditingController emailController;
+  final TextEditingController phoneController;
+  final TextEditingController cityController;
 
   const PersonalInfoSection({
     super.key,
-    this.initialName = '',
-    this.initialEmail = '',
-    this.initialPhone = '',
-    this.initialCity = '',
+    required this.nameController,
+    required this.emailController,
+    required this.phoneController,
+    required this.cityController,
   });
 
   @override
@@ -29,25 +29,25 @@ class PersonalInfoSection extends StatelessWidget {
         children: [
           _PersonalInfoField(
             label: t.common.form.fullName,
-            initialValue: initialName,
+            controller: nameController,
             keyboardType: TextInputType.name,
           ),
           const SizedBox(height: AppSpacing.lg),
           _PersonalInfoField(
             label: t.common.form.email,
-            initialValue: initialEmail,
+            controller: emailController,
             keyboardType: TextInputType.emailAddress,
           ),
           const SizedBox(height: AppSpacing.lg),
           _PersonalInfoField(
             label: t.common.form.phone,
-            initialValue: initialPhone,
+            controller: phoneController,
             keyboardType: TextInputType.phone,
           ),
           const SizedBox(height: AppSpacing.lg),
           _PersonalInfoField(
             label: t.common.form.city,
-            initialValue: initialCity,
+            controller: cityController,
             keyboardType: TextInputType.text,
           ),
         ],
@@ -58,12 +58,12 @@ class PersonalInfoSection extends StatelessWidget {
 
 class _PersonalInfoField extends StatelessWidget {
   final String label;
-  final String initialValue;
+  final TextEditingController controller;
   final TextInputType keyboardType;
 
   const _PersonalInfoField({
     required this.label,
-    required this.initialValue,
+    required this.controller,
     required this.keyboardType,
   });
 
@@ -88,8 +88,8 @@ class _PersonalInfoField extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          TextFormField(
-            initialValue: initialValue,
+          TextField(
+            controller: controller,
             keyboardType: keyboardType,
             style: const TextStyle(
               color: appText,

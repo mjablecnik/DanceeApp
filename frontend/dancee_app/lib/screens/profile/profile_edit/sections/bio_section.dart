@@ -4,11 +4,11 @@ import '../../../../core/theme.dart';
 import '../../../../i18n/strings.g.dart';
 
 class BioSection extends StatelessWidget {
-  final String initialBio;
+  final TextEditingController bioController;
 
   const BioSection({
     super.key,
-    this.initialBio = '',
+    required this.bioController,
   });
 
   @override
@@ -38,8 +38,8 @@ class BioSection extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.sm),
-            TextFormField(
-              initialValue: initialBio,
+            TextField(
+              controller: bioController,
               maxLines: 3,
               style: const TextStyle(color: appText),
               decoration: InputDecoration(
