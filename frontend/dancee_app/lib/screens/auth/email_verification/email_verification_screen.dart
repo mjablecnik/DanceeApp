@@ -39,6 +39,13 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen>
     _floatAnim = Tween<double>(begin: 0, end: -10).animate(
       CurvedAnimation(parent: _animController, curve: Curves.easeInOut),
     );
+
+    // Auto-send verification email when the screen opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _authCubit.sendEmailVerification();
+      }
+    });
   }
 
   @override
