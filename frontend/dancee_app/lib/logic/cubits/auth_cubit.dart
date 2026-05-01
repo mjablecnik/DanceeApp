@@ -8,6 +8,8 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/favorites_repository.dart';
+import '../../data/repositories/profile_repository.dart';
+import '../../core/service_locator.dart';
 import '../states/auth_state.dart';
 
 // ignore: constant_identifier_names
@@ -253,6 +255,12 @@ class AuthCubit extends Cubit<AuthState> {
       final uid = currentUid;
       if (uid != null) {
         await _favoritesRepository.deleteAllFavoritesForUser(uid);
+      }
+      // Delete Directus user and their data before Firebase deletion
+      try {
+        await sl<ProfileRepository>().deleteDirectusUser();
+      } catch (_) {
+        // Best effort — continue even if Directus deletion fails
       }
       await _clearOnboardingPrefs();
       await _authRepository.deleteAccount();

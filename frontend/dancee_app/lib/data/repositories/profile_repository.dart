@@ -88,6 +88,25 @@ class ProfileRepository {
     );
   }
 
+  /// Deactivates the currently authenticated Directus user and clears their data.
+  /// Must be called BEFORE deleting the Firebase account (needs valid token).
+  /// Note: Directus does not allow users to delete themselves via DELETE /users/me,
+  /// so we suspend the account, label it, and wipe personal data instead.
+  Future<void> deleteDirectusUser() async {
+    await _client.patch('/users/me', data: {
+      'status': 'suspended',
+      'first_name': 'Deleted',
+      'last_name': 'Account',
+      'phone': null,
+      'city': null,
+      'bio': null,
+      'dance_tags': null,
+      'experience_level': null,
+      'notification_preferences': null,
+      'avatar': null,
+    });
+  }
+
   /// Returns the real app version string (version+build).
   Future<String> getAppVersion() async {
     final info = await PackageInfo.fromPlatform();

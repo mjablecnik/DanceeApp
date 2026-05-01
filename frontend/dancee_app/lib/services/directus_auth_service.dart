@@ -88,6 +88,20 @@ class DirectusAuthService {
     );
 
     _storeTokens(response.data);
+
+    // Step 3: Reactivate if previously deleted (suspended) account.
+    try {
+      final token = _tokens?.accessToken;
+      if (token != null) {
+        await _dio.patch(
+          '/users/me',
+          data: {'status': 'active'},
+          options: Options(headers: {'Authorization': 'Bearer $token'}),
+        );
+      }
+    } catch (_) {
+      // Best effort — user may already be active
+    }
   }
 
   /// Discards stored tokens. Call on sign-out.
