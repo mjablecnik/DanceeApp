@@ -12,6 +12,7 @@ The implementation follows the existing app architecture: a repository method ha
 2. **Multipart upload via Dio**: The existing `DirectusClient` uses Dio, which natively supports `FormData` and multipart uploads. We add a dedicated `uploadFile` method rather than modifying the existing `post` method.
 3. **Single upload method in ProfileRepository**: The upload + link operation is combined into one repository method (`uploadAvatar`) that performs both the file upload and the `PATCH /users/me` call, keeping the cubit logic simple.
 4. **New ProfileState variant**: A new `uploadingAvatar` state is added to `ProfileState` to distinguish avatar upload progress from general profile updates, enabling targeted UI feedback.
+5. **permission_handler for granular permission control**: Rather than relying solely on `image_picker`'s implicit permission requests, we use `permission_handler` to check permission status before launching the picker. This enables a two-step UX: first a rationale dialog with retry, then a "permanently denied" dialog with an "Open Settings" button that takes the user directly to the app's system settings page.
 
 ## Architecture
 
@@ -29,7 +30,23 @@ sequenceDiagram
     User->>ProfilePhotoSection: Tap avatar / "Change photo"
     ProfilePhotoSection->>ProfilePhotoSection: Show source selection bottom sheet
     User->>ProfilePhotoSection: Select camera or gallery
-    ProfilePhotoSection->>ImagePicker: pickImage(source)
+    ProfilePhotoSection->>PermissionHandler: Check permission status
+    alt Permission granted
+        ProfilePhotoSection->>ImagePicker: pickImage(source)
+    else Permission denied (not permanent)
+        ProfilePhotoSection->>ProfilePhotoSection: Show rationale dialog
+        User->>ProfilePhotoSection: Tap "Allow"
+        ProfilePhotoSection->>PermissionHandler: Request permission
+        alt Granted after request
+            ProfilePhotoSection->>ImagePicker: pickImage(source)
+        else Denied again
+            ProfilePhotoSection->>ProfilePhotoSection: Show snackbar error
+        end
+    else Permanently denied
+        ProfilePhotoSection->>ProfilePhotoSection: Show "Open Settings" dialog
+        User->>ProfilePhotoSection: Tap "Open Settings"
+        ProfilePhotoSection->>PermissionHandler: openAppSettings()
+    end
     ImagePicker-->>ProfilePhotoSection: XFile (or null if cancelled)
     ProfilePhotoSection->>ImageCropper: cropImage(sourcePath)
     ImageCropper-->>ProfilePhotoSection: CroppedFile (or null if cancelled)
@@ -143,23 +160,87 @@ The existing `ProfilePhotoSection` is enhanced to:
 - Display a `CircularProgressIndicator` overlay during `uploadingAvatar` state
 - Disable tap interactions during upload
 
-### 6. Source Selection Bottom Sheet
+### 6. Permission Handling Flow
+
+Before launching `ImagePicker`, the UI checks the permission status for the selected source (camera or photos) using `permission_handler`. The flow has three branches:
+
+**a) Permission already granted** — proceed directly to `ImagePicker`.
+
+**b) Permission denied (not permanent)** — show a rationale dialog explaining why the app needs access, with an "Allow" button that triggers `Permission.request()`. If the user grants it, proceed to `ImagePicker`. If denied again, show a snackbar error.
+
+**c) Permission permanently denied** — show a dialog explaining that the permission was permanently denied, with an "Open Settings" button that calls `openAppSettings()` to navigate the user to the system app settings page where they can manually enable the permission. A "Cancel" button dismisses the dialog.
+
+```dart
+/// Checks permission and handles denied/permanently denied states.
+/// Returns true if permission is granted and picker can proceed.
+Future<bool> _ensurePermission(Permission permission, BuildContext context) async {
+  var status = await permission.status;
+
+  if (status.isGranted || status.isLimited) return true;
+
+  if (status.isPermanentlyDenied) {
+    await _showOpenSettingsDialog(context);
+    return false;
+  }
+
+  // Show rationale, then request
+  status = await permission.request();
+  if (status.isGranted || status.isLimited) return true;
+
+  if (status.isPermanentlyDenied) {
+    await _showOpenSettingsDialog(context);
+  }
+  return false;
+}
+
+Future<void> _showOpenSettingsDialog(BuildContext context) async {
+  await showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      backgroundColor: AppColors.appSurface,
+      title: Text(t.profile.editProfile.avatar.permissionDeniedTitle),
+      content: Text(t.profile.editProfile.avatar.permissionDeniedMessage),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx),
+          child: Text(t.common.cancel),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.pop(ctx);
+            openAppSettings();
+          },
+          child: Text(t.profile.editProfile.avatar.openSettings),
+        ),
+      ],
+    ),
+  );
+}
+```
+
+**Platform notes:**
+- On Web, `permission_handler` is not needed — the browser handles permissions natively through `image_picker`. The `_ensurePermission` check is skipped on Web (`kIsWeb`).
+- On iOS, camera permission uses `Permission.camera`; gallery uses `Permission.photos`.
+- On Android, camera uses `Permission.camera`; gallery uses `Permission.photos` (Android 13+) or `Permission.storage` (older).
+
+### 7. Source Selection Bottom Sheet
 
 A modal bottom sheet using the app's dark theme (`appSurface` background, `appBorder` dividers, `appText`/`appMuted` text colors). Options:
 - Camera icon + "Take a photo" (hidden on Web if camera unavailable)
 - Gallery icon + "Choose from gallery"
 - Cancel option
 
-### 7. New Packages
+### 8. New Packages
 
 | Package | Version | Purpose |
 |---------|---------|---------|
 | `image_picker` | `^1.1.0` | Cross-platform image selection (camera/gallery) |
 | `image_cropper` | `^8.0.0` | Native crop UI with 1:1 aspect ratio enforcement |
+| `permission_handler` | `^11.3.0` | Check permission status, request permissions, open app settings |
 
-Both packages support Android, iOS, and Web.
+All packages support Android and iOS. `image_picker` and `image_cropper` also support Web. `permission_handler` is skipped on Web (browser handles permissions natively).
 
-### 8. i18n Keys
+### 9. i18n Keys
 
 New translation keys under `profile.editProfile.avatar`:
 
@@ -173,6 +254,9 @@ New translation keys under `profile.editProfile.avatar`:
         "uploadError": "Failed to upload photo. Please try again.",
         "linkError": "Failed to update profile photo. Please try again.",
         "permissionRequired": "Camera or gallery permission is required to change your photo.",
+        "permissionDeniedTitle": "Permission required",
+        "permissionDeniedMessage": "You have permanently denied access. Please enable it in your device settings to change your profile photo.",
+        "openSettings": "Open Settings",
         "sourceTitle": "Change profile photo"
       }
     }
@@ -276,7 +360,9 @@ loaded(profile) → [user taps avatar] → uploadingAvatar(profile) → [upload 
 | Profile PATCH fails after successful upload | Same as above — revert state, show `t.profile.editProfile.avatar.linkError`. The orphaned file in Directus is acceptable (Directus can clean up unused files separately) |
 | Image picker returns null (user cancelled) | No-op. No state change, no error message |
 | Image cropper returns null (user cancelled) | No-op. No state change, no error message |
-| Permission denied (camera/gallery) | Show snackbar with `t.profile.editProfile.avatar.permissionRequired` |
+| Permission denied (first time) | Show rationale dialog explaining why the permission is needed, with "Allow" button that re-requests the permission via `permission_handler` |
+| Permission permanently denied | Show dialog with explanation and "Open Settings" button that calls `openAppSettings()` to navigate to the system app settings page |
+| Permission denied after rationale | Show snackbar with `t.profile.editProfile.avatar.permissionRequired` |
 
 ### Error Display Pattern
 
@@ -328,7 +414,10 @@ Unit tests cover specific examples, edge cases, and integration points:
 - **Successful upload flow**: Mock DirectusClient, verify uploadAvatar calls POST /files then PATCH /users/me in sequence
 - **Upload failure**: Mock a DioException on POST /files, verify state reverts to loaded
 - **Link failure**: Mock success on POST /files but failure on PATCH /users/me, verify state reverts
-- **Permission denied handling**: Verify the UI shows the permission error message
+- **Permission denied handling**: Verify the UI shows the rationale dialog when permission is denied for the first time
+- **Permission permanently denied**: Verify the UI shows the "Open Settings" dialog when permission is permanently denied
+- **Permission granted after rationale**: Verify the picker launches after the user grants permission via the rationale dialog
+- **Web skips permission check**: Verify that on Web platform, `_ensurePermission` is bypassed and the picker launches directly
 - **Web platform camera hiding**: Verify the bottom sheet omits the camera option on web when camera is unavailable
 - **Empty avatar URL fallback**: Verify ProfilePhotoSection shows initials when avatarUrl is null or empty
 - **Image load error fallback**: Verify the initials fallback renders when the cached image fails to load

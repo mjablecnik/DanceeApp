@@ -28,7 +28,9 @@ This feature adds profile avatar upload functionality to the Dancee App. Users c
 2. WHEN the user selects the camera option, THE Image_Picker SHALL open the device camera to capture a new photo
 3. WHEN the user selects the gallery option, THE Image_Picker SHALL open the device image gallery to select an existing photo
 4. WHEN the user dismisses the bottom sheet without selecting an option, THE Image_Picker SHALL close the dialog and leave the current avatar unchanged
-5. IF the device does not grant camera or gallery permission, THEN THE App SHALL display an informative message to the user explaining that permission is required
+5. IF the device does not grant camera or gallery permission on first request, THEN THE App SHALL display a rationale dialog explaining why the permission is needed, with an option to re-request the permission
+6. IF the user has permanently denied camera or gallery permission, THEN THE App SHALL display a dialog with an "Open Settings" button that navigates the user to the system app settings page where they can manually enable the permission
+7. ON Web, THE App SHALL skip explicit permission checks and rely on the browser's native permission handling
 
 ### Requirement 2: Image Editing
 
