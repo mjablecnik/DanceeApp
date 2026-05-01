@@ -173,12 +173,14 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       listenWhen: (_, state) => state.maybeMap(
         loaded: (_) => true,
         updating: (_) => true,
+        uploadingAvatar: (_) => true,
         orElse: () => false,
       ),
       listener: (context, state) {
         state.maybeMap(
           loaded: (s) => _initFromProfile(s.profile),
           updating: (s) => _initFromProfile(s.profile),
+          uploadingAvatar: (s) => _initFromProfile(s.profile),
           orElse: () {},
         );
       },
@@ -218,6 +220,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       _initFromProfile(s.profile);
                       return _buildForm();
                     },
+                    uploadingAvatar: (s) {
+                      _initFromProfile(s.profile);
+                      return _buildForm();
+                    },
                     error: (s) => Center(
                       child: Text(s.message, style: const TextStyle(color: appMuted)),
                     ),
@@ -249,6 +255,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 avatarUrl: context.read<ProfileCubit>().state.maybeMap(
                       loaded: (s) => s.profile.avatarUrl ?? '',
                       updating: (s) => s.profile.avatarUrl ?? '',
+                      uploadingAvatar: (s) => s.profile.avatarUrl ?? '',
                       orElse: () => '',
                     ),
                 name: _nameController.text,

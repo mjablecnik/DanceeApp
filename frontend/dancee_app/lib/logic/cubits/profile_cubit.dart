@@ -54,6 +54,25 @@ class ProfileCubit extends Cubit<ProfileState> {
     }
   }
 
+  /// Uploads a new avatar image and updates the profile state.
+  Future<void> uploadAvatar(String filePath, String fileName) async {
+    final currentProfile = state.maybeMap(
+      loaded: (s) => s.profile,
+      uploadingAvatar: (s) => s.profile,
+      orElse: () => null,
+    );
+    if (currentProfile == null) return;
+
+    emit(ProfileState.uploadingAvatar(profile: currentProfile));
+    try {
+      final updated = await _profileRepository.uploadAvatar(filePath, fileName);
+      emit(ProfileState.loaded(profile: updated));
+    } catch (e) {
+      emit(ProfileState.loaded(profile: currentProfile));
+      rethrow;
+    }
+  }
+
   /// Submits a [ContactMessage] to the CMS. Returns true on success.
   Future<bool> submitContactMessage(ContactMessage message) async {
     try {
