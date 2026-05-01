@@ -374,7 +374,13 @@
       },
       "save": "Uložit změny",
       "updateSuccess": "Profil byl úspěšně aktualizován.",
-      "updateError": "Nepodařilo se aktualizovat profil. Zkuste to prosím znovu."
+      "updateError": "Nepodařilo se aktualizovat profil. Zkuste to prosím znovu.",
+      "experienceLevels": {
+        "beginner": "Začátečník",
+        "slightlyAdvanced": "Mírně pokročilý",
+        "advanced": "Pokročilý",
+        "expert": "Expert"
+      }
     }
   },
   "premium": {

@@ -374,7 +374,13 @@
       },
       "save": "Save changes",
       "updateSuccess": "Profile updated successfully.",
-      "updateError": "Failed to update profile. Please try again."
+      "updateError": "Failed to update profile. Please try again.",
+      "experienceLevels": {
+        "beginner": "Beginner",
+        "slightlyAdvanced": "Slightly advanced",
+        "advanced": "Advanced",
+        "expert": "Expert"
+      }
     }
   },
   "premium": {

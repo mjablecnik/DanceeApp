@@ -374,7 +374,13 @@
       },
       "save": "Guardar cambios",
       "updateSuccess": "Perfil actualizado con éxito.",
-      "updateError": "Error al actualizar el perfil. Por favor, inténtalo de nuevo."
+      "updateError": "Error al actualizar el perfil. Por favor, inténtalo de nuevo.",
+      "experienceLevels": {
+        "beginner": "Principiante",
+        "slightlyAdvanced": "Ligeramente avanzado",
+        "advanced": "Avanzado",
+        "expert": "Experto"
+      }
     }
   },
   "premium": {

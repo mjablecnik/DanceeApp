@@ -8,12 +8,14 @@ class ExperienceLevelSection extends StatefulWidget {
   final List<String> levels;
   final String selectedLevel;
   final ValueChanged<String>? onChanged;
+  final String Function(String)? labelBuilder;
 
   const ExperienceLevelSection({
     super.key,
     required this.levels,
     required this.selectedLevel,
     this.onChanged,
+    this.labelBuilder,
   });
 
   @override
@@ -74,7 +76,7 @@ class _ExperienceLevelSectionState extends State<ExperienceLevelSection> {
                       ),
                       const SizedBox(width: AppSpacing.md),
                       Text(
-                        level,
+                        widget.labelBuilder?.call(level) ?? level,
                         style: const TextStyle(
                           color: appText,
                           fontSize: AppTypography.fontSizeMd,

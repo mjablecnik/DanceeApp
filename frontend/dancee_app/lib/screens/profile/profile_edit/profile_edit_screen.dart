@@ -23,9 +23,24 @@ const _kDanceStyleNames = [
   'Tango', 'Swing', 'Ballroom', 'Afro', 'Forró',
 ];
 
-const _kExperienceLevelNames = [
-  'Začátečník', 'Mírně pokročilý', 'Pokročilý', 'Expert',
-];
+/// Maps Directus experience_level values to translation keys.
+const _kExperienceLevelKeys = ['beginner', 'slightlyAdvanced', 'advanced', 'expert'];
+
+String _experienceLevelLabel(String key) {
+  final levels = t.profile.editProfile.experienceLevels;
+  switch (key) {
+    case 'beginner':
+      return levels.beginner;
+    case 'slightlyAdvanced':
+      return levels.slightlyAdvanced;
+    case 'advanced':
+      return levels.advanced;
+    case 'expert':
+      return levels.expert;
+    default:
+      return key;
+  }
+}
 
 class ProfileEditScreen extends StatefulWidget {
   const ProfileEditScreen({super.key});
@@ -53,7 +68,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   void initState() {
     super.initState();
     _dancePrefs = {for (final name in _kDanceStyleNames) name: false};
-    _level = _kExperienceLevelNames.first;
+    _level = _kExperienceLevelKeys.first;
     _notifications = {
       t.profile.editProfile.notifications.newEvents: true,
       t.profile.editProfile.notifications.eventReminders: true,
@@ -95,9 +110,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     _dancePrefs = {
       for (final name in _kDanceStyleNames) name: profile.danceTags.contains(name),
     };
-    _level = _kExperienceLevelNames.contains(profile.experienceLevel)
+    _level = _kExperienceLevelKeys.contains(profile.experienceLevel)
         ? profile.experienceLevel
-        : _kExperienceLevelNames.first;
+        : _kExperienceLevelKeys.first;
   }
 
   Future<void> _save() async {
@@ -252,9 +267,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 child: SectionLabel(title: t.profile.editProfile.sections.level),
               ),
               ExperienceLevelSection(
-                levels: _kExperienceLevelNames,
+                levels: _kExperienceLevelKeys,
                 selectedLevel: _level,
                 onChanged: (level) => setState(() => _level = level),
+                labelBuilder: _experienceLevelLabel,
               ),
               Padding(
                 padding: const EdgeInsets.only(left: AppSpacing.xl, right: AppSpacing.xl, bottom: AppSpacing.md),
