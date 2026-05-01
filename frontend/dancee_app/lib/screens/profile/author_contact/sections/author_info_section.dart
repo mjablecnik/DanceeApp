@@ -42,10 +42,6 @@ class AuthorInfoSection extends StatelessWidget {
                       color: appText,
                     ),
                   ),
-                  Text(
-                    t.contact.email,
-                    style: const TextStyle(fontSize: AppTypography.fontSizeMd, color: appMuted),
-                  ),
                 ],
               ),
             ],

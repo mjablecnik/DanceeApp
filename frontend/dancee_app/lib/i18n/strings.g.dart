@@ -4,9 +4,9 @@
 /// To regenerate, run: `dart run slang`
 ///
 /// Locales: 3
-/// Strings: 1032 (344 per locale)
+/// Strings: 1029 (343 per locale)
 ///
-/// Built on 2026-05-01 at 07:27 UTC
+/// Built on 2026-05-01 at 10:55 UTC
 
 // coverage:ignore-file
 // ignore_for_file: type=lint
@@ -367,7 +367,6 @@ class _StringsContactEn {
 
 	// Translations
 	String get teamName => 'Dancee Team';
-	String get email => 'hello@dancee.app';
 	String get description => 'We\'d love to read your feedback...';
 	String get responseTime => 'Response time';
 	String get responseTimeDetail => 'We usually respond within 24 hours on working days. Thank you for your patience!';
@@ -1209,7 +1208,6 @@ class _StringsContactCs extends _StringsContactEn {
 
 	// Translations
 	@override String get teamName => 'Tým Dancee';
-	@override String get email => 'hello@dancee.app';
 	@override String get description => 'Rádi si přečteme vaše zpětné vazby...';
 	@override String get responseTime => 'Doba odezvy';
 	@override String get responseTimeDetail => 'Obvykle odpovídáme do 24 hodin v pracovní dny. Děkujeme za trpělivost!';
@@ -2051,7 +2049,6 @@ class _StringsContactEs extends _StringsContactEn {
 
 	// Translations
 	@override String get teamName => 'Equipo Dancee';
-	@override String get email => 'hello@dancee.app';
 	@override String get description => 'Nos encantaría leer tus comentarios...';
 	@override String get responseTime => 'Tiempo de respuesta';
 	@override String get responseTimeDetail => 'Normalmente respondemos en 24 horas en días laborables. ¡Gracias por tu paciencia!';
@@ -2971,7 +2968,6 @@ extension on Translations {
 			case 'saved.emptyTitle': return 'No saved events';
 			case 'saved.emptySubtitle': return 'Events you save will appear here';
 			case 'contact.teamName': return 'Dancee Team';
-			case 'contact.email': return 'hello@dancee.app';
 			case 'contact.description': return 'We\'d love to read your feedback...';
 			case 'contact.responseTime': return 'Response time';
 			case 'contact.responseTimeDetail': return 'We usually respond within 24 hours on working days. Thank you for your patience!';
@@ -3323,7 +3319,6 @@ extension on _StringsCs {
 			case 'saved.emptyTitle': return 'Žádné uložené akce';
 			case 'saved.emptySubtitle': return 'Akce, které si uložíš, se zobrazí zde';
 			case 'contact.teamName': return 'Tým Dancee';
-			case 'contact.email': return 'hello@dancee.app';
 			case 'contact.description': return 'Rádi si přečteme vaše zpětné vazby...';
 			case 'contact.responseTime': return 'Doba odezvy';
 			case 'contact.responseTimeDetail': return 'Obvykle odpovídáme do 24 hodin v pracovní dny. Děkujeme za trpělivost!';
@@ -3675,7 +3670,6 @@ extension on _StringsEs {
 			case 'saved.emptyTitle': return 'Sin eventos guardados';
 			case 'saved.emptySubtitle': return 'Los eventos que guardes aparecerán aquí';
 			case 'contact.teamName': return 'Equipo Dancee';
-			case 'contact.email': return 'hello@dancee.app';
 			case 'contact.description': return 'Nos encantaría leer tus comentarios...';
 			case 'contact.responseTime': return 'Tiempo de respuesta';
 			case 'contact.responseTimeDetail': return 'Normalmente respondemos en 24 horas en días laborables. ¡Gracias por tu paciencia!';
