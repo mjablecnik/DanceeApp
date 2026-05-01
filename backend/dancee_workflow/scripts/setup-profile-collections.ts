@@ -623,6 +623,12 @@ async function setupDirectusUserProfileFields(): Promise<void> {
     },
     note: "User's dance experience level",
   }, { is_nullable: true, max_length: 50 });
+
+  await createFieldIfNotExists("directus_users", "notification_preferences", "json", {
+    interface: "input-code",
+    options: { language: "json" },
+    note: "Notification preferences, e.g. {\"new_events\": true, \"event_reminders\": true, \"marketing\": false}",
+  }, { is_nullable: true });
 }
 
 // ---- Main ----
