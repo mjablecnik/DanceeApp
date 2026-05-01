@@ -122,6 +122,19 @@ class AuthRepository {
   // Private helpers
   // ---------------------------------------------------------------------------
 
+  /// Re-establishes Directus session if tokens are missing (e.g. after app
+  /// restart where Firebase auto-restores the session but Directus tokens
+  /// are lost). Silently ignores failures — the profile screen will show
+  /// a retry option if the token is still unavailable.
+  Future<void> ensureDirectusLinked() async {
+    if (_directus.hasTokens) return;
+    try {
+      await _linkDirectus();
+    } catch (_) {
+      // Silently fail — profile screen will handle the error state.
+    }
+  }
+
   /// Exchanges the current Firebase user's ID token for Directus session
   /// tokens. Throws on failure — callers treat this as a sign-in failure.
   Future<void> _linkDirectus() async {

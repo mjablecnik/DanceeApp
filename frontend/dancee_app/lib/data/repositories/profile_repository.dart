@@ -13,35 +13,33 @@ class ProfileRepository {
 
   final DirectusClient _client;
 
-  /// Fetches the user profile from Directus for the given [firebaseUid].
+  /// Fetches the user profile from Directus for the currently authenticated user.
+  /// Uses /users/me which works with the user's own Directus session token.
   Future<UserProfile> getUserProfile(String firebaseUid) async {
     final data = await _client.get(
-      '/users',
+      '/users/me',
       queryParameters: {
-        'filter[firebase_uid][_eq]': firebaseUid,
         'fields': '*,avatar.id',
-        'limit': '1',
       },
     );
 
-    final items = (data as List<dynamic>?) ?? [];
-    if (items.isEmpty) {
-      throw Exception('User profile not found for firebase_uid=$firebaseUid');
+    if (data == null) {
+      throw Exception('User profile not found');
     }
 
     return UserProfile.fromDirectus(
-      items.first as Map<String, dynamic>,
+      data as Map<String, dynamic>,
       directusBaseUrl: AppConfig.directusBaseUrl,
     );
   }
 
-  /// Updates the user profile in Directus for the given [directusUserId].
+  /// Updates the user profile in Directus for the currently authenticated user.
   Future<UserProfile> updateUserProfile(
     String directusUserId,
     Map<String, dynamic> fields,
   ) async {
     final data = await _client.patch(
-      '/users/$directusUserId',
+      '/users/me',
       data: fields,
     );
 

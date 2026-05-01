@@ -32,6 +32,7 @@ class UserProfile extends Equatable {
     this.avatarUrl,
     required this.danceTags,
     required this.experienceLevel,
+    required this.notificationPreferences,
   });
 
   final String directusUserId;
@@ -45,6 +46,7 @@ class UserProfile extends Equatable {
   final String? avatarUrl;
   final List<String> danceTags;
   final String experienceLevel;
+  final Map<String, bool> notificationPreferences;
 
   String get fullName => '$firstName $lastName'.trim();
 
@@ -75,6 +77,20 @@ class UserProfile extends Equatable {
       danceTags = const [];
     }
 
+    final rawNotifPrefs = json['notification_preferences'];
+    final Map<String, bool> notificationPreferences;
+    if (rawNotifPrefs is Map) {
+      notificationPreferences = rawNotifPrefs.map(
+        (k, v) => MapEntry(k.toString(), v == true),
+      );
+    } else {
+      notificationPreferences = const {
+        'new_events': true,
+        'event_reminders': true,
+        'marketing': false,
+      };
+    }
+
     return UserProfile(
       directusUserId: (json['id'] ?? '').toString(),
       firebaseUid: (json['firebase_uid'] ?? '').toString(),
@@ -87,6 +103,7 @@ class UserProfile extends Equatable {
       avatarUrl: avatarUrl,
       danceTags: danceTags,
       experienceLevel: (json['experience_level'] as String?) ?? '',
+      notificationPreferences: notificationPreferences,
     );
   }
 
@@ -100,6 +117,7 @@ class UserProfile extends Equatable {
       if (bio != null) 'bio': bio,
       'dance_tags': danceTags,
       'experience_level': experienceLevel,
+      'notification_preferences': notificationPreferences,
     };
   }
 
@@ -116,5 +134,6 @@ class UserProfile extends Equatable {
         avatarUrl,
         danceTags,
         experienceLevel,
+        notificationPreferences,
       ];
 }

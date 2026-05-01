@@ -286,31 +286,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           SectionLabel(title: t.profile.sections.appInfo),
                           const SizedBox(height: AppSpacing.md),
                           const AppInfoSection(),
+                          const SizedBox(height: AppSpacing.xxl),
+                          SectionLabel(title: t.profile.sections.dangerZone),
+                          const SizedBox(height: AppSpacing.md),
+                          if (_authError != null) ...[
+                            _ErrorBanner(message: _authError!),
+                            const SizedBox(height: AppSpacing.md),
+                          ],
+                          LogoutSection(
+                            onLogout: isLoading ? () {} : _handleLogout,
+                            onDeleteAccount: isLoading ? () {} : _handleDeleteAccount,
+                          ),
                         ],
                       ),
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(
-                      left: AppSpacing.xl,
-                      right: AppSpacing.xl,
-                      top: AppSpacing.md,
-                      bottom: MediaQuery.of(context).padding.bottom + AppSpacing.lg,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SectionLabel(title: t.profile.sections.dangerZone),
-                        const SizedBox(height: AppSpacing.md),
-                        if (_authError != null) ...[
-                          _ErrorBanner(message: _authError!),
-                          const SizedBox(height: AppSpacing.md),
-                        ],
-                        LogoutSection(
-                          onLogout: isLoading ? () {} : _handleLogout,
-                          onDeleteAccount: isLoading ? () {} : _handleDeleteAccount,
-                        ),
-                      ],
                     ),
                   ),
                 ],

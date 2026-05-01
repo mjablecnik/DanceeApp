@@ -60,9 +60,15 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   late String _level;
   late Map<String, bool> _notifications;
   late Map<String, String> _notificationSubtitles;
+  late Map<String, String> _notificationLabels;
 
   bool _initialized = false;
   bool _isSaving = false;
+
+  // Stable keys for notification preferences (synced to Directus)
+  static const _notifKeyNewEvents = 'new_events';
+  static const _notifKeyReminders = 'event_reminders';
+  static const _notifKeyMarketing = 'marketing';
 
   @override
   void initState() {
@@ -70,14 +76,19 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     _dancePrefs = {for (final name in _kDanceStyleNames) name: false};
     _level = _kExperienceLevelKeys.first;
     _notifications = {
-      t.profile.editProfile.notifications.newEvents: true,
-      t.profile.editProfile.notifications.eventReminders: true,
-      t.profile.editProfile.notifications.marketing: false,
+      _notifKeyNewEvents: true,
+      _notifKeyReminders: true,
+      _notifKeyMarketing: false,
+    };
+    _notificationLabels = {
+      _notifKeyNewEvents: t.profile.editProfile.notifications.newEvents,
+      _notifKeyReminders: t.profile.editProfile.notifications.eventReminders,
+      _notifKeyMarketing: t.profile.editProfile.notifications.marketing,
     };
     _notificationSubtitles = {
-      t.profile.editProfile.notifications.newEvents: t.profile.editProfile.notificationSubtitles.newEvents,
-      t.profile.editProfile.notifications.eventReminders: t.profile.editProfile.notificationSubtitles.eventReminders,
-      t.profile.editProfile.notifications.marketing: t.profile.editProfile.notificationSubtitles.marketing,
+      _notifKeyNewEvents: t.profile.editProfile.notificationSubtitles.newEvents,
+      _notifKeyReminders: t.profile.editProfile.notificationSubtitles.eventReminders,
+      _notifKeyMarketing: t.profile.editProfile.notificationSubtitles.marketing,
     };
 
     // If profile already loaded, initialize controllers immediately
@@ -113,6 +124,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     _level = _kExperienceLevelKeys.contains(profile.experienceLevel)
         ? profile.experienceLevel
         : _kExperienceLevelKeys.first;
+    _notifications = {
+      _notifKeyNewEvents: profile.notificationPreferences[_notifKeyNewEvents] ?? true,
+      _notifKeyReminders: profile.notificationPreferences[_notifKeyReminders] ?? true,
+      _notifKeyMarketing: profile.notificationPreferences[_notifKeyMarketing] ?? false,
+    };
   }
 
   Future<void> _save() async {
@@ -137,6 +153,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         'bio': _bioController.text.trim(),
         'dance_tags': selectedTags,
         'experience_level': _level,
+        'notification_preferences': _notifications,
       });
       if (mounted) context.pop();
     } catch (_) {
@@ -277,8 +294,21 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 child: SectionLabel(title: t.profile.editProfile.sections.notifications),
               ),
               NotificationsSection(
-                notifications: _notifications,
-                subtitles: _notificationSubtitles,
+                notifications: {
+                  for (final entry in _notifications.entries)
+                    _notificationLabels[entry.key] ?? entry.key: entry.value,
+                },
+                subtitles: {
+                  for (final entry in _notificationLabels.entries)
+                    entry.value: _notificationSubtitles[entry.key] ?? '',
+                },
+                onToggle: (label, value) {
+                  // Find the stable key for this label
+                  final stableKey = _notificationLabels.entries
+                      .firstWhere((e) => e.value == label, orElse: () => MapEntry(label, label))
+                      .key;
+                  setState(() => _notifications[stableKey] = value);
+                },
               ),
             ],
           ),

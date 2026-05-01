@@ -66,6 +66,9 @@ class AuthCubit extends Cubit<AuthState> {
         emailVerified: user.emailVerified,
         isNewUser: _checkIsNewUser(user),
       ));
+      // Ensure Directus session tokens are available after app restart.
+      // On fresh sign-in this is a no-op (tokens already obtained).
+      _authRepository.ensureDirectusLinked();
     }
   }
 
