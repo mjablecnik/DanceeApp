@@ -49,10 +49,16 @@ class AuthCubit extends Cubit<AuthState> {
   /// show a local loading indicator inside the affected screen.
   final operationInProgress = ValueNotifier<bool>(false);
 
+  /// Notifies when Directus link completes (tokens become available).
+  final directusLinkedNotifier = ValueNotifier<bool>(false);
+  /// Alias for external access.
+  ValueNotifier<bool> get _directusLinkedNotifier => directusLinkedNotifier;
+
   @override
   Future<void> close() {
     _authStateSubscription.cancel();
     _operationSuccessController.close();
+    directusLinkedNotifier.dispose();
     operationInProgress.dispose();
     return super.close();
   }
@@ -70,7 +76,12 @@ class AuthCubit extends Cubit<AuthState> {
       ));
       // Ensure Directus session tokens are available after app restart.
       // On fresh sign-in this is a no-op (tokens already obtained).
-      _authRepository.ensureDirectusLinked();
+      _authRepository.ensureDirectusLinked().then((_) {
+        // Re-emit authenticated so listeners (ProfileCubit) know tokens are ready
+        if (state.maybeMap(authenticated: (_) => true, orElse: () => false)) {
+          _directusLinkedNotifier.value = !_directusLinkedNotifier.value;
+        }
+      });
     }
   }
 

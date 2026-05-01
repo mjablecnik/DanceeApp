@@ -141,7 +141,7 @@ class AuthRepository {
     final user = _firebase.currentUser;
     if (user == null) return;
 
-    final idToken = await user.getIdToken();
+    final idToken = await user.getIdToken(true);
     if (idToken == null) throw 'auth.errors.generic';
 
     await _directus.linkAndAuthenticate(

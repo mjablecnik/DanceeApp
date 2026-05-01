@@ -26,6 +26,8 @@ function ensureFirebaseInitialized(env, logger) {
 }
 
 export default (router, { services, env, database, getSchema, logger }) => {
+  logger.info("[Firebase Auth] Extension loaded, registering routes...");
+
   router.post("/link", async (req, res, next) => {
     try {
       if (!ensureFirebaseInitialized(env, logger)) {
@@ -62,11 +64,14 @@ export default (router, { services, env, database, getSchema, logger }) => {
 
       if (existingUsers.length > 0) {
         const user = existingUsers[0];
-        if (!user.external_identifier) {
+        // Always update external_identifier to current Firebase UID
+        // (handles re-registration after account deletion with new Firebase account)
+        if (user.external_identifier !== uid) {
           await usersService.updateOne(user.id, {
             external_identifier: uid,
             provider: "firebase",
           });
+          logger.info(`[Firebase Auth] Updated external_identifier for ${email} to ${uid}`);
         }
         return res.json({ data: { id: user.id, email: user.email, role: user.role } });
       }
@@ -102,6 +107,8 @@ export default (router, { services, env, database, getSchema, logger }) => {
     }
   });
 
+  logger.info("[Firebase Auth] /link route registered");
+
   router.post("/auth", async (req, res, next) => {
     try {
       const { uid } = req.body || {};
@@ -119,7 +126,10 @@ export default (router, { services, env, database, getSchema, logger }) => {
         limit: 1,
       });
 
+      logger.info(`[Firebase Auth] /auth lookup for external_identifier=${uid}, found=${users?.length ?? 0}`);
+
       if (!users || users.length === 0) {
+        logger.warn(`[Firebase Auth] /auth: User not found for uid=${uid}`);
         return res.status(404).json({ error: "User not found. Call /firebase/link first." });
       }
 
@@ -176,6 +186,8 @@ export default (router, { services, env, database, getSchema, logger }) => {
       return next(error);
     }
   });
+
+  logger.info("[Firebase Auth] /auth route registered");
 };
 
 function parseTTL(ttl) {

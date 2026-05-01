@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../data/entities/contact_message.dart';
@@ -27,10 +26,8 @@ class ProfileCubit extends Cubit<ProfileState> {
     emit(const ProfileState.loading());
     try {
       final profile = await _profileRepository.getUserProfile(uid);
-      debugPrint('[ProfileCubit] Loaded profile: ${profile.fullName} (${profile.email})');
       emit(ProfileState.loaded(profile: profile));
     } catch (e) {
-      debugPrint('[ProfileCubit] Failed to load profile: $e');
       emit(const ProfileState.error(message: 'profile.errors.loadFailed'));
     }
   }

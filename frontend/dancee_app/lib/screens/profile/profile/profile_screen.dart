@@ -38,8 +38,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         context.read<ProfileCubit>().loadProfile();
+        // If profile fails because Directus tokens aren't ready yet,
+        // auto-retry when they become available.
+        context.read<AuthCubit>().directusLinkedNotifier.addListener(_onDirectusLinked);
       }
     });
+  }
+
+  void _onDirectusLinked() {
+    if (!mounted) return;
+    final profileState = context.read<ProfileCubit>().state;
+    // Only reload if current state is error or initial (not already loaded)
+    profileState.maybeMap(
+      error: (_) => context.read<ProfileCubit>().loadProfile(),
+      initial: (_) => context.read<ProfileCubit>().loadProfile(),
+      orElse: () {},
+    );
+  }
+
+  @override
+  void dispose() {
+    // Safe to call even if listener was never added
+    try {
+      context.read<AuthCubit>().directusLinkedNotifier.removeListener(_onDirectusLinked);
+    } catch (_) {}
+    super.dispose();
   }
 
   Future<void> _handleLogout() async {
