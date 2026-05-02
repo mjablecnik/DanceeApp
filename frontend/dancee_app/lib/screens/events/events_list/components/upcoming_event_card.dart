@@ -119,6 +119,7 @@ class UpcomingEventCard extends StatelessWidget {
                             ],
                           ),
                           // Spacer pushes tags to bottom
+                          const SizedBox(height: AppSpacing.md),
                           const Spacer(),
                           // Dance style tags — clipped to 2 lines
                           if (tags.isNotEmpty)

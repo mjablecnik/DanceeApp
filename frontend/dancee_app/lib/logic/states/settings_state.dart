@@ -4,5 +4,8 @@ part 'settings_state.freezed.dart';
 
 @freezed
 class SettingsState with _$SettingsState {
-  const factory SettingsState({required String languageCode}) = _SettingsState;
+  const factory SettingsState({
+    required String languageCode,
+    @Default(true) bool notificationsEnabled,
+  }) = _SettingsState;
 }

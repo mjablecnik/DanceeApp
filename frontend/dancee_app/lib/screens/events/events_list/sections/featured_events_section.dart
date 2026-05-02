@@ -8,6 +8,7 @@ import '../../../../i18n/strings.g.dart';
 import '../../../../logic/cubits/favorites_cubit.dart';
 import '../../../../shared/components/snap_carousel.dart';
 import '../../../../shared/utils/date_format.dart';
+import '../../../../shared/utils/location_format.dart';
 import '../components/featured_event_card.dart';
 import 'upcoming_events_section.dart' show parentDanceNames;
 
@@ -58,7 +59,7 @@ class FeaturedEventsSection extends StatelessWidget {
               imageUrl: event.imageUrl ?? '',
               title: event.title,
               date: formatDate(event.startTime),
-              location: event.venue?.town ?? event.venue?.name ?? '',
+              location: shortLocation(event.venue?.town ?? event.venue?.name ?? ''),
               price: price.isEmpty ? t.events.detail.admission : price,
               isFree: isFree,
               isFavorited: event.isFavorited,

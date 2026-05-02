@@ -7,6 +7,8 @@ import '../../../core/theme.dart';
 import '../../../data/entities/user_profile.dart';
 import '../../../i18n/strings.g.dart';
 import '../../../logic/cubits/profile_cubit.dart';
+import '../../../logic/cubits/event_cubit.dart';
+import '../../../logic/cubits/course_cubit.dart';
 import '../../../logic/states/profile_state.dart';
 import '../../../shared/components/back_button_header.dart';
 import '../../../shared/elements/labels/section_label.dart';
@@ -53,7 +55,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _cityController = TextEditingController();
+  String? _selectedCity;
   final _bioController = TextEditingController();
 
   late Map<String, bool> _dancePrefs;
@@ -105,7 +107,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     _nameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
-    _cityController.dispose();
     _bioController.dispose();
     super.dispose();
   }
@@ -116,7 +117,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     _nameController.text = profile.fullName;
     _emailController.text = profile.email;
     _phoneController.text = profile.phone ?? '';
-    _cityController.text = profile.city ?? '';
+    _selectedCity = profile.city;
     _bioController.text = profile.bio ?? '';
     _dancePrefs = {
       for (final name in _kDanceStyleNames) name: profile.danceTags.contains(name),
@@ -129,6 +130,37 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       _notifKeyReminders: profile.notificationPreferences[_notifKeyReminders] ?? true,
       _notifKeyMarketing: profile.notificationPreferences[_notifKeyMarketing] ?? false,
     };
+  }
+
+  List<String> _deriveAvailableRegions() {
+    final regions = <String>{};
+    final eventState = context.read<EventCubit>().state;
+    eventState.maybeMap(
+      loaded: (s) {
+        for (final event in s.allEvents) {
+          final venue = event.venue;
+          if (venue == null) continue;
+          if (kCzCountryValues.contains(venue.country)) {
+            if (venue.region.isNotEmpty) regions.add(venue.region);
+          }
+        }
+      },
+      orElse: () {},
+    );
+    final courseState = context.read<CourseCubit>().state;
+    courseState.maybeMap(
+      loaded: (s) {
+        for (final course in s.allCourses) {
+          final venue = course.venue;
+          if (venue == null) continue;
+          if (kCzCountryValues.contains(venue.country)) {
+            if (venue.region.isNotEmpty) regions.add(venue.region);
+          }
+        }
+      },
+      orElse: () {},
+    );
+    return regions.toList()..sort();
   }
 
   Future<void> _save() async {
@@ -149,7 +181,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         'last_name': lastName,
         'email': _emailController.text.trim(),
         'phone': _phoneController.text.trim(),
-        'city': _cityController.text.trim(),
+        'city': _selectedCity ?? '',
         'bio': _bioController.text.trim(),
         'dance_tags': selectedTags,
         'experience_level': _level,
@@ -268,7 +300,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 nameController: _nameController,
                 emailController: _emailController,
                 phoneController: _phoneController,
-                cityController: _cityController,
+                selectedCity: _selectedCity,
+                availableCities: _deriveAvailableRegions(),
+                onCityChanged: (city) => setState(() => _selectedCity = city),
               ),
               BioSection(
                 bioController: _bioController,

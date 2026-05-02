@@ -17,6 +17,7 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$SettingsState {
   String get languageCode => throw _privateConstructorUsedError;
+  bool get notificationsEnabled => throw _privateConstructorUsedError;
 
   /// Create a copy of SettingsState
   /// with the given fields replaced by the non-null parameter values.
@@ -31,7 +32,7 @@ abstract class $SettingsStateCopyWith<$Res> {
           SettingsState value, $Res Function(SettingsState) then) =
       _$SettingsStateCopyWithImpl<$Res, SettingsState>;
   @useResult
-  $Res call({String languageCode});
+  $Res call({String languageCode, bool notificationsEnabled});
 }
 
 /// @nodoc
@@ -50,12 +51,17 @@ class _$SettingsStateCopyWithImpl<$Res, $Val extends SettingsState>
   @override
   $Res call({
     Object? languageCode = null,
+    Object? notificationsEnabled = null,
   }) {
     return _then(_value.copyWith(
       languageCode: null == languageCode
           ? _value.languageCode
           : languageCode // ignore: cast_nullable_to_non_nullable
               as String,
+      notificationsEnabled: null == notificationsEnabled
+          ? _value.notificationsEnabled
+          : notificationsEnabled // ignore: cast_nullable_to_non_nullable
+              as bool,
     ) as $Val);
   }
 }
@@ -68,7 +74,7 @@ abstract class _$$SettingsStateImplCopyWith<$Res>
       __$$SettingsStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String languageCode});
+  $Res call({String languageCode, bool notificationsEnabled});
 }
 
 /// @nodoc
@@ -85,12 +91,17 @@ class __$$SettingsStateImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? languageCode = null,
+    Object? notificationsEnabled = null,
   }) {
     return _then(_$SettingsStateImpl(
       languageCode: null == languageCode
           ? _value.languageCode
           : languageCode // ignore: cast_nullable_to_non_nullable
               as String,
+      notificationsEnabled: null == notificationsEnabled
+          ? _value.notificationsEnabled
+          : notificationsEnabled // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -98,14 +109,18 @@ class __$$SettingsStateImplCopyWithImpl<$Res>
 /// @nodoc
 
 class _$SettingsStateImpl implements _SettingsState {
-  const _$SettingsStateImpl({required this.languageCode});
+  const _$SettingsStateImpl(
+      {required this.languageCode, this.notificationsEnabled = true});
 
   @override
   final String languageCode;
+  @override
+  @JsonKey()
+  final bool notificationsEnabled;
 
   @override
   String toString() {
-    return 'SettingsState(languageCode: $languageCode)';
+    return 'SettingsState(languageCode: $languageCode, notificationsEnabled: $notificationsEnabled)';
   }
 
   @override
@@ -114,11 +129,14 @@ class _$SettingsStateImpl implements _SettingsState {
         (other.runtimeType == runtimeType &&
             other is _$SettingsStateImpl &&
             (identical(other.languageCode, languageCode) ||
-                other.languageCode == languageCode));
+                other.languageCode == languageCode) &&
+            (identical(other.notificationsEnabled, notificationsEnabled) ||
+                other.notificationsEnabled == notificationsEnabled));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, languageCode);
+  int get hashCode =>
+      Object.hash(runtimeType, languageCode, notificationsEnabled);
 
   /// Create a copy of SettingsState
   /// with the given fields replaced by the non-null parameter values.
@@ -130,11 +148,14 @@ class _$SettingsStateImpl implements _SettingsState {
 }
 
 abstract class _SettingsState implements SettingsState {
-  const factory _SettingsState({required final String languageCode}) =
-      _$SettingsStateImpl;
+  const factory _SettingsState(
+      {required final String languageCode,
+      final bool notificationsEnabled}) = _$SettingsStateImpl;
 
   @override
   String get languageCode;
+  @override
+  bool get notificationsEnabled;
 
   /// Create a copy of SettingsState
   /// with the given fields replaced by the non-null parameter values.

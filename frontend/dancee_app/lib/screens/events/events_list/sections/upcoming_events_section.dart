@@ -8,6 +8,7 @@ import '../../../../data/entities/event.dart';
 import '../../../../i18n/strings.g.dart';
 import '../../../../logic/cubits/favorites_cubit.dart';
 import '../../../../shared/utils/date_format.dart';
+import '../../../../shared/utils/location_format.dart';
 import '../components/featured_event_card.dart' show EventTagData;
 import '../components/upcoming_event_card.dart';
 
@@ -209,7 +210,7 @@ class UpcomingEventsSection extends StatelessWidget {
                   UpcomingEventCard(
                     imageUrl: event.imageUrl ?? '',
                     title: event.title,
-                    location: event.venue?.town ?? event.venue?.name ?? '',
+                    location: shortLocation(event.venue?.town ?? event.venue?.name ?? ''),
                     date: formatDate(event.startTime),
                     tags: parentDanceNames(
                             event.dances, allDanceStyles,

@@ -211,10 +211,13 @@ class FeaturedEventCardInfo extends StatelessWidget {
               const Spacer(),
               const FaIcon(FontAwesomeIcons.locationDot, size: 14, color: appPrimary),
               const SizedBox(width: AppSpacing.sm),
-              Text(
-                location,
-                style: const TextStyle(color: appMuted, fontSize: AppTypography.fontSizeMd),
-                overflow: TextOverflow.ellipsis,
+              Flexible(
+                child: Text(
+                  location,
+                  style: const TextStyle(color: appMuted, fontSize: AppTypography.fontSizeMd),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
               ),
             ],
           ),

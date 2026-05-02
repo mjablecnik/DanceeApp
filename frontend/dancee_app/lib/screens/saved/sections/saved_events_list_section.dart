@@ -12,6 +12,7 @@ import '../../../logic/cubits/event_cubit.dart';
 import '../../../logic/cubits/favorites_cubit.dart';
 import '../../../shared/utils/auth_translations.dart';
 import '../../../shared/utils/date_format.dart';
+import '../../../shared/utils/location_format.dart';
 import '../../courses/courses_list/components/course_list_card.dart';
 import '../../events/events_list/components/featured_event_card.dart' show EventTagData;
 import '../../events/events_list/components/upcoming_event_card.dart';
@@ -94,7 +95,7 @@ class FavoriteItemCard extends StatelessWidget {
       return UpcomingEventCard(
         imageUrl: event.imageUrl ?? '',
         title: event.title,
-        location: event.venue?.town ?? event.venue?.name ?? '',
+        location: shortLocation(event.venue?.town ?? event.venue?.name ?? ''),
         date: formatDate(event.startTime),
         tags: event.dances.map((d) => EventTagData(d, appPrimary)).toList(),
         isFavorited: event.isFavorited,

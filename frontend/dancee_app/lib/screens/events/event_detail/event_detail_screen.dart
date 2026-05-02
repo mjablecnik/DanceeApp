@@ -228,11 +228,6 @@ class EventDetailScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(height: AppSpacing.xxl),
                                 ActionButtonsSection(
-                                  onSave: () =>
-                                      context.read<FavoritesCubit>().toggleFavorite(
-                                            itemType: 'event',
-                                            itemId: event.id,
-                                          ),
                                   onShare: null,
                                   onMap: event.venue != null &&
                                           (event.venue!.latitude != 0 ||

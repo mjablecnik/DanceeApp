@@ -8,15 +8,8 @@ import '../../../../logic/cubits/settings_cubit.dart';
 import '../../../../logic/states/settings_state.dart';
 import '../components/profile_menu_item.dart';
 
-class SettingsSection extends StatefulWidget {
+class SettingsSection extends StatelessWidget {
   const SettingsSection({super.key});
-
-  @override
-  State<SettingsSection> createState() => _SettingsSectionState();
-}
-
-class _SettingsSectionState extends State<SettingsSection> {
-  bool _notificationsEnabled = true;
 
   Future<void> _showLanguageDialog(BuildContext context) async {
     final cubit = context.read<SettingsCubit>();
@@ -93,8 +86,9 @@ class _SettingsSectionState extends State<SettingsSection> {
                 trailing: Material(
                   color: Colors.transparent,
                   child: Switch(
-                    value: _notificationsEnabled,
-                    onChanged: (value) => setState(() => _notificationsEnabled = value),
+                    value: state.notificationsEnabled,
+                    onChanged: (value) =>
+                        context.read<SettingsCubit>().setNotificationsEnabled(value),
                     activeTrackColor: appPrimary.withValues(alpha: 0.5),
                     activeColor: appPrimary,
                   ),

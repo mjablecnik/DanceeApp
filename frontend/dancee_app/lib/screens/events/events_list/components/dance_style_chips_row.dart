@@ -12,7 +12,8 @@ class DanceStyleChipsRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<FilterCubit, FilterState>(
       builder: (context, filterState) {
-        final styles = filterState.parentDanceStyles;
+        final styles = List.of(filterState.parentDanceStyles)
+          ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
         if (styles.isEmpty) return const SizedBox.shrink();
 
         final selectedCodes = filterState.selectedDanceStyles;

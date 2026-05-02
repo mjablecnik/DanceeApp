@@ -32,7 +32,8 @@ class _FilterDanceScreenState extends State<FilterDanceScreen> {
   void initState() {
     super.initState();
     final filterCubit = context.read<FilterCubit>();
-    _styles = filterCubit.parentDanceStyles;
+    _styles = List.of(filterCubit.parentDanceStyles)
+      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
     final alreadySelected = filterCubit.state.selectedDanceStyles;
     _selected = {
       for (final s in _styles) s.code: alreadySelected.contains(s.code),

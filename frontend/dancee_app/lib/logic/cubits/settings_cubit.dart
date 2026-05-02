@@ -8,13 +8,18 @@ class SettingsCubit extends Cubit<SettingsState> {
   SettingsCubit() : super(const SettingsState(languageCode: 'en'));
 
   static const _localeKey = 'locale';
+  static const _notificationsKey = 'notifications_enabled';
 
-  /// Reads persisted language from SharedPreferences, sets slang locale, emits state.
+  /// Reads persisted settings from SharedPreferences, sets slang locale, emits state.
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     final code = prefs.getString(_localeKey) ?? 'en';
+    final notificationsEnabled = prefs.getBool(_notificationsKey) ?? true;
     _applyLocale(code);
-    emit(SettingsState(languageCode: code));
+    emit(SettingsState(
+      languageCode: code,
+      notificationsEnabled: notificationsEnabled,
+    ));
   }
 
   /// Persists [languageCode] to SharedPreferences, updates slang locale, emits new state.
@@ -22,7 +27,14 @@ class SettingsCubit extends Cubit<SettingsState> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_localeKey, languageCode);
     _applyLocale(languageCode);
-    emit(SettingsState(languageCode: languageCode));
+    emit(state.copyWith(languageCode: languageCode));
+  }
+
+  /// Persists notifications preference to SharedPreferences and emits new state.
+  Future<void> setNotificationsEnabled(bool enabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_notificationsKey, enabled);
+    emit(state.copyWith(notificationsEnabled: enabled));
   }
 
   String get currentLanguageCode => state.languageCode;
