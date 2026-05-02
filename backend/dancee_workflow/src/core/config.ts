@@ -24,9 +24,11 @@ export const config = {
   // When set, the scraper sends requests as a logged-in user, which unlocks
   // private events and reduces the chance of being rate-limited.
   fbCookies: process.env.FB_COOKIES ?? "",
-  // Delay in milliseconds between consecutive Facebook scrape requests.
-  // Prevents aggressive request patterns that could trigger account blocks.
-  scrapeDelayMs: parseInt(process.env.SCRAPE_DELAY_MS ?? "3000", 10),
+  // Minimum delay in milliseconds between consecutive Facebook scrape requests.
+  // Actual delay is randomized between min and max to avoid predictable patterns.
+  scrapeDelayMinMs: parseInt(process.env.SCRAPE_DELAY_MIN_MS ?? "4000", 10),
+  // Maximum delay in milliseconds between consecutive Facebook scrape requests.
+  scrapeDelayMaxMs: parseInt(process.env.SCRAPE_DELAY_MAX_MS ?? "10000", 10),
 };
 
 export function validateConfig(): void {

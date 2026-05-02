@@ -10,15 +10,27 @@ import { config } from "../core/config";
 let lastScrapeTime = 0;
 
 /**
+ * Returns a random delay between the configured min and max scrape delay.
+ * Randomizing the interval makes the request pattern less predictable,
+ * reducing the chance of Facebook flagging the account.
+ */
+function randomDelay(): number {
+  const { scrapeDelayMinMs, scrapeDelayMaxMs } = config;
+  return Math.floor(Math.random() * (scrapeDelayMaxMs - scrapeDelayMinMs + 1)) + scrapeDelayMinMs;
+}
+
+/**
  * Wait if needed so that consecutive scrape requests are spaced at least
- * `config.scrapeDelayMs` apart. This prevents aggressive request patterns
- * that could trigger Facebook account blocks.
+ * a random interval (between min and max delay) apart. This prevents
+ * aggressive and predictable request patterns that could trigger
+ * Facebook account blocks.
  */
 async function throttle(): Promise<void> {
   const now = Date.now();
   const elapsed = now - lastScrapeTime;
-  if (elapsed < config.scrapeDelayMs) {
-    await new Promise((resolve) => setTimeout(resolve, config.scrapeDelayMs - elapsed));
+  const delay = randomDelay();
+  if (elapsed < delay) {
+    await new Promise((resolve) => setTimeout(resolve, delay - elapsed));
   }
   lastScrapeTime = Date.now();
 }
