@@ -21,7 +21,7 @@ class AppCachedImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (imageUrl.isEmpty) {
-      return Container(
+      return errorChild ?? Container(
         width: width,
         height: height,
         color: appSurface,
