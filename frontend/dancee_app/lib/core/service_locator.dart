@@ -44,6 +44,7 @@ void setupServiceLocator() {
       baseUrl: AppConfig.directusBaseUrl,
       accessToken: AppConfig.directusAccessToken,
       directusTokenProvider: () => sl<DirectusAuthService>().getAccessToken(),
+      onTokenExpired: () => sl<AuthRepository>().ensureDirectusLinked(),
     ),
   );
 

@@ -18,9 +18,11 @@ class DirectusClient {
     required String baseUrl,
     required String accessToken,
     Future<String?> Function()? directusTokenProvider,
+    Future<void> Function()? onTokenExpired,
     Dio? dio,
   })  : _accessToken = accessToken,
         _directusTokenProvider = directusTokenProvider,
+        _onTokenExpired = onTokenExpired,
         _dio = dio ??
             Dio(
               BaseOptions(
@@ -47,12 +49,39 @@ class DirectusClient {
         options.headers['Authorization'] = 'Bearer ${token ?? _accessToken}';
         handler.next(options);
       },
+      onError: (error, handler) async {
+        // On 401, try to refresh the token and retry the request once.
+        if (error.response?.statusCode == 401 &&
+            _onTokenExpired != null &&
+            error.requestOptions.extra['_retried'] != true) {
+          try {
+            await _onTokenExpired();
+            // Get fresh token
+            String? newToken;
+            if (_directusTokenProvider != null) {
+              newToken = await _directusTokenProvider();
+            }
+            if (newToken != null) {
+              // Retry the original request with the new token
+              final opts = error.requestOptions;
+              opts.headers['Authorization'] = 'Bearer $newToken';
+              opts.extra['_retried'] = true;
+              final response = await _dio.fetch(opts);
+              return handler.resolve(response);
+            }
+          } catch (_) {
+            // Refresh failed — fall through to original error
+          }
+        }
+        handler.next(error);
+      },
     ));
   }
 
   final Dio _dio;
   final String _accessToken;
   final Future<String?> Function()? _directusTokenProvider;
+  final Future<void> Function()? _onTokenExpired;
 
   /// Performs a GET request and returns the unwrapped `data` field from the
   /// Directus response envelope.
