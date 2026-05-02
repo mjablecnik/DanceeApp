@@ -175,13 +175,44 @@ class _AppListeners extends StatefulWidget {
 
 class _AppListenersState extends State<_AppListeners> {
   StreamSubscription<String>? _favErrorSub;
+  bool _initialLoadDone = false;
 
   @override
   void initState() {
     super.initState();
-    // Trigger initial data load once cubits are in the tree
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initialLoad();
+      final authCubit = context.read<AuthCubit>();
+
+      // If user is already authenticated, wait for Directus tokens before
+      // loading data. On unauthenticated start, load immediately (public data
+      // uses the static fallback token).
+      final isAuthenticated = authCubit.state.maybeMap(
+        authenticated: (_) => true,
+        orElse: () => false,
+      );
+
+      if (isAuthenticated && !authCubit.directusLinkedNotifier.value) {
+        // Directus token exchange is in progress — wait for it.
+        void onLinked() {
+          if (!_initialLoadDone) {
+            _initialLoadDone = true;
+            _initialLoad();
+          }
+        }
+        authCubit.directusLinkedNotifier.addListener(onLinked);
+        // Safety net: if token exchange takes too long, load anyway with
+        // whatever token is available (static fallback).
+        Future.delayed(const Duration(seconds: 10), () {
+          if (!_initialLoadDone) {
+            _initialLoadDone = true;
+            _initialLoad();
+          }
+        });
+      } else {
+        _initialLoadDone = true;
+        _initialLoad();
+      }
+
       _favErrorSub = context.read<FavoritesCubit>().toggleErrors.listen(
         (message) {
           _scaffoldMessengerKey.currentState?.showSnackBar(
