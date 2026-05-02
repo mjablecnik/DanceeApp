@@ -26,4 +26,8 @@ class AppConfig {
   /// This is a public identifier (also present in google-services.json), not a secret.
   static const String googleWebClientId =
       '776014571343-4duso423nt0paq85rtja5hsg4m0tieoq.apps.googleusercontent.com';
+
+  /// Minimum time the app must spend in background before auto-refreshing
+  /// data on resume (events, courses, dance styles, favorites).
+  static const int staleDataThresholdMinutes = 60;
 }

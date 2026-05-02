@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'core/app_routes.dart';
+import 'core/config.dart';
 import 'core/router_guard.dart';
 import 'core/service_locator.dart';
 import 'core/theme.dart';
@@ -173,13 +174,19 @@ class _AppListeners extends StatefulWidget {
   State<_AppListeners> createState() => _AppListenersState();
 }
 
-class _AppListenersState extends State<_AppListeners> {
+class _AppListenersState extends State<_AppListeners> with WidgetsBindingObserver {
   StreamSubscription<String>? _favErrorSub;
   bool _initialLoadDone = false;
+  DateTime _lastLoadTime = DateTime.now();
+
+  /// Minimum time in background before auto-refreshing data on resume.
+  static final _staleThreshold =
+      Duration(minutes: AppConfig.staleDataThresholdMinutes);
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authCubit = context.read<AuthCubit>();
 
@@ -225,11 +232,23 @@ class _AppListenersState extends State<_AppListeners> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _favErrorSub?.cancel();
     super.dispose();
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      final elapsed = DateTime.now().difference(_lastLoadTime);
+      if (elapsed >= _staleThreshold && _initialLoadDone) {
+        _initialLoad();
+      }
+    }
+  }
+
   void _initialLoad() {
+    _lastLoadTime = DateTime.now();
     final languageCode = context.read<SettingsCubit>().currentLanguageCode;
     context.read<EventCubit>().loadEvents(languageCode);
     context.read<CourseCubit>().loadCourses(languageCode);
