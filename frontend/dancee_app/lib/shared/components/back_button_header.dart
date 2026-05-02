@@ -46,7 +46,9 @@ class BackButtonHeader extends StatelessWidget {
                       size: 16, color: appText),
                 ),
               ),
-            ),
+            )
+          else if (trailing != null)
+            const SizedBox(width: 40, height: 40),
           Expanded(
             child: Text(
               title,
