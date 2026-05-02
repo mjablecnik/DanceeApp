@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- UCrop dark theme colors matching Dancee app design system -->
+    <color name="ucrop_bg">#FF0F172A</color>
+    <color name="ucrop_surface">#FF1E293B</color>
+    <color name="ucrop_primary">#FF3B82F6</color>
+    <color name="ucrop_muted">#FF94A3B8</color>
+    <color name="ucrop_text">#FFF8FAFC</color>
+</resources>

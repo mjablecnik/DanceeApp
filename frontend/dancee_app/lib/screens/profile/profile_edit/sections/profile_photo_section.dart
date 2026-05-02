@@ -95,8 +95,14 @@ class _ProfilePhotoSectionState extends State<ProfilePhotoSection> {
       return;
     }
 
-    final permission = source == ImageSource.camera ? Permission.camera : Permission.photos;
-    final granted = await _ensurePermission(permission);
+    // On Android 13+, the system photo picker doesn't require explicit permission.
+    // image_picker handles gallery access internally, so we only check permission for camera.
+    if (source == ImageSource.gallery) {
+      await _pickAndCropImage(source);
+      return;
+    }
+
+    final granted = await _ensurePermission(Permission.camera);
     if (granted) {
       await _pickAndCropImage(source);
     }
@@ -207,9 +213,15 @@ class _ProfilePhotoSectionState extends State<ProfilePhotoSection> {
         aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
         uiSettings: [
           AndroidUiSettings(
-            toolbarColor: appPrimary,
+            toolbarTitle: t.profile.editProfile.avatar.sourceTitle,
+            toolbarColor: appSurface,
             backgroundColor: appBg,
-            toolbarWidgetColor: Colors.white,
+            toolbarWidgetColor: appText,
+            activeControlsWidgetColor: appPrimary,
+            cropFrameColor: appPrimary,
+            cropGridColor: appBorder,
+            dimmedLayerColor: appBg.withValues(alpha: 0.7),
+            statusBarColor: appBg,
             lockAspectRatio: true,
           ),
           IOSUiSettings(

@@ -15,4 +15,17 @@
     <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
         <item name="android:windowBackground">?android:colorBackground</item>
     </style>
+
+    <!-- Dark theme for UCrop image cropper activity -->
+    <style name="UCropDarkTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@color/ucrop_bg</item>
+        <item name="android:colorBackground">@color/ucrop_bg</item>
+        <item name="android:navigationBarColor">@color/ucrop_bg</item>
+        <item name="android:statusBarColor">@color/ucrop_bg</item>
+        <item name="colorPrimary">@color/ucrop_surface</item>
+        <item name="colorPrimaryDark">@color/ucrop_bg</item>
+        <item name="colorAccent">@color/ucrop_primary</item>
+        <item name="android:textColorPrimary">@color/ucrop_text</item>
+        <item name="android:textColorSecondary">@color/ucrop_muted</item>
+    </style>
 </resources>
