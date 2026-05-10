@@ -46,7 +46,7 @@ class AuthGatePage extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: appText,
-                  fontSize: AppTypography.fontSizeXxl,
+                  fontSize: AppTypography.fontSize4xl,
                   fontWeight: AppTypography.fontWeightBold,
                 ),
               ),
