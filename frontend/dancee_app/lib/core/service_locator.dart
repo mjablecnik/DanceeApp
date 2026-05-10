@@ -5,6 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 import 'clients.dart';
 import 'config.dart';
+import '../services/destination_service.dart';
 import '../services/directus_auth_service.dart';
 import '../services/firebase_auth_service.dart';
 import '../data/repositories/auth_repository.dart';
@@ -25,6 +26,7 @@ final GetIt sl = GetIt.instance;
 
 void setupServiceLocator() {
   // Services
+  sl.registerLazySingleton<DestinationService>(() => DestinationService());
   sl.registerLazySingleton<FirebaseAuthService>(
     () => FirebaseAuthService(
       firebaseAuth: FirebaseAuth.instance,
