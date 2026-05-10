@@ -3,15 +3,10 @@ import 'package:go_router/go_router.dart';
 
 import 'service_locator.dart';
 import '../logic/cubits/auth_cubit.dart';
-
-/// Protected routes that require authentication.
-const _protectedPrefixes = ['/events', '/courses', '/profile', '/saved'];
+import '../services/destination_service.dart';
 
 /// Auth-only screens that authenticated+verified users should be redirected away from.
 const _authOnlyScreens = ['/login', '/register', '/forgot-password'];
-
-bool _isProtectedRoute(String path) =>
-    _protectedPrefixes.any((prefix) => path.startsWith(prefix));
 
 /// GoRouter redirect callback. Reads [AuthCubit] state from the service locator
 /// and returns the appropriate redirect path, or null for no redirect.
@@ -21,10 +16,10 @@ String? routerGuard(BuildContext context, GoRouterState state) {
 
   return authState.map(
     unauthenticated: (_) {
-      if (_isProtectedRoute(location) ||
-          location == '/onboarding' ||
-          location == '/verify-email') {
-        return '/login';
+      // Anonymous users can access public routes and auth screens freely.
+      // Protected routes are handled in-page (AuthGatePage renders inside shell).
+      if (location == '/onboarding' || location == '/verify-email') {
+        return '/events';
       }
       return null;
     },
@@ -44,7 +39,8 @@ String? routerGuard(BuildContext context, GoRouterState state) {
       }
       // Email is verified — redirect away from auth screens
       if (_authOnlyScreens.contains(location) || location == '/verify-email') {
-        return '/events';
+        final destination = sl<DestinationService>().consumeDestination();
+        return destination ?? '/events';
       }
       return null;
     },
