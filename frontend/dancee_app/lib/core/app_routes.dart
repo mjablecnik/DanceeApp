@@ -2,8 +2,11 @@
 // Run `dart run build_runner build` to regenerate app_routes.g.dart.
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../logic/cubits/auth_cubit.dart';
+import '../logic/states/auth_state.dart';
 import '../screens/auth/email_verification/email_verification_screen.dart';
 import '../screens/auth/forgot_password/forgot_password_screen.dart';
 import '../screens/auth/login/login_screen.dart';
@@ -24,6 +27,7 @@ import '../screens/profile/profile_edit/profile_edit_screen.dart';
 import '../screens/saved/saved_events_screen.dart';
 import '../shared/elements/navigation/app_bottom_nav_bar.dart';
 import '../shared/elements/navigation/main_shell.dart';
+import '../shared/pages/auth_gate_page.dart';
 
 part 'app_routes.g.dart';
 
@@ -141,7 +145,14 @@ class ProfileRoute extends GoRouteData {
 
   @override
   Page<void> buildPage(BuildContext context, GoRouterState state) =>
-      const NoTransitionPage(child: ProfileScreen());
+      NoTransitionPage(
+        child: BlocBuilder<AuthCubit, AuthState>(
+          builder: (context, authState) => authState.maybeMap(
+            authenticated: (_) => const ProfileScreen(),
+            orElse: () => const AuthGatePage(intendedRoute: '/profile'),
+          ),
+        ),
+      );
 }
 
 @immutable
@@ -150,7 +161,14 @@ class SavedRoute extends GoRouteData {
 
   @override
   Page<void> buildPage(BuildContext context, GoRouterState state) =>
-      const NoTransitionPage(child: SavedEventsScreen());
+      NoTransitionPage(
+        child: BlocBuilder<AuthCubit, AuthState>(
+          builder: (context, authState) => authState.maybeMap(
+            authenticated: (_) => const SavedEventsScreen(),
+            orElse: () => const AuthGatePage(intendedRoute: '/saved'),
+          ),
+        ),
+      );
 }
 
 // ---------------------------------------------------------------------------
