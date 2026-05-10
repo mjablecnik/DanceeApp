@@ -414,6 +414,13 @@
     "emptyTitle": "No saved events",
     "emptySubtitle": "Events you save will appear here"
   },
+  "authGate": {
+    "title": "Sign in required",
+    "message": "Create an account or sign in to access your saved events and profile.",
+    "actionMessage": "You need to sign in to use this feature.",
+    "login": "Log in",
+    "register": "Create account"
+  },
   "contact": {
     "teamName": "Dancee Team",
     "description": "We'd love to read your feedback...",

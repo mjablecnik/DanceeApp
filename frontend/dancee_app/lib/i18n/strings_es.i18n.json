@@ -414,6 +414,13 @@
     "emptyTitle": "Sin eventos guardados",
     "emptySubtitle": "Los eventos que guardes aparecerán aquí"
   },
+  "authGate": {
+    "title": "Inicio de sesión requerido",
+    "message": "Crea una cuenta o inicia sesión para acceder a tus eventos guardados y perfil.",
+    "actionMessage": "Necesitas iniciar sesión para usar esta función.",
+    "login": "Iniciar sesión",
+    "register": "Crear cuenta"
+  },
   "contact": {
     "teamName": "Equipo Dancee",
     "description": "Nos encantaría leer tus comentarios...",

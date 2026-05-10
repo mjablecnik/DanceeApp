@@ -414,6 +414,13 @@
     "emptyTitle": "Žádné uložené akce",
     "emptySubtitle": "Akce, které si uložíš, se zobrazí zde"
   },
+  "authGate": {
+    "title": "Vyžaduje přihlášení",
+    "message": "Vytvořte si účet nebo se přihlaste pro přístup k uloženým akcím a profilu.",
+    "actionMessage": "Pro použití této funkce se musíte přihlásit.",
+    "login": "Přihlásit se",
+    "register": "Vytvořit účet"
+  },
   "contact": {
     "teamName": "Tým Dancee",
     "description": "Rádi si přečteme vaše zpětné vazby...",

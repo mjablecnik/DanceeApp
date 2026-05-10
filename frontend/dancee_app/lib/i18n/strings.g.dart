@@ -4,9 +4,9 @@
 /// To regenerate, run: `dart run slang`
 ///
 /// Locales: 3
-/// Strings: 1059 (353 per locale)
+/// Strings: 1074 (358 per locale)
 ///
-/// Built on 2026-05-02 at 08:13 UTC
+/// Built on 2026-05-10 at 16:06 UTC
 
 // coverage:ignore-file
 // ignore_for_file: type=lint
@@ -160,6 +160,7 @@ class Translations implements BaseTranslations<AppLocale, Translations> {
 	late final _StringsProfileEn profile = _StringsProfileEn._(_root);
 	late final _StringsPremiumEn premium = _StringsPremiumEn._(_root);
 	late final _StringsSavedEn saved = _StringsSavedEn._(_root);
+	late final _StringsAuthGateEn authGate = _StringsAuthGateEn._(_root);
 	late final _StringsContactEn contact = _StringsContactEn._(_root);
 }
 
@@ -358,6 +359,20 @@ class _StringsSavedEn {
 	String get subtitle => 'Your favorite events';
 	String get emptyTitle => 'No saved events';
 	String get emptySubtitle => 'Events you save will appear here';
+}
+
+// Path: authGate
+class _StringsAuthGateEn {
+	_StringsAuthGateEn._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get title => 'Sign in required';
+	String get message => 'Create an account or sign in to access your saved events and profile.';
+	String get actionMessage => 'You need to sign in to use this feature.';
+	String get login => 'Log in';
+	String get register => 'Create account';
 }
 
 // Path: contact
@@ -1019,6 +1034,7 @@ class _StringsCs implements Translations {
 	@override late final _StringsProfileCs profile = _StringsProfileCs._(_root);
 	@override late final _StringsPremiumCs premium = _StringsPremiumCs._(_root);
 	@override late final _StringsSavedCs saved = _StringsSavedCs._(_root);
+	@override late final _StringsAuthGateCs authGate = _StringsAuthGateCs._(_root);
 	@override late final _StringsContactCs contact = _StringsContactCs._(_root);
 }
 
@@ -1217,6 +1233,20 @@ class _StringsSavedCs implements _StringsSavedEn {
 	@override String get subtitle => 'Tvoje oblíbené akce';
 	@override String get emptyTitle => 'Žádné uložené akce';
 	@override String get emptySubtitle => 'Akce, které si uložíš, se zobrazí zde';
+}
+
+// Path: authGate
+class _StringsAuthGateCs implements _StringsAuthGateEn {
+	_StringsAuthGateCs._(this._root);
+
+	@override final _StringsCs _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Vyžaduje přihlášení';
+	@override String get message => 'Vytvořte si účet nebo se přihlaste pro přístup k uloženým akcím a profilu.';
+	@override String get actionMessage => 'Pro použití této funkce se musíte přihlásit.';
+	@override String get login => 'Přihlásit se';
+	@override String get register => 'Vytvořit účet';
 }
 
 // Path: contact
@@ -1878,6 +1908,7 @@ class _StringsEs implements Translations {
 	@override late final _StringsProfileEs profile = _StringsProfileEs._(_root);
 	@override late final _StringsPremiumEs premium = _StringsPremiumEs._(_root);
 	@override late final _StringsSavedEs saved = _StringsSavedEs._(_root);
+	@override late final _StringsAuthGateEs authGate = _StringsAuthGateEs._(_root);
 	@override late final _StringsContactEs contact = _StringsContactEs._(_root);
 }
 
@@ -2076,6 +2107,20 @@ class _StringsSavedEs implements _StringsSavedEn {
 	@override String get subtitle => 'Tus eventos favoritos';
 	@override String get emptyTitle => 'Sin eventos guardados';
 	@override String get emptySubtitle => 'Los eventos que guardes aparecerán aquí';
+}
+
+// Path: authGate
+class _StringsAuthGateEs implements _StringsAuthGateEn {
+	_StringsAuthGateEs._(this._root);
+
+	@override final _StringsEs _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Inicio de sesión requerido';
+	@override String get message => 'Crea una cuenta o inicia sesión para acceder a tus eventos guardados y perfil.';
+	@override String get actionMessage => 'Necesitas iniciar sesión para usar esta función.';
+	@override String get login => 'Iniciar sesión';
+	@override String get register => 'Crear cuenta';
 }
 
 // Path: contact
@@ -3033,6 +3078,11 @@ extension on Translations {
 			case 'saved.subtitle': return 'Your favorite events';
 			case 'saved.emptyTitle': return 'No saved events';
 			case 'saved.emptySubtitle': return 'Events you save will appear here';
+			case 'authGate.title': return 'Sign in required';
+			case 'authGate.message': return 'Create an account or sign in to access your saved events and profile.';
+			case 'authGate.actionMessage': return 'You need to sign in to use this feature.';
+			case 'authGate.login': return 'Log in';
+			case 'authGate.register': return 'Create account';
 			case 'contact.teamName': return 'Dancee Team';
 			case 'contact.description': return 'We\'d love to read your feedback...';
 			case 'contact.responseTime': return 'Response time';
@@ -3394,6 +3444,11 @@ extension on _StringsCs {
 			case 'saved.subtitle': return 'Tvoje oblíbené akce';
 			case 'saved.emptyTitle': return 'Žádné uložené akce';
 			case 'saved.emptySubtitle': return 'Akce, které si uložíš, se zobrazí zde';
+			case 'authGate.title': return 'Vyžaduje přihlášení';
+			case 'authGate.message': return 'Vytvořte si účet nebo se přihlaste pro přístup k uloženým akcím a profilu.';
+			case 'authGate.actionMessage': return 'Pro použití této funkce se musíte přihlásit.';
+			case 'authGate.login': return 'Přihlásit se';
+			case 'authGate.register': return 'Vytvořit účet';
 			case 'contact.teamName': return 'Tým Dancee';
 			case 'contact.description': return 'Rádi si přečteme vaše zpětné vazby...';
 			case 'contact.responseTime': return 'Doba odezvy';
@@ -3755,6 +3810,11 @@ extension on _StringsEs {
 			case 'saved.subtitle': return 'Tus eventos favoritos';
 			case 'saved.emptyTitle': return 'Sin eventos guardados';
 			case 'saved.emptySubtitle': return 'Los eventos que guardes aparecerán aquí';
+			case 'authGate.title': return 'Inicio de sesión requerido';
+			case 'authGate.message': return 'Crea una cuenta o inicia sesión para acceder a tus eventos guardados y perfil.';
+			case 'authGate.actionMessage': return 'Necesitas iniciar sesión para usar esta función.';
+			case 'authGate.login': return 'Iniciar sesión';
+			case 'authGate.register': return 'Crear cuenta';
 			case 'contact.teamName': return 'Equipo Dancee';
 			case 'contact.description': return 'Nos encantaría leer tus comentarios...';
 			case 'contact.responseTime': return 'Tiempo de respuesta';
