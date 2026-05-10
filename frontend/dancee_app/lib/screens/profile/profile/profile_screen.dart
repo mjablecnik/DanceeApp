@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/app_routes.dart';
 import '../../../core/colors.dart';
 import '../../../core/theme.dart';
@@ -177,12 +178,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               Column(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.only(
-                      top: AppSpacing.md,
-                      left: AppSpacing.xl,
-                      right: AppSpacing.xl,
-                      bottom: AppSpacing.lg,
+                  BackButtonHeader(
+                    title: t.nav.profile,
+                    onBack: context.canPop() ? () => context.pop() : null,
+                    trailing: GestureDetector(
+                      onTap: () => const ProfileEditRoute().push(context),
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: appSurface,
+                          borderRadius: BorderRadius.circular(AppRadius.round),
+                        ),
+                        child: const Center(
+                          child: FaIcon(FontAwesomeIcons.pen, size: 16, color: appText),
+                        ),
+                      ),
                     ),
                   ),
                   Expanded(

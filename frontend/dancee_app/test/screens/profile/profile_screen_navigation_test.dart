@@ -76,6 +76,9 @@ class _FakeAuthRepository extends Fake implements AuthRepository {
   void emitUser(User? user) => _controller.add(user);
 
   Future<void> dispose() => _controller.close();
+
+  @override
+  Future<void> ensureDirectusLinked() async {}
 }
 
 class _FakeFavoritesRepository extends Fake implements FavoritesRepository {}
@@ -93,6 +96,7 @@ const _kFakeProfile = UserProfile(
   email: 'test@example.com',
   danceTags: [],
   experienceLevel: 'beginner',
+  notificationPreferences: {},
 );
 
 class _StubProfileCubit extends ProfileCubit {

@@ -48,6 +48,7 @@ UserProfile _randomUserProfile() {
     avatarUrl: null, // avatarUrl does not survive toDirectus/fromDirectus round-trip
     danceTags: _randomDanceTags(),
     experienceLevel: _experienceLevels[_rng.nextInt(_experienceLevels.length)],
+    notificationPreferences: const {},
   );
 }
 
@@ -169,6 +170,7 @@ void _propertySerializationRoundTrip() {
           avatarUrl: null,
           danceTags: _randomDanceTags(),
           experienceLevel: _experienceLevels[_rng.nextInt(_experienceLevels.length)],
+          notificationPreferences: const {},
         );
 
         final map = profile.toDirectus();

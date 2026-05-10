@@ -108,6 +108,9 @@ class _FakeAuthRepository extends Fake implements AuthRepository {
   void emitNull() => _controller.add(null);
 
   Future<void> dispose() => _controller.close();
+
+  @override
+  Future<void> ensureDirectusLinked() async {}
 }
 
 class _FakeFavoritesRepository extends Fake implements FavoritesRepository {
@@ -128,6 +131,7 @@ const _kFakeProfile = UserProfile(
   email: 'test@example.com',
   danceTags: [],
   experienceLevel: 'beginner',
+  notificationPreferences: {},
 );
 
 class _StubProfileCubit extends ProfileCubit {
@@ -249,9 +253,15 @@ void main() {
       'tapping logout button shows confirmation dialog with cancel and logout actions',
       (tester) async {
         await _pumpProfileScreen(tester, router, fakeAuthRepo);
+        await tester.pumpAndSettle();
+
+        // Scroll the logout button into view before tapping (it's below the fold).
+        final logoutButton = find.text(t.profile.danger.logout).first;
+        await tester.ensureVisible(logoutButton);
+        await tester.pump();
 
         // Tap the logout row (find by danger logout text)
-        await tester.tap(find.text(t.profile.danger.logout).first);
+        await tester.tap(logoutButton);
         await tester.pumpAndSettle();
 
         // Dialog should appear with cancel and logout action buttons
@@ -277,9 +287,13 @@ void main() {
       'confirming logout dialog calls AuthCubit.signOut()',
       (tester) async {
         await _pumpProfileScreen(tester, router, fakeAuthRepo);
+        await tester.pumpAndSettle();
 
         // Open logout dialog
-        await tester.tap(find.text(t.profile.danger.logout).first);
+        final logoutButton = find.text(t.profile.danger.logout).first;
+        await tester.ensureVisible(logoutButton);
+        await tester.pump();
+        await tester.tap(logoutButton);
         await tester.pumpAndSettle();
 
         // Confirm logout — tap the logout button inside the dialog (the last one)
@@ -299,9 +313,13 @@ void main() {
       'cancelling logout dialog does NOT call AuthCubit.signOut()',
       (tester) async {
         await _pumpProfileScreen(tester, router, fakeAuthRepo);
+        await tester.pumpAndSettle();
 
         // Open logout dialog
-        await tester.tap(find.text(t.profile.danger.logout).first);
+        final logoutButton = find.text(t.profile.danger.logout).first;
+        await tester.ensureVisible(logoutButton);
+        await tester.pump();
+        await tester.tap(logoutButton);
         await tester.pumpAndSettle();
 
         // Cancel logout
@@ -322,9 +340,15 @@ void main() {
       'tapping delete account button shows confirmation dialog with cancel and delete actions',
       (tester) async {
         await _pumpProfileScreen(tester, router, fakeAuthRepo);
+        await tester.pumpAndSettle();
+
+        // Scroll the delete account button into view before tapping.
+        final deleteButton = find.text(t.profile.danger.deleteAccount);
+        await tester.ensureVisible(deleteButton);
+        await tester.pump();
 
         // Tap delete account row
-        await tester.tap(find.text(t.profile.danger.deleteAccount));
+        await tester.tap(deleteButton);
         await tester.pumpAndSettle();
 
         expect(
@@ -354,8 +378,12 @@ void main() {
       'cancelling delete account dialog does NOT call AuthCubit.deleteAccount()',
       (tester) async {
         await _pumpProfileScreen(tester, router, fakeAuthRepo);
+        await tester.pumpAndSettle();
 
-        await tester.tap(find.text(t.profile.danger.deleteAccount));
+        final deleteButton = find.text(t.profile.danger.deleteAccount);
+        await tester.ensureVisible(deleteButton);
+        await tester.pump();
+        await tester.tap(deleteButton);
         await tester.pumpAndSettle();
 
         await tester.tap(find.text(t.common.cancel));

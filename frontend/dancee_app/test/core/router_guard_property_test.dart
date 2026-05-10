@@ -1,8 +1,7 @@
-// Feature: firebase-auth
-// Task 3.5: Property test for router guard
-// Property 8: Router guard redirect correctness — for any route path ×
-// AuthState combination, routerGuard returns the correct redirect.
-// Validates: Requirements 10.1, 10.2, 10.3
+// Feature: anonymous-browsing
+// Property 1: Router guard redirect correctness for anonymous users
+// Property 2: Router guard redirect correctness for authenticated users
+// Validates: Requirements 1.1, 1.2, 2.8, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6
 
 import 'dart:async';
 
@@ -18,6 +17,7 @@ import 'package:dancee_app/data/repositories/auth_repository.dart';
 import 'package:dancee_app/data/repositories/favorites_repository.dart';
 import 'package:dancee_app/logic/cubits/auth_cubit.dart';
 import 'package:dancee_app/logic/states/auth_state.dart';
+import 'package:dancee_app/services/destination_service.dart';
 
 // ---------------------------------------------------------------------------
 // Fakes / Helpers
@@ -52,9 +52,6 @@ class _NoOpFavoritesRepository extends Fake implements FavoritesRepository {
 }
 
 /// [AuthCubit] subclass that starts with a predetermined [AuthState].
-///
-/// The state is emitted in the constructor body (after super), so it takes
-/// precedence over the initial `unauthenticated` state set by [AuthCubit].
 class _FixedStateAuthCubit extends AuthCubit {
   _FixedStateAuthCubit(AuthState fixedState)
       : super(
@@ -87,18 +84,16 @@ AuthCubit _registerState(AuthState state) {
 // Test data
 // ---------------------------------------------------------------------------
 
-const _protectedRoutes = [
-  '/events',
-  '/events/123',
-  '/courses',
-  '/courses/42',
-  '/profile',
-  '/saved',
-];
+/// Public routes — anonymous users can browse these freely.
+const _publicRoutes = ['/events', '/events/123', '/courses', '/courses/42'];
+
+/// Protected routes — anonymous users see AuthGatePage in-place (no redirect
+/// from the router guard; the page builder handles this).
+const _protectedRoutes = ['/profile', '/saved'];
 
 const _authOnlyRoutes = ['/login', '/register', '/forgot-password'];
 
-const _publicRoutes = ['/', '/about'];
+const _generalRoutes = ['/', '/about'];
 
 const _authenticatedState = AuthState.authenticated(
   uid: 'uid-1',
@@ -117,17 +112,24 @@ const _unverifiedState = AuthState.authenticated(
 );
 
 // ---------------------------------------------------------------------------
-// Property 8: Router guard redirect correctness
+// Property 1 & 2: Router guard redirect correctness
 // ---------------------------------------------------------------------------
 
 void _propertyRouterGuardCorrectness() {
-  // Requirements: 10.1, 10.2, 10.3
-
   late AuthCubit cubit;
+
+  setUp(() {
+    if (!sl.isRegistered<DestinationService>()) {
+      sl.registerLazySingleton<DestinationService>(() => DestinationService());
+    }
+  });
 
   tearDown(() async {
     await cubit.close();
     if (sl.isRegistered<AuthCubit>()) sl.unregister<AuthCubit>();
+    if (sl.isRegistered<DestinationService>()) {
+      sl.unregister<DestinationService>();
+    }
   });
 
   // ── Unauthenticated ──────────────────────────────────────────────────────
@@ -138,51 +140,64 @@ void _propertyRouterGuardCorrectness() {
     });
 
     test(
-      'P8a: unauthenticated + protected route → redirect to /login',
+      'P1a: unauthenticated + public routes → no redirect (anonymous browsing)',
       () {
-        for (final route in _protectedRoutes) {
+        for (final route in _publicRoutes) {
           expect(
             _guard(route),
-            equals('/login'),
-            reason: 'Expected /login redirect for protected route "$route"',
+            isNull,
+            reason: 'Expected no redirect for public route "$route"',
           );
         }
       },
     );
 
     test(
-      'P8b: unauthenticated + /onboarding → redirect to /login',
-      () => expect(_guard('/onboarding'), equals('/login')),
+      'P1b: unauthenticated + protected routes → no redirect (AuthGatePage shown in-page)',
+      () {
+        for (final route in _protectedRoutes) {
+          expect(
+            _guard(route),
+            isNull,
+            reason:
+                'Expected no redirect for protected route "$route" — AuthGatePage handles this in-page',
+          );
+        }
+      },
     );
 
     test(
-      'P8c: unauthenticated + /verify-email → redirect to /login',
-      () => expect(_guard('/verify-email'), equals('/login')),
+      'P1c: unauthenticated + /onboarding → redirect to /events',
+      () => expect(_guard('/onboarding'), equals('/events')),
     );
 
     test(
-      'P8d: unauthenticated + auth-only screens → no redirect (null)',
+      'P1d: unauthenticated + /verify-email → redirect to /events',
+      () => expect(_guard('/verify-email'), equals('/events')),
+    );
+
+    test(
+      'P1e: unauthenticated + auth-only screens → no redirect (null)',
       () {
         for (final route in _authOnlyRoutes) {
           expect(
             _guard(route),
             isNull,
             reason:
-                'Expected no redirect for auth-only route "$route" when unauthenticated',
+                'Expected no redirect for auth screen "$route" when unauthenticated',
           );
         }
       },
     );
 
     test(
-      'P8e: unauthenticated + public routes → no redirect (null)',
+      'P1f: unauthenticated + general routes → no redirect (null)',
       () {
-        for (final route in _publicRoutes) {
+        for (final route in _generalRoutes) {
           expect(
             _guard(route),
             isNull,
-            reason:
-                'Expected no redirect for public route "$route" when unauthenticated',
+            reason: 'Expected no redirect for route "$route"',
           );
         }
       },
@@ -200,9 +215,10 @@ void _propertyRouterGuardCorrectness() {
       'P8f: loading + any route → no redirect (null)',
       () {
         final allRoutes = [
+          ..._publicRoutes,
           ..._protectedRoutes,
           ..._authOnlyRoutes,
-          ..._publicRoutes,
+          ..._generalRoutes,
           '/onboarding',
           '/verify-email',
         ];
@@ -225,7 +241,7 @@ void _propertyRouterGuardCorrectness() {
     });
 
     test(
-      'P8g: authenticated+verified + auth-only screens → redirect to /events',
+      'P2a: authenticated+verified + auth-only screens → redirect to /events',
       () {
         for (final route in _authOnlyRoutes) {
           expect(
@@ -239,12 +255,26 @@ void _propertyRouterGuardCorrectness() {
     );
 
     test(
-      'P8h: authenticated+verified + /verify-email → redirect to /events',
+      'P2b: authenticated+verified + /verify-email → redirect to /events',
       () => expect(_guard('/verify-email'), equals('/events')),
     );
 
     test(
-      'P8i: authenticated+verified + protected routes → no redirect (null)',
+      'P2c: authenticated+verified + public routes → no redirect (null)',
+      () {
+        for (final route in _publicRoutes) {
+          expect(
+            _guard(route),
+            isNull,
+            reason:
+                'Expected no redirect for public route "$route" when verified',
+          );
+        }
+      },
+    );
+
+    test(
+      'P2d: authenticated+verified + protected routes → no redirect (null)',
       () {
         for (final route in _protectedRoutes) {
           expect(
@@ -258,7 +288,7 @@ void _propertyRouterGuardCorrectness() {
     );
 
     test(
-      'P8j: authenticated+verified + /onboarding → no redirect (null)',
+      'P2e: authenticated+verified + /onboarding → no redirect (null)',
       () => expect(_guard('/onboarding'), isNull),
     );
   });
@@ -276,7 +306,21 @@ void _propertyRouterGuardCorrectness() {
     );
 
     test(
-      'P8l: authenticated+unverified + protected routes → redirect to /verify-email',
+      'P8l: authenticated+unverified + public routes → redirect to /verify-email',
+      () {
+        for (final route in _publicRoutes) {
+          expect(
+            _guard(route),
+            equals('/verify-email'),
+            reason:
+                'Expected /verify-email redirect for "$route" when unverified',
+          );
+        }
+      },
+    );
+
+    test(
+      'P8l2: authenticated+unverified + protected routes → redirect to /verify-email',
       () {
         for (final route in _protectedRoutes) {
           expect(
@@ -304,9 +348,6 @@ void _propertyRouterGuardCorrectness() {
     );
 
     test(
-      // Task 9 fix: /onboarding is allowed for authenticated+unverified users.
-      // Social sign-in users (Google/Apple) skip email verification and go
-      // straight to onboarding, so the guard must let them through.
       'P8n: authenticated+unverified + /onboarding → allowed (no redirect)',
       () => expect(_guard('/onboarding'), isNull),
     );
@@ -323,9 +364,10 @@ void _propertyRouterGuardCorrectness() {
       'P8o: error + any route → no redirect (null)',
       () {
         final allRoutes = [
+          ..._publicRoutes,
           ..._protectedRoutes,
           ..._authOnlyRoutes,
-          ..._publicRoutes,
+          ..._generalRoutes,
           '/onboarding',
           '/verify-email',
         ];
@@ -346,7 +388,9 @@ void _propertyRouterGuardCorrectness() {
     test(
       'P8p: redirect target is always one of the known destinations or null',
       () {
-        const validTargets = {'/login', '/verify-email', '/events', null};
+        // After the anonymous-browsing rewrite, /login is no longer a redirect
+        // target. Valid targets are /events, /verify-email, or null.
+        const validTargets = {'/verify-email', '/events', null};
         final cases = <(AuthState, String)>[
           (const AuthState.unauthenticated(), '/events'),
           (const AuthState.unauthenticated(), '/login'),
@@ -394,7 +438,7 @@ void _propertyRouterGuardCorrectness() {
 void main() {
   group('RouterGuard — property tests', () {
     group(
-      'Property 8: Router guard redirect correctness',
+      'Property 1 & 2: Router guard redirect correctness',
       _propertyRouterGuardCorrectness,
     );
   });

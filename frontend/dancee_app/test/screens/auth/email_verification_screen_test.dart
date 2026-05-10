@@ -150,6 +150,9 @@ class _FakeAuthRepository extends Fake implements AuthRepository {
   Future<void> deleteAccount() async {
     throw UnimplementedError();
   }
+
+  @override
+  Future<void> ensureDirectusLinked() async {}
 }
 
 // ---------------------------------------------------------------------------
@@ -234,6 +237,9 @@ void _resendButtonTests() {
     await tester.pump(); // process state change
     await tester.pump(const Duration(milliseconds: 100)); // settle animation
 
+    // The screen auto-sends a verification email on init; capture the baseline.
+    final baselineCount = repo.sendEmailVerificationCount;
+
     // Find and tap the resend button
     final resendFinder = find.text('Resend verification email');
     expect(resendFinder, findsOneWidget);
@@ -243,7 +249,7 @@ void _resendButtonTests() {
 
     expect(
       repo.sendEmailVerificationCount,
-      equals(1),
+      equals(baselineCount + 1),
       reason: 'Tapping resend should call sendEmailVerification once',
     );
   });
@@ -284,6 +290,9 @@ void _resendButtonTests() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
+    // The screen auto-sends a verification email on init; capture the baseline.
+    final baselineCount = repo.sendEmailVerificationCount;
+
     final resendFinder = find.text('Resend verification email');
 
     await tester.tap(resendFinder);
@@ -293,7 +302,7 @@ void _resendButtonTests() {
     await tester.tap(resendFinder);
     await tester.pump();
 
-    expect(repo.sendEmailVerificationCount, equals(2),
+    expect(repo.sendEmailVerificationCount, equals(baselineCount + 2),
         reason: 'Each tap should call sendEmailVerification');
   });
 }

@@ -37,6 +37,12 @@ dependencies:
   image_cropper: ^8.0.0
   permission_handler: ^11.3.0
 
+dependency_overrides:
+  # image_cropper_platform_interface 7.x uses Color.toARGB32() which requires
+  # Flutter 3.28+. The current environment has Flutter 3.27.4, so we pin to
+  # the last compatible version.
+  image_cropper_platform_interface: ^6.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

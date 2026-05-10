@@ -32,6 +32,9 @@ class _FakeAuthRepository extends Fake implements AuthRepository {
 
   @override
   User? get currentUser => null;
+
+  @override
+  Future<void> ensureDirectusLinked() async {}
 }
 
 /// [AuthCubit] subclass that always reports a fixed authenticated UID.

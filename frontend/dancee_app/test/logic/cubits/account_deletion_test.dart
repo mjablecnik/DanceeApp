@@ -112,6 +112,9 @@ class _TrackedAuthRepository extends Fake implements AuthRepository {
   Future<void> signOut() async {
     callOrder.add('signOut');
   }
+
+  @override
+  Future<void> ensureDirectusLinked() async {}
 }
 
 // ---------------------------------------------------------------------------

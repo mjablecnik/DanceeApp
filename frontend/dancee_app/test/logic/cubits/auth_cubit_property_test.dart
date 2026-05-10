@@ -147,6 +147,9 @@ class _FakeAuthRepository extends Fake implements AuthRepository {
   Future<void> deleteAccount() async {
     if (throwOnDeleteAccount) throw errorMessage;
   }
+
+  @override
+  Future<void> ensureDirectusLinked() async {}
 }
 
 // ---------------------------------------------------------------------------

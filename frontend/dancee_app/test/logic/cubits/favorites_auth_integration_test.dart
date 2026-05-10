@@ -79,6 +79,9 @@ class _FakeAuthRepository extends Fake implements AuthRepository {
   Future<UserCredential> signInWithEmail(String email, String password) async {
     throw UnimplementedError();
   }
+
+  @override
+  Future<void> ensureDirectusLinked() async {}
 }
 
 class _FakeFavoritesRepositoryForAuth extends Fake implements FavoritesRepository {

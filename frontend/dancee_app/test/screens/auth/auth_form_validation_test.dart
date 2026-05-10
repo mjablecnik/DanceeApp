@@ -138,6 +138,9 @@ class _TrackingAuthRepository extends Fake implements AuthRepository {
 
   @override
   Future<void> deleteAccount() async {}
+
+  @override
+  Future<void> ensureDirectusLinked() async {}
 }
 
 // ---------------------------------------------------------------------------

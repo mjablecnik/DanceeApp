@@ -92,14 +92,15 @@ void main() {
         // The dance tag should still appear.
         expect(find.byType(DanceTag), findsOneWidget);
 
-        // AppCachedImage handles empty URL by showing a fallback icon instead
-        // of a network image — verify the image_not_supported icon is present.
+        // ProfileCardSection passes a custom errorChild (initials) to
+        // AppCachedImage, so when avatarUrl is empty the initials are shown
+        // rather than the generic image_not_supported icon.
         expect(
-          find.byIcon(Icons.image_not_supported),
+          find.text('NU'),
           findsOneWidget,
           reason:
-              'Empty avatarUrl should render the image_not_supported placeholder '
-              'icon from AppCachedImage',
+              'Empty avatarUrl should render initials ("NU") from the custom '
+              'errorChild in ProfileCardSection',
         );
       },
     );
@@ -120,7 +121,8 @@ void main() {
         expect(find.text('Minimal User'), findsOneWidget);
         expect(find.text('minimal@example.com'), findsOneWidget);
         expect(find.byType(DanceTag), findsNothing);
-        expect(find.byIcon(Icons.image_not_supported), findsOneWidget);
+        // ProfileCardSection uses initials as errorChild when avatarUrl is empty.
+        expect(find.text('MU'), findsOneWidget);
       },
     );
   });
