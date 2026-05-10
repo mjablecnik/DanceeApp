@@ -163,30 +163,31 @@ class UpcomingEventCard extends StatelessWidget {
                 ],
               ),
               // Heart button — absolute top right
-              Positioned(
-                top: 0,
-                right: 0,
-                child: GestureDetector(
-                  onTap: onFavoriteTap,
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(AppRadius.xl),
-                    ),
-                    child: Center(
-                      child: FaIcon(
-                        isFavorited
-                            ? FontAwesomeIcons.solidHeart
-                            : FontAwesomeIcons.heart,
-                        size: 14,
-                        color: isFavorited ? Colors.red : appMuted,
+              if (onFavoriteTap != null)
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: GestureDetector(
+                    onTap: onFavoriteTap,
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(AppRadius.xl),
+                      ),
+                      child: Center(
+                        child: FaIcon(
+                          isFavorited
+                              ? FontAwesomeIcons.solidHeart
+                              : FontAwesomeIcons.heart,
+                          size: 14,
+                          color: isFavorited ? Colors.red : appMuted,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
             ],
           ),
         ),

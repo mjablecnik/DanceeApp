@@ -119,28 +119,29 @@ class FeaturedEventCardImage extends StatelessWidget {
             ),
           ),
         ),
-        Positioned(
-          top: AppSpacing.md,
-          right: AppSpacing.md,
-          child: GestureDetector(
-            onTap: onFavoriteTap,
-            child: Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.4),
-                borderRadius: BorderRadius.circular(AppRadius.xl),
-              ),
-              child: Center(
-                child: FaIcon(
-                  isFavorited ? FontAwesomeIcons.solidHeart : FontAwesomeIcons.heart,
-                  size: 14,
-                  color: isFavorited ? Colors.red : Colors.white,
+        if (onFavoriteTap != null)
+          Positioned(
+            top: AppSpacing.md,
+            right: AppSpacing.md,
+            child: GestureDetector(
+              onTap: onFavoriteTap,
+              child: Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(AppRadius.xl),
+                ),
+                child: Center(
+                  child: FaIcon(
+                    isFavorited ? FontAwesomeIcons.solidHeart : FontAwesomeIcons.heart,
+                    size: 14,
+                    color: isFavorited ? Colors.red : Colors.white,
+                  ),
                 ),
               ),
             ),
           ),
-        ),
         Positioned(
           top: AppSpacing.md,
           left: AppSpacing.md,

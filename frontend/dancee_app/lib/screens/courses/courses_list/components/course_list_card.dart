@@ -223,17 +223,19 @@ class CourseCardBottomRow extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(width: AppSpacing.md),
-            GestureDetector(
-              onTap: onFavoriteTap,
-              child: FaIcon(
-                isFavorited
-                    ? FontAwesomeIcons.solidHeart
-                    : FontAwesomeIcons.heart,
-                size: 16,
-                color: isFavorited ? Colors.red : appMuted,
+            if (onFavoriteTap != null) ...[
+              const SizedBox(width: AppSpacing.md),
+              GestureDetector(
+                onTap: onFavoriteTap,
+                child: FaIcon(
+                  isFavorited
+                      ? FontAwesomeIcons.solidHeart
+                      : FontAwesomeIcons.heart,
+                  size: 16,
+                  color: isFavorited ? Colors.red : appMuted,
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ],

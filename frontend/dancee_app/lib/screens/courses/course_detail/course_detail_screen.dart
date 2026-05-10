@@ -6,6 +6,7 @@ import '../../../core/colors.dart';
 import '../../../core/theme.dart';
 import '../../../data/entities/course.dart';
 import '../../../i18n/strings.g.dart';
+import '../../../logic/cubits/auth_cubit.dart';
 import '../../../logic/cubits/course_cubit.dart';
 import '../../../logic/cubits/favorites_cubit.dart';
 import '../../../logic/states/course_state.dart';
@@ -178,6 +179,13 @@ class CourseDetailScreen extends StatelessWidget {
                     final isFavorited = context
                         .read<FavoritesCubit>()
                         .isFavorited('course', course.id);
+                    final isAuthenticated = context
+                        .read<AuthCubit>()
+                        .state
+                        .maybeMap(
+                          authenticated: (_) => true,
+                          orElse: () => false,
+                        );
 
                     final spotsAvailable = course.maxParticipants != null
                         ? '${(course.maxParticipants! - (course.currentParticipants ?? 0))}'
@@ -195,15 +203,17 @@ class CourseDetailScreen extends StatelessWidget {
                             topLeft: course.level != null
                                 ? HeroLabelBadge(label: translateLevel(course.level!))
                                 : null,
-                            topRight: HeroFavoriteButton(
-                              isFavorite: isFavorited,
-                              onTap: () => context
-                                  .read<FavoritesCubit>()
-                                  .toggleFavorite(
-                                    itemType: 'course',
-                                    itemId: course.id,
-                                  ),
-                            ),
+                            topRight: isAuthenticated
+                                ? HeroFavoriteButton(
+                                    isFavorite: isFavorited,
+                                    onTap: () => context
+                                        .read<FavoritesCubit>()
+                                        .toggleFavorite(
+                                          itemType: 'course',
+                                          itemId: course.id,
+                                        ),
+                                  )
+                                : null,
                           ),
                           Padding(
                             padding: const EdgeInsets.symmetric(

@@ -6,6 +6,7 @@ import '../../../core/colors.dart';
 import '../../../core/theme.dart';
 import '../../../data/entities/course.dart';
 import '../../../i18n/strings.g.dart';
+import '../../../logic/cubits/auth_cubit.dart';
 import '../../../logic/cubits/course_cubit.dart';
 import '../../../logic/cubits/favorites_cubit.dart';
 import '../../../logic/cubits/filter_cubit.dart';
@@ -214,43 +215,52 @@ class _AllCoursesSection extends StatelessWidget {
             ),
           )
         else
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-            child: Column(
-              children: courses.asMap().entries.map((entry) {
-                final index = entry.key;
-                final course = entry.value;
-                return Column(
-                  children: [
-                    if (index > 0) const SizedBox(height: AppSpacing.md),
-                    CourseListCard(
-                      imageUrl: course.imageUrl ?? '',
-                      title: course.title,
-                      instructor: course.instructorName ?? '',
-                      dateRange: _courseDisplayDate(course),
-                      time: _courseDisplayTime(course),
-                      tags: parentDanceNames(
-                              course.dances,
-                              context.read<FilterCubit>().allDanceStyles,
-                              activeFilterCodes: context.read<FilterCubit>().state.selectedDanceStyles)
-                          .map((tag) => CourseTag(
-                              tag.name, tag.isFilterMatch ? appSuccess : appPrimary))
-                          .toList(),
-                      price: course.price ?? '',
-                      isFavorited: course.isFavorited,
-                      onTap: () =>
-                          CourseDetailRoute(id: course.id).push(context),
-                      onFavoriteTap: () =>
-                          context.read<FavoritesCubit>().toggleFavorite(
-                                itemType: 'course',
-                                itemId: course.id,
-                              ),
-                    ),
-                  ],
-                );
-              }).toList(),
-            ),
+          Builder(
+            builder: (context) {
+              final isAuthenticated = context.read<AuthCubit>().state.maybeMap(
+                authenticated: (_) => true,
+                orElse: () => false,
+              );
+              return Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+                child: Column(
+                  children: courses.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final course = entry.value;
+                    return Column(
+                      children: [
+                        if (index > 0) const SizedBox(height: AppSpacing.md),
+                        CourseListCard(
+                          imageUrl: course.imageUrl ?? '',
+                          title: course.title,
+                          instructor: course.instructorName ?? '',
+                          dateRange: _courseDisplayDate(course),
+                          time: _courseDisplayTime(course),
+                          tags: parentDanceNames(
+                                  course.dances,
+                                  context.read<FilterCubit>().allDanceStyles,
+                                  activeFilterCodes: context.read<FilterCubit>().state.selectedDanceStyles)
+                              .map((tag) => CourseTag(
+                                  tag.name, tag.isFilterMatch ? appSuccess : appPrimary))
+                              .toList(),
+                          price: course.price ?? '',
+                          isFavorited: course.isFavorited,
+                          onTap: () =>
+                              CourseDetailRoute(id: course.id).push(context),
+                          onFavoriteTap: isAuthenticated
+                              ? () => context.read<FavoritesCubit>().toggleFavorite(
+                                    itemType: 'course',
+                                    itemId: course.id,
+                                  )
+                              : null,
+                        ),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              );
+            },
           ),
       ],
     );

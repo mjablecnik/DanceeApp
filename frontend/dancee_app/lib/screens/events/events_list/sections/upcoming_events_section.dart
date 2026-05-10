@@ -6,6 +6,7 @@ import '../../../../core/theme.dart';
 import '../../../../data/entities/dance_style.dart';
 import '../../../../data/entities/event.dart';
 import '../../../../i18n/strings.g.dart';
+import '../../../../logic/cubits/auth_cubit.dart';
 import '../../../../logic/cubits/favorites_cubit.dart';
 import '../../../../shared/utils/date_format.dart';
 import '../../../../shared/utils/location_format.dart';
@@ -198,37 +199,47 @@ class UpcomingEventsSection extends StatelessWidget {
             ),
           )
         else
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-          child: Column(
-            children: events.asMap().entries.map((entry) {
-              final index = entry.key;
-              final event = entry.value;
-              return Column(
-                children: [
-                  if (index > 0) const SizedBox(height: AppSpacing.lg),
-                  UpcomingEventCard(
-                    imageUrl: event.imageUrl ?? '',
-                    title: event.title,
-                    location: shortLocation(event.venue?.town ?? event.venue?.name ?? ''),
-                    date: formatDate(event.startTime),
-                    tags: parentDanceNames(
-                            event.dances, allDanceStyles,
-                            activeFilterCodes: activeFilterCodes)
-                        .map((tag) => EventTagData(
-                            tag.name, tag.isFilterMatch ? appSuccess : appPrimary))
-                        .toList(),
-                    isFavorited: event.isFavorited,
-                    onTap: () => onEventTap?.call(event.id),
-                    onFavoriteTap: () => context.read<FavoritesCubit>().toggleFavorite(
-                          itemType: 'event',
-                          itemId: event.id,
-                        ),
-                  ),
-                ],
-              );
-            }).toList(),
-          ),
+        Builder(
+          builder: (context) {
+            final isAuthenticated = context.read<AuthCubit>().state.maybeMap(
+              authenticated: (_) => true,
+              orElse: () => false,
+            );
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+              child: Column(
+                children: events.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final event = entry.value;
+                  return Column(
+                    children: [
+                      if (index > 0) const SizedBox(height: AppSpacing.lg),
+                      UpcomingEventCard(
+                        imageUrl: event.imageUrl ?? '',
+                        title: event.title,
+                        location: shortLocation(event.venue?.town ?? event.venue?.name ?? ''),
+                        date: formatDate(event.startTime),
+                        tags: parentDanceNames(
+                                event.dances, allDanceStyles,
+                                activeFilterCodes: activeFilterCodes)
+                            .map((tag) => EventTagData(
+                                tag.name, tag.isFilterMatch ? appSuccess : appPrimary))
+                            .toList(),
+                        isFavorited: event.isFavorited,
+                        onTap: () => onEventTap?.call(event.id),
+                        onFavoriteTap: isAuthenticated
+                            ? () => context.read<FavoritesCubit>().toggleFavorite(
+                                  itemType: 'event',
+                                  itemId: event.id,
+                                )
+                            : null,
+                      ),
+                    ],
+                  );
+                }).toList(),
+              ),
+            );
+          },
         ),
       ],
     );

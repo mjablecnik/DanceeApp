@@ -8,6 +8,7 @@ import '../../../data/entities/event.dart';
 import '../../../data/entities/event_info.dart';
 import '../../../data/entities/event_part.dart';
 import '../../../i18n/strings.g.dart';
+import '../../../logic/cubits/auth_cubit.dart';
 import '../../../logic/cubits/event_cubit.dart';
 import '../../../logic/cubits/favorites_cubit.dart';
 import '../../../logic/states/event_state.dart';
@@ -187,6 +188,13 @@ class EventDetailScreen extends StatelessWidget {
                     final isFavorited = context
                         .read<FavoritesCubit>()
                         .isFavorited('event', event.id);
+                    final isAuthenticated = context
+                        .read<AuthCubit>()
+                        .state
+                        .maybeMap(
+                          authenticated: (_) => true,
+                          orElse: () => false,
+                        );
 
                     return SingleChildScrollView(
                       padding: const EdgeInsets.only(bottom: 100),
@@ -197,14 +205,17 @@ class EventDetailScreen extends StatelessWidget {
                             topLeft: priceRange.isNotEmpty
                                 ? HeroPriceBadge(price: priceRange)
                                 : null,
-                            topRight: HeroFavoriteButton(
-                              isFavorite: isFavorited,
-                              onTap: () =>
-                                  context.read<FavoritesCubit>().toggleFavorite(
-                                        itemType: 'event',
-                                        itemId: event.id,
-                                      ),
-                            ),
+                            topRight: isAuthenticated
+                                ? HeroFavoriteButton(
+                                    isFavorite: isFavorited,
+                                    onTap: () => context
+                                        .read<FavoritesCubit>()
+                                        .toggleFavorite(
+                                          itemType: 'event',
+                                          itemId: event.id,
+                                        ),
+                                  )
+                                : null,
                           ),
                           Padding(
                             padding: const EdgeInsets.symmetric(
