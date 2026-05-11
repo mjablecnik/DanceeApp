@@ -113,7 +113,7 @@ class _FirebaseErrorApp extends StatelessWidget {
 
 GoRouter _buildRouter(_GoRouterRefreshNotifier authRefreshNotifier) {
   return GoRouter(
-    initialLocation: '/login',
+    initialLocation: '/events',
     refreshListenable: authRefreshNotifier,
     redirect: routerGuard,
     routes: $appRoutes,
