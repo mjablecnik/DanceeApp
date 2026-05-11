@@ -54,7 +54,9 @@
     "events": "Eventos",
     "courses": "Cursos",
     "saved": "Guardados",
-    "profile": "Perfil"
+    "profile": "Perfil",
+    "home": "Inicio",
+    "search": "Buscar"
   },
   "auth": {
     "tagline": "Descubre el mundo del baile",

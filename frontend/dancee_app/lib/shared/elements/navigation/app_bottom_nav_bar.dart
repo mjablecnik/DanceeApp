@@ -12,16 +12,11 @@ class AppBottomNavBar extends StatelessWidget {
 
   const AppBottomNavBar({super.key, required this.currentTab});
 
-  static const _tabs = [
-    NavTab.events,
-    NavTab.courses,
-    // NavTab placeholder for FAB — commented out per requirement
-    NavTab.saved,
-    NavTab.profile,
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final showCoursesAs4th = currentTab == NavTab.courses;
+    final bottomPad = MediaQuery.of(context).padding.bottom;
+
     return Container(
       decoration: const BoxDecoration(
         color: appCard,
@@ -32,84 +27,85 @@ class AppBottomNavBar extends StatelessWidget {
         left: AppSpacing.xxl,
         right: AppSpacing.xxl,
         top: AppSpacing.sm,
-        bottom: MediaQuery.of(context).padding.bottom + AppSpacing.lg,
+        bottom: bottomPad + AppSpacing.lg,
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: _tabs
-            .map((tab) => NavItem(tab: tab, currentTab: currentTab))
-            .toList(),
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _NavItem(
+            icon: FontAwesomeIcons.house,
+            label: t.nav.home,
+            isActive: currentTab == NavTab.events,
+            onTap: () => const EventsRoute().go(context),
+          ),
+          _NavItem(
+            icon: FontAwesomeIcons.magnifyingGlass,
+            label: t.nav.search,
+            isActive: false,
+            onTap: () {},
+          ),
+          _NavFab(
+            onTap: () {
+              if (currentTab == NavTab.courses) {
+                const AddCourseRoute().push(context);
+              } else {
+                const AddEventRoute().push(context);
+              }
+            },
+          ),
+          showCoursesAs4th
+              ? _NavItem(
+                  icon: FontAwesomeIcons.bookOpen,
+                  label: t.nav.courses,
+                  isActive: true,
+                  onTap: () => const CoursesRoute().go(context),
+                )
+              : _NavItem(
+                  icon: FontAwesomeIcons.heart,
+                  label: t.nav.saved,
+                  isActive: currentTab == NavTab.saved,
+                  onTap: () => const SavedRoute().go(context),
+                ),
+          _NavItem(
+            icon: FontAwesomeIcons.user,
+            label: t.nav.profile,
+            isActive: currentTab == NavTab.profile,
+            onTap: () => const ProfileRoute().go(context),
+          ),
+        ],
       ),
     );
   }
 }
 
-class NavItem extends StatelessWidget {
-  final NavTab tab;
-  final NavTab currentTab;
+class _NavItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
 
-  const NavItem({
-    super.key,
-    required this.tab,
-    required this.currentTab,
+  const _NavItem({
+    required this.icon,
+    required this.label,
+    required this.isActive,
+    required this.onTap,
   });
-
-  IconData _iconFor(NavTab tab) {
-    switch (tab) {
-      case NavTab.events:
-        return FontAwesomeIcons.music;
-      case NavTab.courses:
-        return FontAwesomeIcons.bookOpen;
-      case NavTab.saved:
-        return FontAwesomeIcons.heart;
-      case NavTab.profile:
-        return FontAwesomeIcons.user;
-    }
-  }
-
-  String _labelFor(NavTab tab) {
-    switch (tab) {
-      case NavTab.events:
-        return t.nav.events;
-      case NavTab.courses:
-        return t.nav.courses;
-      case NavTab.saved:
-        return t.nav.saved;
-      case NavTab.profile:
-        return t.nav.profile;
-    }
-  }
-
-  void _navigate(BuildContext context, NavTab tab) {
-    switch (tab) {
-      case NavTab.events:
-        const EventsRoute().go(context);
-      case NavTab.courses:
-        const CoursesRoute().go(context);
-      case NavTab.saved:
-        const SavedRoute().go(context);
-      case NavTab.profile:
-        const ProfileRoute().go(context);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    final isActive = tab == currentTab;
     final color = isActive ? appPrimary : appMuted;
-
     return GestureDetector(
-      onTap: isActive ? null : () => _navigate(context, tab),
+      onTap: isActive ? null : onTap,
       behavior: HitTestBehavior.opaque,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            FaIcon(_iconFor(tab), size: 22, color: color),
+            FaIcon(icon, size: 22, color: color),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              _labelFor(tab),
+              label,
               style: TextStyle(
                 color: color,
                 fontSize: AppTypography.fontSizeXs,
@@ -117,6 +113,35 @@ class NavItem extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NavFab extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _NavFab({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Transform.translate(
+        offset: const Offset(0, -20),
+        child: Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            color: appPrimary,
+            shape: BoxShape.circle,
+            border: Border.all(color: appBg, width: 4),
+            boxShadow: [AppShadows.primary],
+          ),
+          child: const Center(
+            child: FaIcon(FontAwesomeIcons.plus, size: 20, color: Colors.white),
+          ),
         ),
       ),
     );

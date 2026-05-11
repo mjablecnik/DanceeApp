@@ -54,7 +54,9 @@
     "events": "Events",
     "courses": "Courses",
     "saved": "Saved",
-    "profile": "Profile"
+    "profile": "Profile",
+    "home": "Home",
+    "search": "Search"
   },
   "auth": {
     "tagline": "Discover the dancing world",

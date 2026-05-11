@@ -54,7 +54,9 @@
     "events": "Události",
     "courses": "Kurzy",
     "saved": "Uložené",
-    "profile": "Profil"
+    "profile": "Profil",
+    "home": "Domů",
+    "search": "Hledat"
   },
   "auth": {
     "tagline": "Objevuj taneční svět",
