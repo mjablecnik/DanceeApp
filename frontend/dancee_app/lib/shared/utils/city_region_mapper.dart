@@ -1,26 +1,29 @@
+/// Maps city names to Directus region values.
+/// The keys are the exact region strings stored in Directus venue data.
+/// The values are lists of city name variants (lowercase) that belong to that region.
 const _cityRegionMap = <String, List<String>>{
-  'prague': ['praha', 'prague'],
-  'brno': ['brno'],
-  'ostrava': ['ostrava'],
-  'plzen': ['plzeň', 'plzen'],
-  'liberec': ['liberec'],
-  'olomouc': ['olomouc'],
-  'ceske-budejovice': ['české budějovice', 'ceske budejovice'],
-  'hradec-kralove': ['hradec králové', 'hradec kralove'],
-  'pardubice': ['pardubice'],
-  'zlin': ['zlín', 'zlin'],
-  'jihlava': ['jihlava'],
-  'karlovy-vary': ['karlovy vary'],
-  'usti-nad-labem': ['ústí nad labem', 'usti nad labem'],
+  'Praha': ['praha', 'prague'],
+  'Brno': ['brno'],
+  'Ostrava': ['ostrava'],
+  'Plzeň': ['plzeň', 'plzen'],
+  'Liberec': ['liberec'],
+  'Olomouc': ['olomouc'],
+  'České Budějovice': ['české budějovice', 'ceske budejovice', 'budějovice', 'budejovice'],
+  'Hradec Králové': ['hradec králové', 'hradec kralove'],
+  'Pardubice': ['pardubice'],
+  'Zlín': ['zlín', 'zlin'],
+  'Jihlava': ['jihlava'],
+  'Karlovy Vary': ['karlovy vary'],
+  'Ústí nad Labem': ['ústí nad labem', 'usti nad labem'],
 };
 
-/// Maps a city name to its corresponding region identifier.
+/// Maps a city name to its corresponding Directus region value.
 /// Returns null if no mapping is found.
 String? mapCityToRegion(String city) {
   final normalized = city.trim().toLowerCase();
   if (normalized.isEmpty) return null;
   for (final entry in _cityRegionMap.entries) {
-    if (entry.value.any((c) => normalized.contains(c.toLowerCase()))) {
+    if (entry.value.any((c) => normalized.contains(c))) {
       return entry.key;
     }
   }
