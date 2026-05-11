@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 
 import 'service_locator.dart';
 import '../logic/cubits/auth_cubit.dart';
-import '../services/destination_service.dart';
 
 /// Auth-only screens that authenticated+verified users should be redirected away from.
 const _authOnlyScreens = ['/login', '/register', '/forgot-password'];
@@ -39,8 +38,7 @@ String? routerGuard(BuildContext context, GoRouterState state) {
       }
       // Email is verified — redirect away from auth screens
       if (_authOnlyScreens.contains(location) || location == '/verify-email') {
-        final destination = sl<DestinationService>().consumeDestination();
-        return destination ?? '/events';
+        return '/events';
       }
       return null;
     },
