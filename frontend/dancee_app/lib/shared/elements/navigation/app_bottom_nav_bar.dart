@@ -14,7 +14,6 @@ class AppBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final showCoursesAs4th = currentTab == NavTab.courses;
     final bottomPad = MediaQuery.of(context).padding.bottom;
 
     return Container(
@@ -33,16 +32,16 @@ class AppBottomNavBar extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _NavItem(
-            icon: FontAwesomeIcons.house,
-            label: t.nav.home,
+            icon: FontAwesomeIcons.calendarDays,
+            label: t.nav.events,
             isActive: currentTab == NavTab.events,
             onTap: () => const EventsRoute().go(context),
           ),
           _NavItem(
-            icon: FontAwesomeIcons.magnifyingGlass,
-            label: t.nav.search,
-            isActive: false,
-            onTap: () {},
+            icon: FontAwesomeIcons.bookOpen,
+            label: t.nav.courses,
+            isActive: currentTab == NavTab.courses,
+            onTap: () => const CoursesRoute().go(context),
           ),
           _NavFab(
             onTap: () {
@@ -53,19 +52,12 @@ class AppBottomNavBar extends StatelessWidget {
               }
             },
           ),
-          showCoursesAs4th
-              ? _NavItem(
-                  icon: FontAwesomeIcons.bookOpen,
-                  label: t.nav.courses,
-                  isActive: true,
-                  onTap: () => const CoursesRoute().go(context),
-                )
-              : _NavItem(
-                  icon: FontAwesomeIcons.heart,
-                  label: t.nav.saved,
-                  isActive: currentTab == NavTab.saved,
-                  onTap: () => const SavedRoute().go(context),
-                ),
+          _NavItem(
+            icon: FontAwesomeIcons.heart,
+            label: t.nav.saved,
+            isActive: currentTab == NavTab.saved,
+            onTap: () => const SavedRoute().go(context),
+          ),
           _NavItem(
             icon: FontAwesomeIcons.user,
             label: t.nav.profile,
@@ -118,6 +110,8 @@ class _NavItem extends StatelessWidget {
     );
   }
 }
+
+
 
 class _NavFab extends StatelessWidget {
   final VoidCallback onTap;

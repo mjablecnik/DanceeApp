@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/app_routes.dart';
 import '../../../core/colors.dart';
 import '../../../core/theme.dart';
+import '../../../shared/elements/navigation/app_bottom_nav_bar.dart';
 
 class AddCourseScreen extends StatefulWidget {
   const AddCourseScreen({super.key});
@@ -84,7 +84,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: _AddCourseBottomNav(),
+      bottomNavigationBar: const AppBottomNavBar(currentTab: NavTab.courses),
     );
   }
 
@@ -645,131 +645,6 @@ class _AddCourseHeader extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Bottom Navigation
-// ---------------------------------------------------------------------------
-
-class _AddCourseBottomNav extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final bottomPad = MediaQuery.of(context).padding.bottom;
-    return Container(
-      decoration: const BoxDecoration(
-        color: appCard,
-        border: Border(top: BorderSide(color: appBorder)),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
-      ),
-      padding: EdgeInsets.only(
-        left: AppSpacing.xxl,
-        right: AppSpacing.xxl,
-        top: AppSpacing.sm,
-        bottom: bottomPad + AppSpacing.lg,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _NavIcon(
-            icon: FontAwesomeIcons.house,
-            label: 'Domů',
-            isActive: false,
-            onTap: () => const EventsRoute().go(context),
-          ),
-          _NavIcon(
-            icon: FontAwesomeIcons.magnifyingGlass,
-            label: 'Hledat',
-            isActive: false,
-            onTap: () {},
-          ),
-          _NavFab(onTap: () {}),
-          _NavIcon(
-            icon: FontAwesomeIcons.bookOpen,
-            label: 'Kurzy',
-            isActive: true,
-            onTap: () => const CoursesRoute().go(context),
-          ),
-          _NavIcon(
-            icon: FontAwesomeIcons.user,
-            label: 'Profil',
-            isActive: false,
-            onTap: () => const ProfileRoute().go(context),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _NavIcon extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool isActive;
-  final VoidCallback onTap;
-
-  const _NavIcon({
-    required this.icon,
-    required this.label,
-    required this.isActive,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: AppSpacing.xs,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            FaIcon(icon, size: 22, color: isActive ? appPrimary : appMuted),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              label,
-              style: TextStyle(
-                color: isActive ? appPrimary : appMuted,
-                fontSize: AppTypography.fontSizeXs,
-                fontWeight: AppTypography.fontWeightMedium,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _NavFab extends StatelessWidget {
-  final VoidCallback onTap;
-
-  const _NavFab({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Transform.translate(
-        offset: const Offset(0, -20),
-        child: Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            color: appPrimary,
-            shape: BoxShape.circle,
-            border: Border.all(color: appBg, width: 4),
-            boxShadow: [AppShadows.primary],
-          ),
-          child: const Center(
-            child: FaIcon(FontAwesomeIcons.plus, size: 20, color: Colors.white),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 // ---------------------------------------------------------------------------
 // Section heading (no icon for Add Course)
 // ---------------------------------------------------------------------------
