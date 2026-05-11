@@ -13,6 +13,7 @@ List<RouteBase> get $appRoutes => [
       $onboardingRoute,
       $verifyEmailRoute,
       $mainShellRouteData,
+      $addCourseRoute,
       $addEventRoute,
       $eventDetailRoute,
       $filterDanceRoute,
@@ -221,6 +222,29 @@ extension $SavedRouteExtension on SavedRoute {
 
   String get location => GoRouteData.$location(
         '/saved',
+      );
+
+  void go(BuildContext context) => context.go(location);
+
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  void replace(BuildContext context) => context.replace(location);
+}
+
+RouteBase get $addCourseRoute => GoRouteData.$route(
+      path: '/courses/add',
+      factory: $AddCourseRouteExtension._fromState,
+    );
+
+extension $AddCourseRouteExtension on AddCourseRoute {
+  static AddCourseRoute _fromState(GoRouterState state) =>
+      const AddCourseRoute();
+
+  String get location => GoRouteData.$location(
+        '/courses/add',
       );
 
   void go(BuildContext context) => context.go(location);
