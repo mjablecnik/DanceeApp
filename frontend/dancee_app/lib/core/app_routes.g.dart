@@ -13,6 +13,7 @@ List<RouteBase> get $appRoutes => [
       $onboardingRoute,
       $verifyEmailRoute,
       $mainShellRouteData,
+      $addEventRoute,
       $eventDetailRoute,
       $filterDanceRoute,
       $filterLocationRoute,
@@ -220,6 +221,28 @@ extension $SavedRouteExtension on SavedRoute {
 
   String get location => GoRouteData.$location(
         '/saved',
+      );
+
+  void go(BuildContext context) => context.go(location);
+
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  void replace(BuildContext context) => context.replace(location);
+}
+
+RouteBase get $addEventRoute => GoRouteData.$route(
+      path: '/events/add',
+      factory: $AddEventRouteExtension._fromState,
+    );
+
+extension $AddEventRouteExtension on AddEventRoute {
+  static AddEventRoute _fromState(GoRouterState state) => const AddEventRoute();
+
+  String get location => GoRouteData.$location(
+        '/events/add',
       );
 
   void go(BuildContext context) => context.go(location);

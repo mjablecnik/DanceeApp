@@ -14,6 +14,7 @@ import '../screens/auth/onboarding/onboarding_screen.dart';
 import '../screens/auth/register/register_screen.dart';
 import '../screens/courses/course_detail/course_detail_screen.dart';
 import '../screens/courses/courses_list/courses_list_screen.dart';
+import '../screens/events/add_event/add_event_screen.dart';
 import '../screens/events/event_detail/event_detail_screen.dart';
 import '../screens/events/events_list/events_list_screen.dart';
 import '../screens/events/filter_dance/filter_dance_screen.dart';
@@ -174,6 +175,16 @@ class SavedRoute extends GoRouteData {
 // ---------------------------------------------------------------------------
 // Sub-pages (no bottom nav)
 // ---------------------------------------------------------------------------
+
+@TypedGoRoute<AddEventRoute>(path: '/events/add')
+@immutable
+class AddEventRoute extends GoRouteData {
+  const AddEventRoute();
+
+  @override
+  Page<void> buildPage(BuildContext context, GoRouterState state) =>
+      const NoTransitionPage(child: AddEventScreen());
+}
 
 @TypedGoRoute<EventDetailRoute>(path: '/events/detail')
 @immutable
