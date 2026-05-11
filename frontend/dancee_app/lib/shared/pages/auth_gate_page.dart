@@ -16,12 +16,12 @@ class AuthGatePage extends StatelessWidget {
 
   void _navigateToLogin(BuildContext context) {
     sl<DestinationService>().setDestination(intendedRoute);
-    context.go('/login');
+    context.push('/login');
   }
 
   void _navigateToRegister(BuildContext context) {
     sl<DestinationService>().setDestination(intendedRoute);
-    context.go('/register');
+    context.push('/register');
   }
 
   @override

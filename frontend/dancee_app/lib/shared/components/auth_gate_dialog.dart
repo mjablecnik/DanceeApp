@@ -30,7 +30,7 @@ class AuthGateBottomSheet extends StatelessWidget {
       sl<DestinationService>().setDestination(returnRoute!);
     }
     Navigator.of(context).pop();
-    context.go('/login');
+    context.push('/login');
   }
 
   void _navigateToRegister(BuildContext context) {
@@ -38,7 +38,7 @@ class AuthGateBottomSheet extends StatelessWidget {
       sl<DestinationService>().setDestination(returnRoute!);
     }
     Navigator.of(context).pop();
-    context.go('/register');
+    context.push('/register');
   }
 
   @override

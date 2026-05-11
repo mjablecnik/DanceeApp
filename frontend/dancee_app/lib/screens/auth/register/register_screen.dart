@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/app_routes.dart';
 import '../../../core/colors.dart';
+import '../../../core/service_locator.dart';
 import '../../../core/theme.dart';
 import '../../../i18n/strings.g.dart';
+import '../../../services/destination_service.dart';
 import '../../../shared/components/background_circles.dart';
 import '../../../shared/sections/auth_header_section.dart';
 import 'sections/register_form_section.dart';
@@ -18,10 +21,12 @@ class _RegisterScreenState extends State<RegisterScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   late Animation<double> _floatAnim;
+  late final bool _cameFromAuthGate;
 
   @override
   void initState() {
     super.initState();
+    _cameFromAuthGate = sl<DestinationService>().hasDestination;
     _animController = AnimationController(
       duration: const Duration(seconds: 3),
       vsync: this,
@@ -37,12 +42,23 @@ class _RegisterScreenState extends State<RegisterScreen>
     super.dispose();
   }
 
+  void _goBack() {
+    sl<DestinationService>().consumeDestination();
+    context.pop();
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: false,
+      canPop: _cameFromAuthGate,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) const LoginRoute().go(context);
+        if (!didPop) {
+          if (_cameFromAuthGate) {
+            _goBack();
+          } else {
+            const LoginRoute().go(context);
+          }
+        }
       },
       child: Scaffold(
         backgroundColor: appBg,
@@ -58,6 +74,24 @@ class _RegisterScreenState extends State<RegisterScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    if (_cameFromAuthGate)
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: GestureDetector(
+                          onTap: _goBack,
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: appSurface,
+                              borderRadius: BorderRadius.circular(AppRadius.round),
+                            ),
+                            child: const Center(
+                              child: Icon(Icons.arrow_back, size: 20, color: appText),
+                            ),
+                          ),
+                        ),
+                      ),
                     AuthHeaderSection(
                       title: t.auth.register.title,
                       subtitle: t.auth.register.subtitle,

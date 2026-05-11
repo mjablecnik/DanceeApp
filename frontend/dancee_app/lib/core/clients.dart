@@ -43,14 +43,20 @@ class DirectusClient {
           try {
             token = await _directusTokenProvider();
           } catch (_) {
-            // fall back to static token on error
+            // fall back to no auth (public role) on error
           }
         }
-        options.headers['Authorization'] = 'Bearer ${token ?? _accessToken}';
+        if (token != null) {
+          options.headers['Authorization'] = 'Bearer $token';
+        } else {
+          // Anonymous user — no Authorization header, rely on Directus public role.
+          options.headers.remove('Authorization');
+        }
         handler.next(options);
       },
       onError: (error, handler) async {
         // On 401, try to refresh the token and retry the request once.
+        // Skip retry for anonymous users (no token provider result).
         if (error.response?.statusCode == 401 &&
             _onTokenExpired != null &&
             error.requestOptions.extra['_retried'] != true) {

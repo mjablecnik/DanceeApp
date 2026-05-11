@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/colors.dart';
+import '../../../core/service_locator.dart';
 import '../../../core/theme.dart';
 import '../../../i18n/strings.g.dart';
+import '../../../services/destination_service.dart';
 import '../../../shared/components/background_circles.dart';
 import '../../../shared/sections/auth_header_section.dart';
 import 'sections/login_form_section.dart';
@@ -17,10 +20,12 @@ class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   late Animation<double> _floatAnim;
+  late final bool _cameFromAuthGate;
 
   @override
   void initState() {
     super.initState();
+    _cameFromAuthGate = sl<DestinationService>().hasDestination;
     _animController = AnimationController(
       duration: const Duration(seconds: 3),
       vsync: this,
@@ -36,10 +41,20 @@ class _LoginScreenState extends State<LoginScreen>
     super.dispose();
   }
 
+  void _goBack() {
+    sl<DestinationService>().consumeDestination();
+    context.pop();
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: false,
+      canPop: _cameFromAuthGate,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && _cameFromAuthGate) {
+          _goBack();
+        }
+      },
       child: Scaffold(
         backgroundColor: appBg,
         body: Stack(
@@ -54,7 +69,27 @@ class _LoginScreenState extends State<LoginScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const SizedBox(height: AppSpacing.xxxl),
+                    if (_cameFromAuthGate)
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: GestureDetector(
+                          onTap: _goBack,
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: appSurface,
+                              borderRadius: BorderRadius.circular(AppRadius.round),
+                            ),
+                            child: const Center(
+                              child: Icon(Icons.arrow_back, size: 20, color: appText),
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      const SizedBox(height: AppSpacing.xxxl),
+                    const SizedBox(height: AppSpacing.xl),
                     AuthHeaderSection(
                       title: t.auth.login.title,
                       subtitle: t.auth.login.subtitle,
