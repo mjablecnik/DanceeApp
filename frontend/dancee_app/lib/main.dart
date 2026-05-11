@@ -21,9 +21,12 @@ import 'logic/cubits/profile_cubit.dart';
 import 'logic/cubits/settings_cubit.dart';
 import 'logic/states/course_state.dart';
 import 'shared/utils/auth_translations.dart';
+import 'shared/utils/filter_prefill.dart';
+import 'logic/states/auth_state.dart';
 import 'logic/states/event_state.dart';
 import 'logic/states/favorites_state.dart';
 import 'logic/states/filter_state.dart';
+import 'logic/states/profile_state.dart';
 import 'logic/states/settings_state.dart';
 
 void main() async {
@@ -362,6 +365,32 @@ class _AppListenersState extends State<_AppListeners> with WidgetsBindingObserve
               },
               orElse: () {},
             );
+          },
+        ),
+        // 9.3 — Auth sign-in: prefill filters from profile if no filters active
+        BlocListener<AuthCubit, AuthState>(
+          listenWhen: (prev, curr) =>
+              prev.maybeMap(unauthenticated: (_) => true, orElse: () => false) &&
+              curr.maybeMap(authenticated: (_) => true, orElse: () => false),
+          listener: (context, state) async {
+            final profileCubit = context.read<ProfileCubit>();
+            await profileCubit.loadProfile();
+            final filterCubit = context.read<FilterCubit>();
+            if (!filterCubit.state.hasActiveFilters) {
+              profileCubit.state.maybeMap(
+                loaded: (s) => prefillFiltersFromProfile(s.profile, filterCubit),
+                orElse: () {},
+              );
+            }
+          },
+        ),
+        // 10.1 — Auth sign-out: clear all filters
+        BlocListener<AuthCubit, AuthState>(
+          listenWhen: (prev, curr) =>
+              prev.maybeMap(authenticated: (_) => true, orElse: () => false) &&
+              curr.maybeMap(unauthenticated: (_) => true, orElse: () => false),
+          listener: (context, state) {
+            context.read<FilterCubit>().clearAll();
           },
         ),
       ],
