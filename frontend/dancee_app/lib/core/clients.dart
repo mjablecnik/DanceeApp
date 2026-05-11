@@ -43,15 +43,13 @@ class DirectusClient {
           try {
             token = await _directusTokenProvider();
           } catch (_) {
-            // fall back to static token on error
+            // fall back to no auth on error
           }
         }
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
-        } else if (_accessToken.isNotEmpty) {
-          options.headers['Authorization'] = 'Bearer $_accessToken';
         } else {
-          // No token available — rely on Directus public role.
+          // No Directus session token — rely on Directus public role.
           options.headers.remove('Authorization');
         }
         handler.next(options);

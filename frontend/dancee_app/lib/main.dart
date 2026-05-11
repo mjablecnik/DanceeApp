@@ -256,7 +256,14 @@ class _AppListenersState extends State<_AppListeners> with WidgetsBindingObserve
     context.read<EventCubit>().loadEvents(languageCode);
     context.read<CourseCubit>().loadCourses(languageCode);
     context.read<FilterCubit>().loadDanceStyles(languageCode);
-    context.read<FavoritesCubit>().loadFavorites();
+    // Only load favorites if user is authenticated (requires Directus user token)
+    final isAuthenticated = context.read<AuthCubit>().state.maybeMap(
+      authenticated: (_) => true,
+      orElse: () => false,
+    );
+    if (isAuthenticated) {
+      context.read<FavoritesCubit>().loadFavorites();
+    }
   }
 
 
@@ -370,17 +377,32 @@ class _AppListenersState extends State<_AppListeners> with WidgetsBindingObserve
         // 9.3 — Auth sign-in: prefill filters from profile if no filters active
         BlocListener<AuthCubit, AuthState>(
           listenWhen: (prev, curr) =>
-              prev.maybeMap(unauthenticated: (_) => true, orElse: () => false) &&
+              !prev.maybeMap(authenticated: (_) => true, orElse: () => false) &&
               curr.maybeMap(authenticated: (_) => true, orElse: () => false),
           listener: (context, state) async {
             final profileCubit = context.read<ProfileCubit>();
-            await profileCubit.loadProfile();
             final filterCubit = context.read<FilterCubit>();
+
+            // Wait for Directus token exchange to complete.
+            await Future.delayed(const Duration(seconds: 2));
+
+            // Load favorites now that user is authenticated
+            context.read<FavoritesCubit>().loadFavorites();
+
+            await profileCubit.loadProfile();
             if (!filterCubit.state.hasActiveFilters) {
               profileCubit.state.maybeMap(
-                loaded: (s) => prefillFiltersFromProfile(s.profile, filterCubit),
-                orElse: () {},
+                loaded: (s) {
+                  debugPrint('[FilterPrefill] Prefilling from profile: '
+                      'danceTags=${s.profile.danceTags}, city=${s.profile.city}');
+                  prefillFiltersFromProfile(s.profile, filterCubit);
+                },
+                orElse: () {
+                  debugPrint('[FilterPrefill] Profile not loaded, skipping prefill');
+                },
               );
+            } else {
+              debugPrint('[FilterPrefill] Filters already active, skipping prefill');
             }
           },
         ),
@@ -391,6 +413,9 @@ class _AppListenersState extends State<_AppListeners> with WidgetsBindingObserve
               curr.maybeMap(unauthenticated: (_) => true, orElse: () => false),
           listener: (context, state) {
             context.read<FilterCubit>().clearAll();
+            _scaffoldMessengerKey.currentState?.showSnackBar(
+              SnackBar(content: Text(t.common.logoutSuccess)),
+            );
           },
         ),
       ],

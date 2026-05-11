@@ -96,10 +96,11 @@ class _LoginFormSectionState extends State<LoginFormSection> {
           error: (s) => setState(() => _authError = resolveAuthErrorKey(s.message)),
           authenticated: (s) {
             setState(() => _authError = null);
-            // Navigate away from login after successful authentication
+            // Navigate away from login after successful authentication.
+            // Always go to /events — filter prefill handles personalization.
+            sl<DestinationService>().consumeDestination();
             if (s.emailVerified) {
-              final destination = sl<DestinationService>().consumeDestination();
-              context.go(destination ?? '/events');
+              context.go('/events');
             } else {
               context.go('/verify-email');
             }

@@ -34,6 +34,7 @@
     "saveChanges": "Save changes",
     "loading": "Loading...",
     "retry": "Retry",
+    "logoutSuccess": "You have been successfully signed out.",
     "from": "From ${time}",
     "form": {
       "email": "E-mail",

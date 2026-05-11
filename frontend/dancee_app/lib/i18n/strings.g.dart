@@ -4,9 +4,9 @@
 /// To regenerate, run: `dart run slang`
 ///
 /// Locales: 3
-/// Strings: 1080 (360 per locale)
+/// Strings: 1083 (361 per locale)
 ///
-/// Built on 2026-05-11 at 01:54 UTC
+/// Built on 2026-05-11 at 06:49 UTC
 
 // coverage:ignore-file
 // ignore_for_file: type=lint
@@ -192,6 +192,7 @@ class _StringsCommonEn {
 	String get saveChanges => 'Save changes';
 	String get loading => 'Loading...';
 	String get retry => 'Retry';
+	String get logoutSuccess => 'You have been successfully signed out.';
 	String from({required Object time}) => 'From ${time}';
 	late final _StringsCommonFormEn form = _StringsCommonFormEn._(_root);
 }
@@ -1070,6 +1071,7 @@ class _StringsCommonCs extends _StringsCommonEn {
 	@override String get saveChanges => 'Uložit změny';
 	@override String get loading => 'Načítání...';
 	@override String get retry => 'Zkusit znovu';
+	@override String get logoutSuccess => 'Byli jste úspěšně odhlášeni.';
 	@override String from({required Object time}) => 'Od ${time}';
 	@override late final _StringsCommonFormCs form = _StringsCommonFormCs._(_root);
 }
@@ -1948,6 +1950,7 @@ class _StringsCommonEs extends _StringsCommonEn {
 	@override String get saveChanges => 'Guardar cambios';
 	@override String get loading => 'Cargando...';
 	@override String get retry => 'Reintentar';
+	@override String get logoutSuccess => 'Has cerrado sesión correctamente.';
 	@override String from({required Object time}) => 'Desde ${time}';
 	@override late final _StringsCommonFormEs form = _StringsCommonFormEs._(_root);
 }
@@ -2795,6 +2798,7 @@ extension on Translations {
 			case 'common.saveChanges': return 'Save changes';
 			case 'common.loading': return 'Loading...';
 			case 'common.retry': return 'Retry';
+			case 'common.logoutSuccess': return 'You have been successfully signed out.';
 			case 'common.from': return ({required Object time}) => 'From ${time}';
 			case 'common.form.email': return 'E-mail';
 			case 'common.form.emailHint': return 'your@email.com';
@@ -3163,6 +3167,7 @@ extension on _StringsCs {
 			case 'common.saveChanges': return 'Uložit změny';
 			case 'common.loading': return 'Načítání...';
 			case 'common.retry': return 'Zkusit znovu';
+			case 'common.logoutSuccess': return 'Byli jste úspěšně odhlášeni.';
 			case 'common.from': return ({required Object time}) => 'Od ${time}';
 			case 'common.form.email': return 'E-mail';
 			case 'common.form.emailHint': return 'tvuj@email.cz';
@@ -3531,6 +3536,7 @@ extension on _StringsEs {
 			case 'common.saveChanges': return 'Guardar cambios';
 			case 'common.loading': return 'Cargando...';
 			case 'common.retry': return 'Reintentar';
+			case 'common.logoutSuccess': return 'Has cerrado sesión correctamente.';
 			case 'common.from': return ({required Object time}) => 'Desde ${time}';
 			case 'common.form.email': return 'E-mail';
 			case 'common.form.emailHint': return 'tu@email.com';

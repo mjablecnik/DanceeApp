@@ -34,6 +34,7 @@
     "saveChanges": "Guardar cambios",
     "loading": "Cargando...",
     "retry": "Reintentar",
+    "logoutSuccess": "Has cerrado sesión correctamente.",
     "from": "Desde ${time}",
     "form": {
       "email": "E-mail",
