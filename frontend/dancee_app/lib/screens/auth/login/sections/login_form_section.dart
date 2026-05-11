@@ -2,12 +2,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/app_routes.dart';
 import '../../../../core/colors.dart';
+import '../../../../core/service_locator.dart';
 import '../../../../core/theme.dart';
 import '../../../../i18n/strings.g.dart';
 import '../../../../logic/cubits/auth_cubit.dart';
 import '../../../../logic/states/auth_state.dart';
+import '../../../../services/destination_service.dart';
 import '../../../../shared/elements/buttons/gradient_button.dart';
 import '../../../../shared/elements/forms/app_checkbox.dart';
 import '../../../../shared/elements/forms/app_input_field.dart';
@@ -91,7 +94,16 @@ class _LoginFormSectionState extends State<LoginFormSection> {
       listener: (context, state) {
         state.mapOrNull(
           error: (s) => setState(() => _authError = resolveAuthErrorKey(s.message)),
-          authenticated: (_) => setState(() => _authError = null),
+          authenticated: (s) {
+            setState(() => _authError = null);
+            // Navigate away from login after successful authentication
+            if (s.emailVerified) {
+              final destination = sl<DestinationService>().consumeDestination();
+              context.go(destination ?? '/events');
+            } else {
+              context.go('/verify-email');
+            }
+          },
         );
       },
       buildWhen: (prev, curr) =>
