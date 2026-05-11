@@ -11,6 +11,8 @@ class AppPasswordField extends StatefulWidget {
   final ValueChanged<String>? onChanged;
   final String? errorText;
   final FocusNode? focusNode;
+  final TextInputAction? textInputAction;
+  final ValueChanged<String>? onSubmitted;
 
   const AppPasswordField({
     super.key,
@@ -20,6 +22,8 @@ class AppPasswordField extends StatefulWidget {
     this.onChanged,
     this.errorText,
     this.focusNode,
+    this.textInputAction,
+    this.onSubmitted,
   });
 
   @override
@@ -61,6 +65,8 @@ class _AppPasswordFieldState extends State<AppPasswordField> {
                   focusNode: widget.focusNode,
                   obscureText: !_showPassword,
                   onChanged: widget.onChanged,
+                  textInputAction: widget.textInputAction,
+                  onSubmitted: widget.onSubmitted,
                   style: const TextStyle(color: appText),
                   decoration: InputDecoration(
                     hintText: widget.hintText ?? t.common.form.passwordPlaceholder,

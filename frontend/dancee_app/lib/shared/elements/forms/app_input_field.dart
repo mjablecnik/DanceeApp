@@ -10,6 +10,8 @@ class AppInputField extends StatelessWidget {
   final Widget? icon;
   final String? errorText;
   final FocusNode? focusNode;
+  final TextInputAction? textInputAction;
+  final ValueChanged<String>? onSubmitted;
 
   const AppInputField({
     super.key,
@@ -20,6 +22,8 @@ class AppInputField extends StatelessWidget {
     this.icon,
     this.errorText,
     this.focusNode,
+    this.textInputAction,
+    this.onSubmitted,
   });
 
   @override
@@ -55,6 +59,8 @@ class AppInputField extends StatelessWidget {
                   controller: controller,
                   focusNode: focusNode,
                   keyboardType: keyboardType,
+                  textInputAction: textInputAction,
+                  onSubmitted: onSubmitted,
                   style: const TextStyle(color: appText),
                   decoration: InputDecoration(
                     hintText: hintText,
