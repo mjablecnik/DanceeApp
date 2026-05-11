@@ -396,6 +396,10 @@ class _AppListenersState extends State<_AppListeners> with WidgetsBindingObserve
                   debugPrint('[FilterPrefill] Prefilling from profile: '
                       'danceTags=${s.profile.danceTags}, city=${s.profile.city}');
                   prefillFiltersFromProfile(s.profile, filterCubit);
+                  // Explicitly re-apply filters so EventCubit/CourseCubit update
+                  final fs = filterCubit.state;
+                  context.read<EventCubit>().applyFilters(fs, fs.danceStyles);
+                  context.read<CourseCubit>().applyFilters(fs, fs.danceStyles);
                 },
                 orElse: () {
                   debugPrint('[FilterPrefill] Profile not loaded, skipping prefill');
