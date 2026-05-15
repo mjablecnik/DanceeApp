@@ -96,6 +96,7 @@ void setupServiceLocator() {
     () => FavoritesCubit(
       favoritesRepository: sl<FavoritesRepository>(),
       authCubit: sl<AuthCubit>(),
+      directusAuthService: sl<DirectusAuthService>(),
     ),
   );
   sl.registerLazySingleton<ProfileCubit>(

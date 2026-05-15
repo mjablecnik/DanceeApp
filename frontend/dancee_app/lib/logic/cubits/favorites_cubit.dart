@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../core/exceptions.dart';
@@ -7,6 +8,7 @@ import '../../data/entities/course.dart';
 import '../../data/entities/event.dart';
 import '../../data/entities/favorite.dart';
 import '../../data/repositories/favorites_repository.dart';
+import '../../services/directus_auth_service.dart';
 import '../states/auth_state.dart';
 import '../states/favorites_state.dart';
 import 'auth_cubit.dart';
@@ -18,16 +20,29 @@ class FavoritesCubit extends Cubit<FavoritesState> {
   FavoritesCubit({
     required FavoritesRepository favoritesRepository,
     required AuthCubit authCubit,
+    DirectusAuthService? directusAuthService,
   })  : _favoritesRepository = favoritesRepository,
         _authCubit = authCubit,
+        _directusAuthService = directusAuthService,
         super(const FavoritesState.initial()) {
     _authSubscription = authCubit.stream.listen(_onAuthStateChanged);
+    _directusLinkedListener = () {
+      if (_authCubit.state.maybeMap(
+        authenticated: (_) => true,
+        orElse: () => false,
+      )) {
+        loadFavorites();
+      }
+    };
+    authCubit.directusLinkedNotifier.addListener(_directusLinkedListener);
   }
 
   final FavoritesRepository _favoritesRepository;
   final AuthCubit _authCubit;
+  final DirectusAuthService? _directusAuthService;
   List<Favorite> _allFavorites = [];
   late final StreamSubscription<AuthState> _authSubscription;
+  late final VoidCallback _directusLinkedListener;
 
   final _toggleErrorController = StreamController<String>.broadcast();
 
@@ -37,7 +52,12 @@ class FavoritesCubit extends Cubit<FavoritesState> {
 
   void _onAuthStateChanged(AuthState authState) {
     authState.maybeMap(
-      authenticated: (_) => loadFavorites(),
+      authenticated: (_) {
+        // Don't load immediately — wait for directusLinkedNotifier to fire
+        // (which signals that the Firebase → Directus token exchange is done).
+        // Emit loading so the UI shows a spinner while waiting.
+        emit(const FavoritesState.loading());
+      },
       unauthenticated: (_) {
         _allFavorites = [];
         emit(const FavoritesState.initial());
@@ -48,6 +68,7 @@ class FavoritesCubit extends Cubit<FavoritesState> {
 
   @override
   Future<void> close() {
+    _authCubit.directusLinkedNotifier.removeListener(_directusLinkedListener);
     _authSubscription.cancel();
     _toggleErrorController.close();
     return super.close();
@@ -56,9 +77,14 @@ class FavoritesCubit extends Cubit<FavoritesState> {
   String get _currentUserId => _authCubit.currentUid ?? '';
 
   /// Fetches all favorites for the current user, emits loaded state.
-  /// Does nothing if the user is not authenticated (empty user ID).
+  /// Does nothing if the user is not authenticated (empty user ID) or if
+  /// Directus tokens are not yet available.
   Future<void> loadFavorites() async {
     if (_currentUserId.isEmpty) return;
+    if (_directusAuthService != null && !_directusAuthService.hasTokens) {
+      emit(const FavoritesState.loading());
+      return;
+    }
     emit(const FavoritesState.loading());
     try {
       _allFavorites = await _favoritesRepository.getFavorites(_currentUserId);
