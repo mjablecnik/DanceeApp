@@ -17,7 +17,7 @@ import '../../../shared/utils/auth_translations.dart';
 import '../../../shared/sections/dance_styles_filter_section.dart';
 import '../../../shared/utils/date_format.dart';
 import '../../../shared/utils/region_label.dart';
-import '../../events/events_list/sections/upcoming_events_section.dart' show parentDanceNames;
+import '../../../shared/utils/dance_names.dart';
 import 'components/course_list_card.dart';
 
 String _courseDisplayDate(Course course) {
