@@ -109,9 +109,13 @@ class CourseCardTopRow extends StatelessWidget {
                 children: [
                   const FaIcon(FontAwesomeIcons.userTie, size: 12, color: appPrimary),
                   const SizedBox(width: AppSpacing.sm - 2),
-                  Text(
-                    instructor,
-                    style: const TextStyle(color: appMuted, fontSize: AppTypography.fontSizeSm),
+                  Flexible(
+                    child: Text(
+                      instructor,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: appMuted, fontSize: AppTypography.fontSizeSm),
+                    ),
                   ),
                 ],
               ),
