@@ -48,10 +48,13 @@ class DirectusClient {
         }
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
+          options.extra['_authenticated'] = true;
         } else if (_accessToken.isNotEmpty) {
           options.headers['Authorization'] = 'Bearer $_accessToken';
+          options.extra['_authenticated'] = false;
         } else {
           options.headers.remove('Authorization');
+          options.extra['_authenticated'] = false;
         }
         handler.next(options);
       },
@@ -61,24 +64,32 @@ class DirectusClient {
         if (error.response?.statusCode == 401 &&
             _onTokenExpired != null &&
             error.requestOptions.extra['_retried'] != true) {
-          try {
-            await _onTokenExpired();
-            // Get fresh token
-            String? newToken;
-            if (_directusTokenProvider != null) {
-              newToken = await _directusTokenProvider();
-            }
-            if (newToken != null) {
-              // Retry the original request with the new token
-              final opts = error.requestOptions;
-              opts.headers['Authorization'] = 'Bearer $newToken';
-              opts.extra['_retried'] = true;
-              final response = await _dio.fetch(opts);
-              return handler.resolve(response);
-            }
-          } catch (_) {
-            // Refresh failed — fall through to original error
+          // Check if user is authenticated (has Directus tokens).
+          // If not, skip retry — anonymous users use the static token only.
+          String? currentToken;
+          if (_directusTokenProvider != null) {
+            try {
+              currentToken = await _directusTokenProvider();
+            } catch (_) {}
           }
+          if (currentToken != null) {
+            // Authenticated user — attempt token refresh and retry.
+            try {
+              await _onTokenExpired();
+              final newToken = await _directusTokenProvider!();
+              if (newToken != null) {
+                final opts = error.requestOptions;
+                opts.headers['Authorization'] = 'Bearer $newToken';
+                opts.extra['_retried'] = true;
+                final response = await _dio.fetch(opts);
+                return handler.resolve(response);
+              }
+            } catch (_) {
+              // Refresh failed — fall through to original error
+            }
+          }
+          // Anonymous user or refresh failed — mark as retried to avoid loops.
+          error.requestOptions.extra['_retried'] = true;
         }
         handler.next(error);
       },
@@ -199,7 +210,11 @@ class DirectusClient {
         );
         return ApiException(
           statusCode: statusCode,
-          message: _keyForStatusCode(statusCode),
+          message: _keyForStatusCode(
+            statusCode,
+            authenticated:
+                e.requestOptions.extra['_authenticated'] == true,
+          ),
           originalError: e,
         );
       case DioExceptionType.cancel:
@@ -216,12 +231,16 @@ class DirectusClient {
     }
   }
 
-  String _keyForStatusCode(int? statusCode) {
+  String _keyForStatusCode(int? statusCode, {bool authenticated = true}) {
     switch (statusCode) {
       case 400:
         return 'api.errors.badRequest';
       case 401:
-        return 'api.errors.unauthorized';
+        // For anonymous users (using static token), show a generic error
+        // instead of "session expired" which is misleading.
+        return authenticated
+            ? 'api.errors.unauthorized'
+            : 'api.errors.generic';
       case 403:
         return 'api.errors.forbidden';
       case 404:

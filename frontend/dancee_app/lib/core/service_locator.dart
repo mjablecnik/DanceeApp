@@ -78,7 +78,10 @@ void setupServiceLocator() {
     () => DanceStyleRepository(client: sl<DirectusClient>()),
   );
   sl.registerLazySingleton<ProfileRepository>(
-    () => ProfileRepository(client: sl<DirectusClient>()),
+    () => ProfileRepository(
+      client: sl<DirectusClient>(),
+      directusAuthService: sl<DirectusAuthService>(),
+    ),
   );
 
   // Cubits

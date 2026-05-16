@@ -5,14 +5,21 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../core/clients.dart';
 import '../../core/config.dart';
+import '../../core/exceptions.dart';
+import '../../services/directus_auth_service.dart';
 import '../entities/contact_message.dart';
 import '../entities/translation_utils.dart';
 import '../entities/user_profile.dart';
 
 class ProfileRepository {
-  ProfileRepository({required DirectusClient client}) : _client = client;
+  ProfileRepository({
+    required DirectusClient client,
+    required DirectusAuthService directusAuthService,
+  })  : _client = client,
+        _directusAuthService = directusAuthService;
 
   final DirectusClient _client;
+  final DirectusAuthService _directusAuthService;
 
   /// Fetches the user profile from Directus for the currently authenticated user.
   /// Uses /users/me which works with the user's own Directus session token.
@@ -111,7 +118,16 @@ class ProfileRepository {
   /// Must be called BEFORE deleting the Firebase account (needs valid token).
   /// Note: Directus does not allow users to delete themselves via DELETE /users/me,
   /// so we suspend the account, label it, and wipe personal data instead.
+  ///
+  /// Throws [ApiException] if no authenticated Directus session is available,
+  /// preventing accidental suspension of the public token user.
   Future<void> deleteDirectusUser() async {
+    if (!_directusAuthService.hasTokens) {
+      throw const ApiException(
+        message: 'api.errors.unauthorized',
+        statusCode: 401,
+      );
+    }
     await _client.patch('/users/me', data: {
       'status': 'suspended',
       'first_name': 'Deleted',
