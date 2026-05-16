@@ -11,7 +11,7 @@ import '../../../../shared/components/snap_carousel.dart';
 import '../../../../shared/utils/date_format.dart';
 import '../../../../shared/utils/location_format.dart';
 import '../components/featured_event_card.dart';
-import 'upcoming_events_section.dart' show parentDanceNames;
+import '../../../../shared/utils/dance_names.dart';
 
 class FeaturedEventsSection extends StatelessWidget {
   final List<Event> events;
