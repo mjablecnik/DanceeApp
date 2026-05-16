@@ -12,7 +12,7 @@ import '../../../shared/utils/auth_translations.dart';
 import '../../../logic/states/filter_state.dart';
 import '../../../shared/sections/dance_styles_filter_section.dart';
 import '../../../shared/utils/region_label.dart';
-import 'sections/events_header_section.dart';
+import '../../../shared/sections/events_header_section.dart';
 import 'sections/featured_events_section.dart';
 import 'sections/upcoming_events_section.dart';
 

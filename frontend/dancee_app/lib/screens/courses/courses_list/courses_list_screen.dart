@@ -1,4 +1,4 @@
-import 'package:dancee_app/screens/events/events_list/sections/events_header_section.dart';
+import '../../../shared/sections/events_header_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/app_routes.dart';
