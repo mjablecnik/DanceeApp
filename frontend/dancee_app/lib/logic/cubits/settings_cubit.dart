@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -11,15 +13,28 @@ class SettingsCubit extends Cubit<SettingsState> {
   static const _notificationsKey = 'notifications_enabled';
 
   /// Reads persisted settings from SharedPreferences, sets slang locale, emits state.
+  /// If no locale is persisted, detects the device language and uses it if supported,
+  /// otherwise falls back to English.
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    final code = prefs.getString(_localeKey) ?? 'en';
+    final persisted = prefs.getString(_localeKey);
+    final code = persisted ?? _detectDeviceLanguage();
     final notificationsEnabled = prefs.getBool(_notificationsKey) ?? true;
     _applyLocale(code);
     emit(SettingsState(
       languageCode: code,
       notificationsEnabled: notificationsEnabled,
     ));
+  }
+
+  /// Returns the device language code if it matches a supported locale, otherwise 'en'.
+  String _detectDeviceLanguage() {
+    final deviceLocale = PlatformDispatcher.instance.locale;
+    final supported = AppLocale.values.map((l) => l.languageCode).toSet();
+    if (supported.contains(deviceLocale.languageCode)) {
+      return deviceLocale.languageCode;
+    }
+    return 'en';
   }
 
   /// Persists [languageCode] to SharedPreferences, updates slang locale, emits new state.
