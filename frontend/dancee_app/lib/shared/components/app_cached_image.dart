@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../core/colors.dart';
+import '../../core/theme.dart';
 
 class AppCachedImage extends StatelessWidget {
   final String imageUrl;
@@ -26,7 +27,7 @@ class AppCachedImage extends StatelessWidget {
         height: height,
         color: appSurface,
         child: const Center(
-          child: Icon(Icons.image_not_supported, color: appMuted, size: 24),
+          child: Icon(Icons.image_not_supported, color: appMuted, size: AppIconSizes.md),
         ),
       );
     }
@@ -45,7 +46,7 @@ class AppCachedImage extends StatelessWidget {
         height: height,
         color: appSurface,
         child: const Center(
-          child: Icon(Icons.broken_image, color: appMuted, size: 24),
+          child: Icon(Icons.broken_image, color: appMuted, size: AppIconSizes.md),
         ),
       ),
     );

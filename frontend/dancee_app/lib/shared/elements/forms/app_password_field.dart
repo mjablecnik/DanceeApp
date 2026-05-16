@@ -48,7 +48,7 @@ class _AppPasswordFieldState extends State<AppPasswordField> {
         ),
         const SizedBox(height: AppSpacing.sm),
         Container(
-          height: 48,
+          height: AppSizes.buttonHeightSm,
           decoration: BoxDecoration(
             color: appSurface,
             borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -57,7 +57,7 @@ class _AppPasswordFieldState extends State<AppPasswordField> {
           child: Row(
             children: [
               const SizedBox(width: AppSpacing.lg),
-              const FaIcon(FontAwesomeIcons.lock, color: appMuted, size: 16),
+              const FaIcon(FontAwesomeIcons.lock, color: appMuted, size: AppIconSizes.xs),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: TextField(
@@ -82,7 +82,7 @@ class _AppPasswordFieldState extends State<AppPasswordField> {
                 child: FaIcon(
                   _showPassword ? FontAwesomeIcons.eyeSlash : FontAwesomeIcons.eye,
                   color: appMuted,
-                  size: 16,
+                  size: AppIconSizes.xs,
                 ),
               ),
               const SizedBox(width: AppSpacing.lg),

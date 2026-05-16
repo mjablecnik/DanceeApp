@@ -105,8 +105,8 @@ class _CourseContentSubsectionState extends State<_CourseContentSubsection> {
                   GestureDetector(
                     onTap: isFirst ? _add : () => _remove(index),
                     child: Container(
-                      width: 40,
-                      height: 40,
+                      width: AppSizes.iconButtonMd,
+                      height: AppSizes.iconButtonMd,
                       decoration: BoxDecoration(
                         color: isFirst ? appPrimary : appSurface,
                         borderRadius: BorderRadius.circular(AppRadius.md),

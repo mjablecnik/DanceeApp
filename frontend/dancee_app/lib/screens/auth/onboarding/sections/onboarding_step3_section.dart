@@ -117,7 +117,7 @@ class _CityInputField extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           Container(
-            height: 48,
+            height: AppSizes.buttonHeightSm,
             decoration: BoxDecoration(
               color: appCard,
               borderRadius: BorderRadius.circular(AppRadius.lg),

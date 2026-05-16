@@ -19,7 +19,7 @@ class CoursesHeaderSection extends StatelessWidget {
         bottom: AppSpacing.lg,
       ),
       decoration: BoxDecoration(
-        color: appBg.withValues(alpha: 0.9),
+        color: appBg.withValues(alpha: AppOpacity.high),
         border: const Border(bottom: BorderSide(color: appBorder)),
       ),
       child: Row(
@@ -50,8 +50,8 @@ class CoursesHeaderSection extends StatelessWidget {
           GestureDetector(
             onTap: onFilterTap,
             child: Container(
-              width: 40,
-              height: 40,
+              width: AppSizes.iconButtonMd,
+              height: AppSizes.iconButtonMd,
               decoration: BoxDecoration(
                 color: appSurface,
                 borderRadius: BorderRadius.circular(AppRadius.round),

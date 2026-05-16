@@ -39,14 +39,14 @@ class ExperienceLevelCard extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 48,
-              height: 48,
+              width: AppSizes.buttonHeightSm,
+              height: AppSizes.buttonHeightSm,
               decoration: BoxDecoration(
                 color: appCard,
                 borderRadius: BorderRadius.circular(AppRadius.lg),
               ),
               child: Center(
-                child: FaIcon(icon, size: 20, color: iconColor),
+                child: FaIcon(icon, size: AppIconSizes.sm, color: iconColor),
               ),
             ),
             const SizedBox(width: AppSpacing.lg),

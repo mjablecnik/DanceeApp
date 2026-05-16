@@ -18,12 +18,12 @@ class HeroImageSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 256,
+      height: AppSizes.heroHeight,
       child: Stack(
         children: [
           AppCachedImage(
             imageUrl: imageUrl,
-            height: 256,
+            height: AppSizes.heroHeight,
             width: double.infinity,
             fit: BoxFit.cover,
           ),
@@ -73,8 +73,8 @@ class HeroFavoriteButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 40,
-        height: 40,
+        width: AppSizes.iconButtonMd,
+        height: AppSizes.iconButtonMd,
         decoration: BoxDecoration(
           color: Colors.black.withValues(alpha: 0.4),
           borderRadius: BorderRadius.circular(AppRadius.round),

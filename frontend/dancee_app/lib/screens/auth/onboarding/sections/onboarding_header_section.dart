@@ -24,8 +24,8 @@ class OnboardingHeaderSection extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Container(
-              width: 64,
-              height: 64,
+              width: AppSizes.avatarLg,
+              height: AppSizes.avatarLg,
               decoration: BoxDecoration(
                 gradient: AppGradients.primary,
                 borderRadius: BorderRadius.circular(AppRadius.xl),
@@ -35,7 +35,7 @@ class OnboardingHeaderSection extends StatelessWidget {
                 child: FaIcon(
                   FontAwesomeIcons.music,
                   color: Colors.white,
-                  size: 24,
+                  size: AppIconSizes.md,
                 ),
               ),
             ),

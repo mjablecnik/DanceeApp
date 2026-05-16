@@ -87,7 +87,7 @@ class OnboardingStep1Section extends StatelessWidget {
                       children: [
                         FaIcon(
                           dance.icon,
-                          size: 24,
+                          size: AppIconSizes.md,
                           color: selected ? appPrimary : appMuted,
                         ),
                         const SizedBox(height: AppSpacing.sm),

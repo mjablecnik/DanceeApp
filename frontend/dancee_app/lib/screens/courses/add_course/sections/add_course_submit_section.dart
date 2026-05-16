@@ -64,7 +64,7 @@ class AddCourseSubmitSection extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    FaIcon(FontAwesomeIcons.paperPlane, size: 16, color: appWhite),
+                    FaIcon(FontAwesomeIcons.paperPlane, size: AppIconSizes.xs, color: appWhite),
                     SizedBox(width: AppSpacing.sm),
                     Text(
                       'Odeslat kurz ke schválení',
@@ -98,7 +98,7 @@ class AddCourseSubmitSection extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    FaIcon(FontAwesomeIcons.floppyDisk, size: 16, color: appText),
+                    FaIcon(FontAwesomeIcons.floppyDisk, size: AppIconSizes.xs, color: appText),
                     SizedBox(width: AppSpacing.sm),
                     Text(
                       'Uložit jako koncept',

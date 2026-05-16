@@ -66,8 +66,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                     child: GestureDetector(
                       onTap: () => const LoginRoute().go(context),
                       child: Container(
-                        width: 44,
-                        height: 44,
+                        width: AppSizes.iconButtonLg,
+                        height: AppSizes.iconButtonLg,
                         decoration: BoxDecoration(
                           color: appSurface,
                           borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -77,7 +77,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                           child: FaIcon(
                             FontAwesomeIcons.arrowLeft,
                             color: appText,
-                            size: 16,
+                            size: AppIconSizes.xs,
                           ),
                         ),
                       ),

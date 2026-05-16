@@ -18,7 +18,7 @@ class SocialButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 56,
+      height: AppSizes.buttonHeight,
       decoration: BoxDecoration(
         color: appSurface,
         borderRadius: BorderRadius.circular(AppRadius.xl),

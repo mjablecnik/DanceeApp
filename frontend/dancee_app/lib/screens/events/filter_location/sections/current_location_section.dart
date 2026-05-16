@@ -23,13 +23,13 @@ class CurrentLocationSection extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 48,
-              height: 48,
+              width: AppSizes.buttonHeightSm,
+              height: AppSizes.buttonHeightSm,
               decoration: BoxDecoration(
                 color: appPrimary.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(FontAwesomeIcons.locationCrosshairs, size: 20, color: appPrimary),
+              child: const Icon(FontAwesomeIcons.locationCrosshairs, size: AppIconSizes.sm, color: appPrimary),
             ),
             const SizedBox(width: AppSpacing.lg),
             Expanded(

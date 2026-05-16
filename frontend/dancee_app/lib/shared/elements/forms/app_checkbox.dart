@@ -18,14 +18,14 @@ class AppCheckbox extends StatelessWidget {
     return GestureDetector(
       onTap: () => onChanged(!checked),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        width: 20,
-        height: 20,
+        duration: AppDurations.fast,
+        width: AppSizes.checkboxSize,
+        height: AppSizes.checkboxSize,
         decoration: BoxDecoration(
           color: checked ? appPrimary : Colors.transparent,
           border: Border.all(
             color: checked ? appPrimary : appBorder,
-            width: 2,
+            width: AppBorders.medium,
           ),
           borderRadius: BorderRadius.circular(AppRadius.xs),
         ),

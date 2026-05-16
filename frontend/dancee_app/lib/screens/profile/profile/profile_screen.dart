@@ -184,14 +184,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     trailing: GestureDetector(
                       onTap: () => const ProfileEditRoute().push(context),
                       child: Container(
-                        width: 40,
-                        height: 40,
+                        width: AppSizes.iconButtonMd,
+                        height: AppSizes.iconButtonMd,
                         decoration: BoxDecoration(
                           color: appSurface,
                           borderRadius: BorderRadius.circular(AppRadius.round),
                         ),
                         child: const Center(
-                          child: FaIcon(FontAwesomeIcons.pen, size: 16, color: appText),
+                          child: FaIcon(FontAwesomeIcons.pen, size: AppIconSizes.xs, color: appText),
                         ),
                       ),
                     ),

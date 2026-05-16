@@ -134,7 +134,7 @@ class _NavFab extends StatelessWidget {
             boxShadow: [AppShadows.primary],
           ),
           child: const Center(
-            child: FaIcon(FontAwesomeIcons.plus, size: 20, color: Colors.white),
+            child: FaIcon(FontAwesomeIcons.plus, size: AppIconSizes.sm, color: Colors.white),
           ),
         ),
       ),

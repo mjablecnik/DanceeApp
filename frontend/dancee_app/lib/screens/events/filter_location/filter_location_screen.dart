@@ -254,13 +254,13 @@ class _RegionRow extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: AppSizes.iconButtonMd,
+              height: AppSizes.iconButtonMd,
               decoration: BoxDecoration(
-                color: appPrimary.withValues(alpha: 0.15),
+                color: appPrimary.withValues(alpha: AppOpacity.subtle),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(FontAwesomeIcons.locationDot, color: appPrimary, size: 16),
+              child: const Icon(FontAwesomeIcons.locationDot, color: appPrimary, size: AppIconSizes.xs),
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(

@@ -40,7 +40,7 @@ class _EventProgramSectionState extends State<EventProgramSection> {
               AnimatedRotation(
                 turns: _expanded ? 0 : -0.25,
                 duration: const Duration(milliseconds: 300),
-                child: const FaIcon(FontAwesomeIcons.chevronDown, size: 16, color: appText),
+                child: const FaIcon(FontAwesomeIcons.chevronDown, size: AppIconSizes.xs, color: appText),
               ),
             ],
           ),

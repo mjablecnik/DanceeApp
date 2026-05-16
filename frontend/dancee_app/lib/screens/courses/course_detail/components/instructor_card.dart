@@ -40,8 +40,8 @@ class InstructorCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(32),
             child: AppCachedImage(
               imageUrl: avatarUrl,
-              width: 64,
-              height: 64,
+              width: AppSizes.avatarLg,
+              height: AppSizes.avatarLg,
               fit: BoxFit.cover,
             ),
           ),
@@ -64,7 +64,7 @@ class InstructorCard extends StatelessWidget {
                   style: const TextStyle(
                     color: appMuted,
                     fontSize: AppTypography.fontSizeMd,
-                    height: 1.5,
+                    height: AppLineHeights.normal,
                   ),
                 ),
                 if (stats.isNotEmpty) ...[

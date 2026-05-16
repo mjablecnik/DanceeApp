@@ -230,7 +230,7 @@ class PasswordField extends StatelessWidget {
                   padding: const EdgeInsets.only(right: AppSpacing.lg),
                   child: FaIcon(
                     visible ? FontAwesomeIcons.eyeSlash : FontAwesomeIcons.eye,
-                    size: 16,
+                    size: AppIconSizes.xs,
                     color: appMuted,
                   ),
                 ),
@@ -318,7 +318,7 @@ class NewPasswordField extends StatelessWidget {
                     visible
                         ? FontAwesomeIcons.eyeSlash
                         : FontAwesomeIcons.eye,
-                    size: 16,
+                    size: AppIconSizes.xs,
                     color: appMuted,
                   ),
                 ),
@@ -401,7 +401,7 @@ class ConfirmPasswordField extends StatelessWidget {
                     visible
                         ? FontAwesomeIcons.eyeSlash
                         : FontAwesomeIcons.eye,
-                    size: 16,
+                    size: AppIconSizes.xs,
                     color: appMuted,
                   ),
                 ),

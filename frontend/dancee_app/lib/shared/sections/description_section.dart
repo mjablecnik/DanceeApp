@@ -32,7 +32,7 @@ class DescriptionSection extends StatelessWidget {
             style: const TextStyle(
               color: appMuted,
               fontSize: AppTypography.fontSizeMd,
-              height: 1.6,
+              height: AppLineHeights.relaxed,
             ),
           ),
         ],

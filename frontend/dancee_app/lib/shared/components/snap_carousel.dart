@@ -11,7 +11,7 @@ class SnapCarousel extends StatefulWidget {
   const SnapCarousel({
     super.key,
     required this.itemCount,
-    this.itemWidth = 280,
+    this.itemWidth = AppSizes.featuredCardWidth,
     this.spacing = AppSpacing.lg,
     this.scaleFactor = 0.05,
     required this.itemBuilder,
@@ -58,7 +58,7 @@ class _SnapCarouselState extends State<SnapCarousel> {
   Widget build(BuildContext context) {
     final padding = _sidePadding(context);
     return SizedBox(
-      height: 340,
+      height: AppSizes.carouselHeight,
       child: ListView.separated(
         controller: _controller,
         scrollDirection: Axis.horizontal,

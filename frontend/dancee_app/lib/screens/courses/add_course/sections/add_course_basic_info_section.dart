@@ -152,7 +152,7 @@ class _CourseImageSubsection extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const FaIcon(FontAwesomeIcons.cloudArrowUp, size: 32, color: appMuted),
+              const FaIcon(FontAwesomeIcons.cloudArrowUp, size: AppIconSizes.lg, color: appMuted),
               const SizedBox(height: AppSpacing.md),
               const Text(
                 'Nahrajte obrázek kurzu',

@@ -24,7 +24,7 @@ class FilterLocationHeaderSection extends StatelessWidget {
         bottom: AppSpacing.lg,
       ),
       decoration: BoxDecoration(
-        color: appBg.withValues(alpha: 0.9),
+        color: appBg.withValues(alpha: AppOpacity.high),
         border: const Border(bottom: BorderSide(color: appBorder)),
       ),
       child: Row(
@@ -32,13 +32,13 @@ class FilterLocationHeaderSection extends StatelessWidget {
           GestureDetector(
             onTap: onBack,
             child: Container(
-              width: 40,
-              height: 40,
+              width: AppSizes.iconButtonMd,
+              height: AppSizes.iconButtonMd,
               decoration: const BoxDecoration(
                 color: appSurface,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(FontAwesomeIcons.arrowLeft, size: 16, color: appText),
+              child: const Icon(FontAwesomeIcons.arrowLeft, size: AppIconSizes.xs, color: appText),
             ),
           ),
           const SizedBox(width: AppSpacing.lg),

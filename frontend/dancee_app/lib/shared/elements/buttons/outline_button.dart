@@ -15,7 +15,7 @@ class AppOutlineButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 48,
+      height: AppSizes.buttonHeightSm,
       decoration: BoxDecoration(
         color: appSurface,
         borderRadius: BorderRadius.circular(AppRadius.lg),

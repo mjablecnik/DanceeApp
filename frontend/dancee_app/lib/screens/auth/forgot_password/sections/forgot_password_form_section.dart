@@ -129,17 +129,17 @@ class _ForgotPasswordFormSectionState extends State<ForgotPasswordFormSection> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      width: 40,
-                      height: 40,
+                      width: AppSizes.iconButtonMd,
+                      height: AppSizes.iconButtonMd,
                       decoration: BoxDecoration(
-                        color: appPrimary.withValues(alpha: 0.1),
+                        color: appPrimary.withValues(alpha: AppOpacity.faint),
                         borderRadius: BorderRadius.circular(AppRadius.lg),
                       ),
                       child: const Center(
                         child: FaIcon(
                           FontAwesomeIcons.circleInfo,
                           color: appPrimary,
-                          size: 16,
+                          size: AppIconSizes.xs,
                         ),
                       ),
                     ),
@@ -255,7 +255,7 @@ class _HelpButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 48,
+      height: AppSizes.buttonHeightSm,
       decoration: BoxDecoration(
         color: appSurface,
         borderRadius: BorderRadius.circular(AppRadius.lg),

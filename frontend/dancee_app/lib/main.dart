@@ -90,7 +90,7 @@ class _FirebaseErrorApp extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                const Icon(Icons.error_outline, size: AppIconSizes.xl, color: Colors.red),
                 const SizedBox(height: 16),
                 // Hard-coded English string is intentional: this widget is
                 // shown when Firebase.initializeApp() throws, which means the

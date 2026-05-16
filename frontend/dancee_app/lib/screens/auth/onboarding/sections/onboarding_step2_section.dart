@@ -107,14 +107,14 @@ class OnboardingStep2Section extends StatelessWidget {
                     child: Row(
                       children: [
                         Container(
-                          width: 48,
-                          height: 48,
+                          width: AppSizes.buttonHeightSm,
+                          height: AppSizes.buttonHeightSm,
                           decoration: BoxDecoration(
                             color: appCard,
                             borderRadius: BorderRadius.circular(AppRadius.lg),
                           ),
                           child: Center(
-                            child: FaIcon(level.icon, size: 20, color: level.iconColor),
+                            child: FaIcon(level.icon, size: AppIconSizes.sm, color: level.iconColor),
                           ),
                         ),
                         const SizedBox(width: AppSpacing.lg),

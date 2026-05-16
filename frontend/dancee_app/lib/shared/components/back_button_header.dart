@@ -25,7 +25,7 @@ class BackButtonHeader extends StatelessWidget {
         bottom: AppSpacing.lg,
       ),
       decoration: BoxDecoration(
-        color: appBg.withValues(alpha: 0.9),
+        color: appBg.withValues(alpha: AppOpacity.high),
         border: const Border(bottom: BorderSide(color: appBorder)),
       ),
       child: Row(
@@ -35,20 +35,20 @@ class BackButtonHeader extends StatelessWidget {
             GestureDetector(
               onTap: onBack,
               child: Container(
-                width: 40,
-                height: 40,
+                width: AppSizes.iconButtonMd,
+                height: AppSizes.iconButtonMd,
                 decoration: BoxDecoration(
                   color: appSurface,
                   borderRadius: BorderRadius.circular(AppRadius.round),
                 ),
                 child: const Center(
                   child: FaIcon(FontAwesomeIcons.arrowLeft,
-                      size: 16, color: appText),
+                      size: AppIconSizes.xs, color: appText),
                 ),
               ),
             )
           else if (trailing != null)
-            const SizedBox(width: 40, height: 40),
+            const SizedBox(width: AppSizes.iconButtonMd, height: AppSizes.iconButtonMd),
           Expanded(
             child: Text(
               title,

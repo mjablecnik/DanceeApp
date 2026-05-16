@@ -51,14 +51,14 @@ class UpcomingEventCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(AppRadius.lg),
                         child: AppCachedImage(
                           imageUrl: imageUrl,
-                          width: 96,
-                          height: 96,
+                          width: AppSizes.listCardImageSize,
+                          height: AppSizes.listCardImageSize,
                           fit: BoxFit.cover,
                         ),
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       Container(
-                        width: 96,
+                        width: AppSizes.listCardImageSize,
                         padding: const EdgeInsets.symmetric(
                           horizontal: AppSpacing.sm,
                           vertical: AppSpacing.xs,

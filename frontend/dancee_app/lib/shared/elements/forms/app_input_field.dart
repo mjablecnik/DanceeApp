@@ -41,7 +41,7 @@ class AppInputField extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.sm),
         Container(
-          height: 48,
+          height: AppSizes.buttonHeightSm,
           decoration: BoxDecoration(
             color: appSurface,
             borderRadius: BorderRadius.circular(AppRadius.lg),

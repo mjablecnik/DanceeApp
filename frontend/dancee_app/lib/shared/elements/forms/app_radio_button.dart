@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/colors.dart';
+import '../../../core/theme.dart';
 
 class AppRadioButton extends StatelessWidget {
   final bool selected;
@@ -16,20 +17,20 @@ class AppRadioButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 20,
-        height: 20,
+        width: AppSizes.checkboxSize,
+        height: AppSizes.checkboxSize,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(
             color: selected ? appPrimary : appBorder,
-            width: 2,
+            width: AppBorders.medium,
           ),
         ),
         child: selected
             ? Center(
                 child: Container(
-                  width: 10,
-                  height: 10,
+                  width: AppSizes.checkboxSize / 2,
+                  height: AppSizes.checkboxSize / 2,
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     color: appPrimary,

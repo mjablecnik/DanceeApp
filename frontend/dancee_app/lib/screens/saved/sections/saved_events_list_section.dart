@@ -150,7 +150,7 @@ class _SavedEmptyWidget extends StatelessWidget {
         children: [
           const FaIcon(
             FontAwesomeIcons.heart,
-            size: 48,
+            size: AppIconSizes.xl,
             color: appMuted,
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -192,7 +192,7 @@ class _SavedErrorWidget extends StatelessWidget {
           children: [
             const FaIcon(
               FontAwesomeIcons.circleExclamation,
-              size: 48,
+              size: AppIconSizes.xl,
               color: appMuted,
             ),
             const SizedBox(height: AppSpacing.lg),

@@ -36,7 +36,7 @@ class DanceStyleCard extends StatelessWidget {
           children: [
             FaIcon(
               icon,
-              size: 24,
+              size: AppIconSizes.md,
               color: selected ? appPrimary : appMuted,
             ),
             const SizedBox(height: AppSpacing.sm),

@@ -127,8 +127,8 @@ class CourseCardTopRow extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppRadius.md),
           child: AppCachedImage(
             imageUrl: imageUrl,
-            width: 64,
-            height: 64,
+            width: AppSizes.avatarLg,
+            height: AppSizes.avatarLg,
             fit: BoxFit.cover,
           ),
         ),
@@ -235,7 +235,7 @@ class CourseCardBottomRow extends StatelessWidget {
                   isFavorited
                       ? FontAwesomeIcons.solidHeart
                       : FontAwesomeIcons.heart,
-                  size: 16,
+                  size: AppIconSizes.xs,
                   color: isFavorited ? Colors.red : appMuted,
                 ),
               ),

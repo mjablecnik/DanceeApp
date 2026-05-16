@@ -110,7 +110,7 @@ class PricingOptionCard extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const FaIcon(FontAwesomeIcons.userPlus, size: 16, color: Colors.white),
+                    const FaIcon(FontAwesomeIcons.userPlus, size: AppIconSizes.xs, color: Colors.white),
                     const SizedBox(width: 10),
                     Text(
                       t.courses.detail.register,

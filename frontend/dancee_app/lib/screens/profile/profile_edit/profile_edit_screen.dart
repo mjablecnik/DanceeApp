@@ -226,14 +226,14 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               trailing: GestureDetector(
                 onTap: _isSaving ? null : _save,
                 child: Container(
-                  width: 40,
-                  height: 40,
+                  width: AppSizes.iconButtonMd,
+                  height: AppSizes.iconButtonMd,
                   decoration: BoxDecoration(
                     color: _isSaving ? appMuted : appPrimary,
                     borderRadius: BorderRadius.circular(AppRadius.round),
                   ),
                   child: const Center(
-                    child: FaIcon(FontAwesomeIcons.check, size: 16, color: Colors.white),
+                    child: FaIcon(FontAwesomeIcons.check, size: AppIconSizes.xs, color: Colors.white),
                   ),
                 ),
               ),

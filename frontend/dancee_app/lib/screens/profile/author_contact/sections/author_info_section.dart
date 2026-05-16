@@ -22,8 +22,8 @@ class AuthorInfoSection extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 48,
-                height: 48,
+                width: AppSizes.buttonHeightSm,
+                height: AppSizes.buttonHeightSm,
                 decoration: const BoxDecoration(
                   gradient: AppGradients.primary,
                   shape: BoxShape.circle,

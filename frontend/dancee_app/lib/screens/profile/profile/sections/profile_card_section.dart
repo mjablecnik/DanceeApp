@@ -31,11 +31,11 @@ class ProfileCardSection extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 64,
-            height: 64,
+            width: AppSizes.avatarLg,
+            height: AppSizes.avatarLg,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(32),
-              border: Border.all(color: appPrimary, width: 2),
+              border: Border.all(color: appPrimary, width: AppBorders.medium),
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(32),

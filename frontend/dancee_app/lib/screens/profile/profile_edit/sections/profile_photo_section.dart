@@ -255,11 +255,11 @@ class _ProfilePhotoSectionState extends State<ProfilePhotoSection> {
                 GestureDetector(
                   onTap: widget.isUploading ? null : _showSourceSelection,
                   child: Container(
-                    width: 96,
-                    height: 96,
+                    width: AppSizes.listCardImageSize,
+                    height: AppSizes.listCardImageSize,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(48),
-                      border: Border.all(color: appPrimary, width: 2),
+                      border: Border.all(color: appPrimary, width: AppBorders.medium),
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(48),

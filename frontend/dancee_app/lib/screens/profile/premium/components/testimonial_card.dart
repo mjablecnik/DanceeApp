@@ -34,8 +34,8 @@ class TestimonialCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppRadius.round),
                 child: AppCachedImage(
                   imageUrl: avatarUrl,
-                  width: 40,
-                  height: 40,
+                  width: AppSizes.iconButtonMd,
+                  height: AppSizes.iconButtonMd,
                   fit: BoxFit.cover,
                 ),
               ),

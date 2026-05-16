@@ -18,7 +18,7 @@ class AddEventHeaderSection extends StatelessWidget {
         bottom: AppSpacing.lg,
       ),
       decoration: BoxDecoration(
-        color: appBg.withValues(alpha: 0.9),
+        color: appBg.withValues(alpha: AppOpacity.high),
         border: const Border(bottom: BorderSide(color: appBorder)),
       ),
       child: Row(
@@ -27,14 +27,14 @@ class AddEventHeaderSection extends StatelessWidget {
           GestureDetector(
             onTap: onBack,
             child: Container(
-              width: 40,
-              height: 40,
+              width: AppSizes.iconButtonMd,
+              height: AppSizes.iconButtonMd,
               decoration: BoxDecoration(
                 color: appSurface,
                 borderRadius: BorderRadius.circular(AppRadius.round),
               ),
               child: const Center(
-                child: FaIcon(FontAwesomeIcons.arrowLeft, size: 16, color: appText),
+                child: FaIcon(FontAwesomeIcons.arrowLeft, size: AppIconSizes.xs, color: appText),
               ),
             ),
           ),
@@ -47,14 +47,14 @@ class AddEventHeaderSection extends StatelessWidget {
             ),
           ),
           Container(
-            width: 40,
-            height: 40,
+            width: AppSizes.iconButtonMd,
+            height: AppSizes.iconButtonMd,
             decoration: BoxDecoration(
               color: appSurface,
               borderRadius: BorderRadius.circular(AppRadius.round),
             ),
             child: const Center(
-              child: FaIcon(FontAwesomeIcons.question, size: 16, color: appText),
+              child: FaIcon(FontAwesomeIcons.question, size: AppIconSizes.xs, color: appText),
             ),
           ),
         ],

@@ -42,7 +42,7 @@ class FeaturedEventCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 280,
+        width: AppSizes.featuredCardWidth,
         decoration: BoxDecoration(
           color: appCard,
           border: Border.all(color: appBorder),
@@ -98,8 +98,8 @@ class FeaturedEventCardImage extends StatelessWidget {
           borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.round)),
           child: AppCachedImage(
             imageUrl: imageUrl,
-            height: 160,
-            width: 280,
+            height: AppSizes.featuredCardImageHeight,
+            width: AppSizes.featuredCardWidth,
             fit: BoxFit.cover,
           ),
         ),

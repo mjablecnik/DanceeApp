@@ -20,8 +20,8 @@ class PremiumHeroSection extends StatelessWidget {
         children: [
           Center(
             child: Container(
-              width: 96,
-              height: 96,
+              width: AppSizes.listCardImageSize,
+              height: AppSizes.listCardImageSize,
               decoration: BoxDecoration(
                 gradient: AppGradients.premium,
                 borderRadius: BorderRadius.circular(48),
@@ -55,7 +55,7 @@ class PremiumHeroSection extends StatelessWidget {
               style: const TextStyle(
                 color: appMuted,
                 fontSize: AppTypography.fontSizeMd,
-                height: 1.5,
+                height: AppLineHeights.normal,
               ),
             ),
           ),

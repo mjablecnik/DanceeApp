@@ -19,7 +19,7 @@ class GradientButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 56,
+      height: AppSizes.buttonHeight,
       decoration: BoxDecoration(
         gradient: gradient ?? AppGradients.primary,
         borderRadius: BorderRadius.circular(AppRadius.xl),
@@ -33,8 +33,8 @@ class GradientButton extends StatelessWidget {
           child: Center(
             child: isLoading
                 ? const SizedBox(
-                    width: 24,
-                    height: 24,
+                    width: AppIconSizes.md,
+                    height: AppIconSizes.md,
                     child: CircularProgressIndicator(
                       color: appWhite,
                       strokeWidth: 2.5,

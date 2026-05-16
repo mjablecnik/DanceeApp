@@ -22,7 +22,7 @@ class EventsHeaderSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: appBg.withValues(alpha: 0.9),
+        color: appBg.withValues(alpha: AppOpacity.high),
         border: const Border(bottom: BorderSide(color: appBorder)),
       ),
       child: Padding(
@@ -53,7 +53,7 @@ class EventsHeaderSection extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const FaIcon(FontAwesomeIcons.locationDot, color: appPrimary, size: 16),
+                        const FaIcon(FontAwesomeIcons.locationDot, color: appPrimary, size: AppIconSizes.xs),
                         const SizedBox(width: AppSpacing.xs + 2),
                         Flexible(
                           child: Text(
@@ -83,7 +83,7 @@ class EventsHeaderSection extends StatelessWidget {
                     vertical: AppSpacing.sm,
                   ),
                   decoration: BoxDecoration(
-                    color: appPrimary.withValues(alpha: 0.15),
+                    color: appPrimary.withValues(alpha: AppOpacity.subtle),
                     borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
                   child: Row(

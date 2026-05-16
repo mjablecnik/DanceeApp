@@ -75,14 +75,14 @@ class _LoginScreenState extends State<LoginScreen>
                         child: GestureDetector(
                           onTap: _goBack,
                           child: Container(
-                            width: 40,
-                            height: 40,
+                            width: AppSizes.iconButtonMd,
+                            height: AppSizes.iconButtonMd,
                             decoration: BoxDecoration(
                               color: appSurface,
                               borderRadius: BorderRadius.circular(AppRadius.round),
                             ),
                             child: const Center(
-                              child: Icon(Icons.arrow_back, size: 20, color: appText),
+                              child: Icon(Icons.arrow_back, size: AppIconSizes.sm, color: appText),
                             ),
                           ),
                         ),

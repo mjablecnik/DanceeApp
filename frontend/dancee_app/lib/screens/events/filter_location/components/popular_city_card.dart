@@ -38,8 +38,8 @@ class PopularCityCard extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 48,
-              height: 48,
+              width: AppSizes.buttonHeightSm,
+              height: AppSizes.buttonHeightSm,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,

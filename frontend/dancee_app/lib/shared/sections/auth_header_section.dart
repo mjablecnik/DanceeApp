@@ -26,8 +26,8 @@ class AuthHeaderSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double containerSize = compact ? 64 : 80;
-    final double iconSize = compact ? 24 : 32;
+    final double containerSize = compact ? AppSizes.avatarLg : 80;
+    final double iconSize = compact ? AppIconSizes.md : AppIconSizes.lg;
     final double containerRadius = compact ? AppRadius.xl : AppRadius.round;
     final double appNameFontSize =
         compact ? AppTypography.fontSize5xl : AppTypography.fontSize6xl;
@@ -92,7 +92,7 @@ class AuthHeaderSection extends StatelessWidget {
             style: TextStyle(
               color: appMuted,
               fontSize: compact ? AppTypography.fontSizeMd : null,
-              height: 1.5,
+              height: AppLineHeights.normal,
             ),
           ),
         ),

@@ -26,8 +26,8 @@ class PremiumBanner extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 44,
-              height: 44,
+              width: AppSizes.iconButtonLg,
+              height: AppSizes.iconButtonLg,
               decoration: BoxDecoration(
                 gradient: AppGradients.primary,
                 borderRadius: BorderRadius.circular(AppRadius.full),

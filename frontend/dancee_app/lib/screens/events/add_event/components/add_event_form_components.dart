@@ -18,7 +18,7 @@ class AddEventSectionHeading extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        FaIcon(icon, size: 16, color: appPrimary),
+        FaIcon(icon, size: AppIconSizes.xs, color: appPrimary),
         const SizedBox(width: AppSpacing.sm),
         Text(
           label,

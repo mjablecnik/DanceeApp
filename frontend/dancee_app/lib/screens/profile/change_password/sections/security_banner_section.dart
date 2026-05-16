@@ -27,8 +27,8 @@ class SecurityBannerSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: AppSizes.iconButtonMd,
+            height: AppSizes.iconButtonMd,
             decoration: BoxDecoration(
               color: appWarning.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(AppRadius.md),
@@ -56,7 +56,7 @@ class SecurityBannerSection extends StatelessWidget {
                   style: const TextStyle(
                     color: appMuted,
                     fontSize: AppTypography.fontSizeSm,
-                    height: 1.5,
+                    height: AppLineHeights.normal,
                   ),
                 ),
               ],

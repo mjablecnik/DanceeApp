@@ -26,14 +26,14 @@ class SocialLinksSection extends StatelessWidget {
         children: [
           _SocialLinkField(
             label: t.profile.editProfile.instagram,
-            icon: const FaIcon(FontAwesomeIcons.instagram, size: 16, color: appMuted),
+            icon: const FaIcon(FontAwesomeIcons.instagram, size: AppIconSizes.xs, color: appMuted),
             hintText: t.profile.editProfile.instagramHint,
             controller: instagramController,
           ),
           const SizedBox(height: AppSpacing.lg),
           _SocialLinkField(
             label: t.profile.editProfile.facebook,
-            icon: const FaIcon(FontAwesomeIcons.facebook, size: 16, color: appMuted),
+            icon: const FaIcon(FontAwesomeIcons.facebook, size: AppIconSizes.xs, color: appMuted),
             hintText: t.profile.editProfile.facebookHint,
             controller: facebookController,
           ),

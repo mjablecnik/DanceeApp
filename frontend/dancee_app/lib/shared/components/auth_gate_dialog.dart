@@ -54,7 +54,7 @@ class AuthGateBottomSheet extends StatelessWidget {
         children: [
           const Icon(
             Icons.lock_outline_rounded,
-            size: 48,
+            size: AppIconSizes.xl,
             color: appPrimary,
           ),
           const SizedBox(height: AppSpacing.lg),

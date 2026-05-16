@@ -27,7 +27,7 @@ class AddEventSubmitSection extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    FaIcon(FontAwesomeIcons.paperPlane, size: 16, color: appWhite),
+                    FaIcon(FontAwesomeIcons.paperPlane, size: AppIconSizes.xs, color: appWhite),
                     SizedBox(width: AppSpacing.sm),
                     Text(
                       'Odeslat ke schválení',
