@@ -48,8 +48,9 @@ class DirectusClient {
         }
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
+        } else if (_accessToken.isNotEmpty) {
+          options.headers['Authorization'] = 'Bearer $_accessToken';
         } else {
-          // No Directus session token — rely on Directus public role.
           options.headers.remove('Authorization');
         }
         handler.next(options);
