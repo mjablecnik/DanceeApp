@@ -33,3 +33,6 @@ const Color appIndigo = Color(0xFF6366F1);
 const Color appPurple = Color(0xFF9333EA);
 const Color appHotPink = Color(0xFFDB2777);
 const Color appLightBlueTint = Color(0xFF93C5FD);
+const Color appWhite = Color(0xFFFFFFFF);
+const Color appMutedDark = Color(0xFF64748B);
+const Color appOverlay = Color(0x80000000);

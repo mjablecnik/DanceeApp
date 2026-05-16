@@ -347,7 +347,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Positioned.fill(
                   child: AbsorbPointer(
                     child: ColoredBox(
-                      color: const Color(0x80000000),
+                      color: appOverlay,
                       child: const Center(
                         child: CircularProgressIndicator(color: appPrimary),
                       ),

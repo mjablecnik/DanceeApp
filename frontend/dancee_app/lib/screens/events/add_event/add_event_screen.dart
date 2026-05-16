@@ -639,7 +639,7 @@ class _TextInput extends StatelessWidget {
         ),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: const TextStyle(color: Color(0xFF64748B)),
+          hintStyle: const TextStyle(color: appMutedDark),
           border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(
             horizontal: AppSpacing.lg,
@@ -685,7 +685,7 @@ class _TextAreaInput extends StatelessWidget {
         ),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: const TextStyle(color: Color(0xFF64748B)),
+          hintStyle: const TextStyle(color: appMutedDark),
           border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(
             horizontal: AppSpacing.lg,
@@ -751,7 +751,7 @@ class _DateInputState extends State<_DateInput> {
               child: Text(
                 label.isEmpty ? 'dd.mm.rrrr' : label,
                 style: TextStyle(
-                  color: label.isEmpty ? const Color(0xFF64748B) : appText,
+                  color: label.isEmpty ? appMutedDark : appText,
                   fontSize: AppTypography.fontSizeMd,
                 ),
               ),
@@ -816,7 +816,7 @@ class _TimeInputState extends State<_TimeInput> {
               child: Text(
                 label.isEmpty ? '--:--' : label,
                 style: TextStyle(
-                  color: label.isEmpty ? const Color(0xFF64748B) : appText,
+                  color: label.isEmpty ? appMutedDark : appText,
                   fontSize: AppTypography.fontSizeMd,
                 ),
               ),
