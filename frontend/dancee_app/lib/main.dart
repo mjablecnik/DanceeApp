@@ -20,6 +20,7 @@ import 'logic/cubits/filter_cubit.dart';
 import 'logic/cubits/profile_cubit.dart';
 import 'logic/cubits/settings_cubit.dart';
 import 'logic/states/course_state.dart';
+import 'services/directus_auth_service.dart';
 import 'shared/utils/auth_translations.dart';
 import 'shared/utils/filter_prefill.dart';
 import 'logic/states/auth_state.dart';
@@ -380,14 +381,31 @@ class _AppListenersState extends State<_AppListeners> with WidgetsBindingObserve
               !prev.maybeMap(authenticated: (_) => true, orElse: () => false) &&
               curr.maybeMap(authenticated: (_) => true, orElse: () => false),
           listener: (context, state) async {
+            final authCubit = context.read<AuthCubit>();
             final profileCubit = context.read<ProfileCubit>();
             final filterCubit = context.read<FilterCubit>();
 
             // Wait for Directus token exchange to complete.
-            await Future.delayed(const Duration(seconds: 2));
+            // Check if tokens are already available (fast path for fresh sign-in
+            // where linkAndAuthenticate already obtained tokens).
+            final directusAuth = sl<DirectusAuthService>();
+            if (!directusAuth.hasTokens) {
+              final completer = Completer<void>();
+              void onLinked() {
+                if (!completer.isCompleted) completer.complete();
+              }
+              authCubit.directusLinkedNotifier.addListener(onLinked);
+              await completer.future.timeout(
+                const Duration(seconds: 10),
+                onTimeout: () {},
+              );
+              authCubit.directusLinkedNotifier.removeListener(onLinked);
+            }
 
             // Load favorites now that user is authenticated
-            context.read<FavoritesCubit>().loadFavorites();
+            if (context.mounted) {
+              context.read<FavoritesCubit>().loadFavorites();
+            }
 
             await profileCubit.loadProfile();
             if (!filterCubit.state.hasActiveFilters) {
@@ -397,9 +415,11 @@ class _AppListenersState extends State<_AppListeners> with WidgetsBindingObserve
                       'danceTags=${s.profile.danceTags}, city=${s.profile.city}');
                   prefillFiltersFromProfile(s.profile, filterCubit);
                   // Explicitly re-apply filters so EventCubit/CourseCubit update
-                  final fs = filterCubit.state;
-                  context.read<EventCubit>().applyFilters(fs, fs.danceStyles);
-                  context.read<CourseCubit>().applyFilters(fs, fs.danceStyles);
+                  if (context.mounted) {
+                    final fs = filterCubit.state;
+                    context.read<EventCubit>().applyFilters(fs, fs.danceStyles);
+                    context.read<CourseCubit>().applyFilters(fs, fs.danceStyles);
+                  }
                 },
                 orElse: () {
                   debugPrint('[FilterPrefill] Profile not loaded, skipping prefill');
