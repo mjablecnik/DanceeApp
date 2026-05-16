@@ -52,6 +52,7 @@ class EventCubit extends Cubit<EventState> {
   ///
   /// Uses [allDanceStyles] to resolve parent-child relationships, so a parent
   /// code like "salsa" also counts events tagged "salsa-on1", "salsa-on2", etc.
+  /// Counts are computed against events filtered by the current region selection.
   int countEventsForDanceStyle(String styleCode, List<DanceStyle> allDanceStyles) {
     final expandedCodes = <String>{styleCode};
     final expandedNames = <String>{};
@@ -61,10 +62,30 @@ class EventCubit extends Cubit<EventState> {
       expandedCodes.add(child.code);
       expandedNames.add(child.name.toLowerCase());
     }
-    return _allEvents
+    final events = _regionFilteredEvents;
+    return events
         .where((e) => e.dances.any((d) =>
             expandedCodes.contains(d) || expandedNames.contains(d.toLowerCase())))
         .length;
+  }
+
+  /// Returns events filtered only by the current region selection (ignoring
+  /// dance style and duration type filters). Used for dance style counts.
+  List<Event> get _regionFilteredEvents {
+    if (_currentFilters.selectedRegions.isEmpty) return _allEvents;
+    return _allEvents.where((event) {
+      final venue = event.venue;
+      if (venue == null) return false;
+      final isCz = kCzCountryValues.contains(venue.country);
+      final abroadSelected = _currentFilters.selectedRegions.contains(kAbroadRegionKey);
+      final czRegions = _currentFilters.selectedRegions.where((r) => r != kAbroadRegionKey).toSet();
+      if (!isCz) {
+        return abroadSelected;
+      } else {
+        if (czRegions.isEmpty) return false;
+        return czRegions.contains(venue.region);
+      }
+    }).toList();
   }
 
   /// Returns the number of events that match [region].

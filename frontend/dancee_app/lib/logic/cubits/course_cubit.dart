@@ -32,6 +32,7 @@ class CourseCubit extends Cubit<CourseState> {
 
   /// Returns the number of courses whose dances match [styleCode] or any of
   /// its child styles resolved via [allDanceStyles].
+  /// Counts are computed against courses filtered by the current region selection.
   int countCoursesForDanceStyle(String styleCode, List<DanceStyle> allDanceStyles) {
     final expandedCodes = <String>{styleCode};
     final expandedNames = <String>{};
@@ -41,10 +42,21 @@ class CourseCubit extends Cubit<CourseState> {
       expandedCodes.add(child.code);
       expandedNames.add(child.name.toLowerCase());
     }
-    return _allCourses
+    final courses = _regionFilteredCourses;
+    return courses
         .where((c) => c.dances.any((d) =>
             expandedCodes.contains(d) || expandedNames.contains(d.toLowerCase())))
         .length;
+  }
+
+  /// Returns courses filtered only by the current region selection (ignoring
+  /// dance style and course type filters). Used for dance style counts.
+  List<Course> get _regionFilteredCourses {
+    if (_currentFilters.selectedRegions.isEmpty) return _allCourses;
+    return _allCourses.where((course) {
+      if (course.venue == null) return false;
+      return _currentFilters.selectedRegions.contains(course.venue!.region);
+    }).toList();
   }
 
   /// Returns the number of courses whose venue region matches [region].

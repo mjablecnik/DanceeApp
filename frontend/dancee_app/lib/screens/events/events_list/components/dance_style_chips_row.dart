@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/colors.dart';
 import '../../../../core/theme.dart';
+import '../../../../logic/cubits/course_cubit.dart';
+import '../../../../logic/cubits/event_cubit.dart';
 import '../../../../logic/cubits/filter_cubit.dart';
 import '../../../../logic/states/filter_state.dart';
 
@@ -12,8 +14,23 @@ class DanceStyleChipsRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<FilterCubit, FilterState>(
       builder: (context, filterState) {
-        final styles = List.of(filterState.parentDanceStyles)
+        final allParentStyles = List.of(filterState.parentDanceStyles)
           ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+        if (allParentStyles.isEmpty) return const SizedBox.shrink();
+
+        final filterCubit = context.read<FilterCubit>();
+        final allDanceStyles = filterCubit.allDanceStyles;
+        final eventCubit = context.read<EventCubit>();
+        final courseCubit = context.read<CourseCubit>();
+
+        // Only show styles that have at least 1 event or course
+        // (respecting the current region filter).
+        final styles = allParentStyles.where((s) {
+          final eventCount = eventCubit.countEventsForDanceStyle(s.code, allDanceStyles);
+          final courseCount = courseCubit.countCoursesForDanceStyle(s.code, allDanceStyles);
+          return eventCount > 0 || courseCount > 0;
+        }).toList();
+
         if (styles.isEmpty) return const SizedBox.shrink();
 
         final selectedCodes = filterState.selectedDanceStyles;
