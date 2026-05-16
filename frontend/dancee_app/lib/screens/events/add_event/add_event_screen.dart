@@ -447,7 +447,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
               borderRadius: BorderRadius.circular(AppRadius.lg),
               onTap: () {},
               child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 16),
+                padding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

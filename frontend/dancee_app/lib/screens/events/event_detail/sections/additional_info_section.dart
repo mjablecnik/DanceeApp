@@ -113,7 +113,7 @@ class BuyTicketsButton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm + 2),
         decoration: BoxDecoration(
           color: appPrimary,
           borderRadius: BorderRadius.circular(AppRadius.md),
@@ -149,7 +149,7 @@ class SourceButton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm + 2),
         decoration: BoxDecoration(
           color: appSurface,
           border: Border.all(color: appBorder),

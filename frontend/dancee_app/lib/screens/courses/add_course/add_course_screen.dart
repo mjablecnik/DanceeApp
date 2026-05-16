@@ -513,7 +513,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
               borderRadius: BorderRadius.circular(AppRadius.lg),
               onTap: () {},
               child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 14),
+                padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -551,7 +551,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
               borderRadius: BorderRadius.circular(AppRadius.lg),
               onTap: () {},
               child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 14),
+                padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

@@ -96,7 +96,7 @@ class CourseAdditionalActions extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppRadius.lg),
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -127,7 +127,7 @@ class CourseAdditionalActions extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppRadius.lg),
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
