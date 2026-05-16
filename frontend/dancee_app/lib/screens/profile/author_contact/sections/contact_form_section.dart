@@ -392,14 +392,14 @@ class _ContactFormSectionState extends State<ContactFormSection> {
             onPressed: (_isLoading || _isSent) ? null : _submit,
             style: ElevatedButton.styleFrom(
               backgroundColor: _isSent ? appSuccessDark : appPrimary,
-              foregroundColor: Colors.white,
+              foregroundColor: appWhite,
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               disabledBackgroundColor:
                   _isSent ? appSuccessDark : appPrimary.withValues(alpha: 0.7),
-              disabledForegroundColor: Colors.white,
+              disabledForegroundColor: appWhite,
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -409,7 +409,7 @@ class _ContactFormSectionState extends State<ContactFormSection> {
                     width: 16,
                     height: 16,
                     child: CircularProgressIndicator(
-                      color: Colors.white,
+                      color: appWhite,
                       strokeWidth: 2,
                     ),
                   )

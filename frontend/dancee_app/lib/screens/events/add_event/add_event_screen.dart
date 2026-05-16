@@ -454,13 +454,13 @@ class _AddEventScreenState extends State<AddEventScreen> {
                     FaIcon(
                       FontAwesomeIcons.paperPlane,
                       size: 16,
-                      color: Colors.white,
+                      color: appWhite,
                     ),
                     SizedBox(width: AppSpacing.sm),
                     Text(
                       'Odeslat ke schválení',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: appWhite,
                         fontSize: AppTypography.fontSizeXl,
                         fontWeight: AppTypography.fontWeightBold,
                       ),
@@ -904,7 +904,7 @@ class _DanceTag extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : appText,
+            color: isSelected ? appWhite : appText,
             fontSize: AppTypography.fontSizeMd,
             fontWeight: AppTypography.fontWeightMedium,
           ),

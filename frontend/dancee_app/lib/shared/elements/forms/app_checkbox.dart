@@ -31,7 +31,7 @@ class AppCheckbox extends StatelessWidget {
         ),
         child: checked
             ? const Center(
-                child: FaIcon(FontAwesomeIcons.check, size: 10, color: Colors.white),
+                child: FaIcon(FontAwesomeIcons.check, size: 10, color: appWhite),
               )
             : null,
       ),

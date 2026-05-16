@@ -81,7 +81,7 @@ class PlanCard extends StatelessWidget {
                       child: Text(
                         price,
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: appWhite,
                           fontSize: AppTypography.fontSize6xl,
                           fontWeight: AppTypography.fontWeightBold,
                         ),
@@ -142,7 +142,7 @@ class PlanCard extends StatelessWidget {
                   child: Text(
                     ctaLabel,
                     style: TextStyle(
-                      color: isPrimary ? Colors.white : appText,
+                      color: isPrimary ? appWhite : appText,
                       fontSize: AppTypography.fontSizeLg,
                       fontWeight: AppTypography.fontWeightSemiBold,
                     ),
@@ -167,7 +167,7 @@ class PlanCard extends StatelessWidget {
                 child: Text(
                   badge!,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: appWhite,
                     fontSize: AppTypography.fontSizeXs,
                     fontWeight: AppTypography.fontWeightBold,
                   ),

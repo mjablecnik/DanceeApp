@@ -446,7 +446,7 @@ class PasswordActionButtons extends StatelessWidget {
             onPressed: onSave,
             style: ElevatedButton.styleFrom(
               backgroundColor: appPrimary,
-              foregroundColor: Colors.white,
+              foregroundColor: appWhite,
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppRadius.lg)),
@@ -459,13 +459,13 @@ class PasswordActionButtons extends StatelessWidget {
                     width: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      valueColor: AlwaysStoppedAnimation<Color>(appWhite),
                     ),
                   )
                 : Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const FaIcon(FontAwesomeIcons.check, size: 14, color: Colors.white),
+                      const FaIcon(FontAwesomeIcons.check, size: 14, color: appWhite),
                       const SizedBox(width: AppSpacing.sm),
                       Text(
                         t.profile.changePassword.save,

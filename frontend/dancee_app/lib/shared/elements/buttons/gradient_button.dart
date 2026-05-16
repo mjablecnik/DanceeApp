@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/colors.dart';
 import '../../../core/theme.dart';
 
 class GradientButton extends StatelessWidget {
@@ -35,14 +36,14 @@ class GradientButton extends StatelessWidget {
                     width: 24,
                     height: 24,
                     child: CircularProgressIndicator(
-                      color: Colors.white,
+                      color: appWhite,
                       strokeWidth: 2.5,
                     ),
                   )
                 : Text(
                     label,
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: appWhite,
                       fontSize: AppTypography.fontSizeXl,
                       fontWeight: AppTypography.fontWeightBold,
                     ),

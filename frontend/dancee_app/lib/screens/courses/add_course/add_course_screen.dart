@@ -349,7 +349,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                               ? FontAwesomeIcons.plus
                               : FontAwesomeIcons.minus,
                           size: 14,
-                          color: isFirst ? Colors.white : appMuted,
+                          color: isFirst ? appWhite : appMuted,
                         ),
                       ),
                     ),
@@ -520,13 +520,13 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                     FaIcon(
                       FontAwesomeIcons.paperPlane,
                       size: 16,
-                      color: Colors.white,
+                      color: appWhite,
                     ),
                     SizedBox(width: AppSpacing.sm),
                     Text(
                       'Odeslat kurz ke schválení',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: appWhite,
                         fontSize: AppTypography.fontSizeXl,
                         fontWeight: AppTypography.fontWeightBold,
                       ),
