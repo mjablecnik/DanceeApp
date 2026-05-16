@@ -146,6 +146,57 @@ class AppShadows {
   );
 }
 
+class AppSizes {
+  static const double buttonHeight = 56;
+  static const double buttonHeightSm = 48;
+  static const double iconButtonLg = 44;
+  static const double iconButtonMd = 40;
+  static const double iconButtonSm = 36;
+  static const double avatarLg = 64;
+  static const double avatarSm = 40;
+  static const double heroHeight = 256;
+  static const double carouselHeight = 340;
+  static const double featuredCardWidth = 280;
+  static const double featuredCardImageHeight = 160;
+  static const double listCardImageSize = 96;
+  static const double fabSize = 56;
+  static const double checkboxSize = 20;
+}
+
+class AppIconSizes {
+  static const double xl = 48;
+  static const double lg = 32;
+  static const double md = 24;
+  static const double sm = 20;
+  static const double xs = 16;
+}
+
+class AppBorders {
+  static const double thick = 4;
+  static const double medium = 2;
+  static const double thin = 1;
+}
+
+class AppDurations {
+  static const Duration fast = Duration(milliseconds: 200);
+  static const Duration normal = Duration(milliseconds: 300);
+  static const Duration slow = Duration(milliseconds: 3000);
+}
+
+class AppLineHeights {
+  static const double tight = 1.3;
+  static const double normal = 1.5;
+  static const double relaxed = 1.6;
+}
+
+class AppOpacity {
+  static const double high = 0.9;
+  static const double medium = 0.5;
+  static const double low = 0.3;
+  static const double subtle = 0.15;
+  static const double faint = 0.1;
+}
+
 class AppGradients {
   static const LinearGradient primary = LinearGradient(
     colors: [appPrimary, appAccent],
