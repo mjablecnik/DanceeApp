@@ -22,93 +22,100 @@ class EventsListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ColoredBox(
-      color: appBg,
-      child: Column(
-        children: [
-          BlocBuilder<FilterCubit, FilterState>(
-            builder: (context, filterState) {
-              final regions = filterState.selectedRegions;
-              final location = regions.isEmpty
-                  ? t.events.filter.allCities
-                  : regions.map(regionLabel).join(', ');
-              return EventsHeaderSection(
+    return BlocBuilder<FilterCubit, FilterState>(
+      builder: (context, filterState) {
+        final regions = filterState.selectedRegions;
+        final location = regions.isEmpty
+            ? t.events.filter.allCities
+            : regions.map(regionLabel).join(', ');
+        return ColoredBox(
+          color: appBg,
+          child: Column(
+            children: [
+              EventsHeaderSection(
                 location: location,
                 onLocationTap: () => const FilterLocationRoute().push(context),
                 hasActiveFilters: filterState.hasActiveFilters,
                 onClearFilters: () => context.read<FilterCubit>().clearAll(),
-              );
-            },
-          ),
-          Expanded(
-            child: BlocBuilder<EventCubit, EventState>(
-              builder: (context, state) {
-                return state.map(
-                  initial: (_) => const SizedBox.shrink(),
-                  loading: (_) => const Center(
-                    child: CircularProgressIndicator(color: appPrimary),
-                  ),
-                  loaded: (loaded) => SingleChildScrollView(
-                    padding: const EdgeInsets.only(bottom: 16, top: AppSpacing.xxl),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const EventDurationTypeFilterSection(),
-                        const SizedBox(height: AppSpacing.xxl),
-                        BlocBuilder<FilterCubit, FilterState>(
-                          builder: (context, filterState) {
-                            return DanceStylesFilterSection(
+              ),
+              Expanded(
+                child: BlocBuilder<EventCubit, EventState>(
+                  builder: (context, state) {
+                    return state.map(
+                      initial: (_) => const SizedBox.shrink(),
+                      loading: (_) => const Center(
+                        child: CircularProgressIndicator(color: appPrimary),
+                      ),
+                      loaded: (loaded) => SingleChildScrollView(
+                        padding: const EdgeInsets.only(bottom: 16, top: AppSpacing.xxl),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const EventDurationTypeFilterSection(),
+                            const SizedBox(height: AppSpacing.xxl),
+                            DanceStylesFilterSection(
                               onShowAll: () => const FilterDanceRoute().push(context),
-                            );
-                          },
+                            ),
+                            const SizedBox(height: AppSpacing.xxxl),
+                            ListenableBuilder(
+                              listenable: context.read<FilterCubit>(),
+                              builder: (context, _) {
+                                final filterCubit = context.read<FilterCubit>();
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    FeaturedEventsSection(
+                                      events: loaded.featuredEvents,
+                                      allDanceStyles: filterCubit.allDanceStyles,
+                                      activeFilterCodes: filterCubit.state.selectedDanceStyles,
+                                      onEventTap: (id) => EventDetailRoute(id: id).push(context),
+                                    ),
+                                    if (loaded.featuredEvents.isNotEmpty)
+                                      const SizedBox(height: AppSpacing.xxxl),
+                                    UpcomingEventsSection(
+                                      events: loaded.filteredEvents,
+                                      allDanceStyles: filterCubit.allDanceStyles,
+                                      activeFilterCodes: filterCubit.state.selectedDanceStyles,
+                                      hasActiveFilters: filterCubit.state.hasActiveFilters,
+                                      onClearFilters: () => filterCubit.clearAll(),
+                                      onEventTap: (id) => EventDetailRoute(id: id).push(context),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: AppSpacing.xxxl),
-                        FeaturedEventsSection(
-                          events: loaded.featuredEvents,
-                          allDanceStyles: context.read<FilterCubit>().allDanceStyles,
-                          activeFilterCodes: context.read<FilterCubit>().state.selectedDanceStyles,
-                          onEventTap: (id) => EventDetailRoute(id: id).push(context),
+                      ),
+                      error: (err) => Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              resolveApiErrorKey(err.message),
+                              style: const TextStyle(color: appMuted),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: AppSpacing.lg),
+                            TextButton(
+                              onPressed: () {
+                                final cubit = context.read<EventCubit>();
+                                final lang = context.read<SettingsCubit>().currentLanguageCode;
+                                cubit.loadEvents(lang);
+                              },
+                              child: Text(t.common.retry, style: const TextStyle(color: appPrimary)),
+                            ),
+                          ],
                         ),
-                        if (loaded.featuredEvents.isNotEmpty)
-                          const SizedBox(height: AppSpacing.xxxl),
-                        UpcomingEventsSection(
-                          events: loaded.filteredEvents,
-                          allDanceStyles: context.read<FilterCubit>().allDanceStyles,
-                          activeFilterCodes: context.read<FilterCubit>().state.selectedDanceStyles,
-                          hasActiveFilters: context.read<FilterCubit>().state.hasActiveFilters,
-                          onClearFilters: () => context.read<FilterCubit>().clearAll(),
-                          onEventTap: (id) => EventDetailRoute(id: id).push(context),
-                        ),
-                      ],
-                    ),
-                  ),
-                  error: (err) => Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          resolveApiErrorKey(err.message),
-                          style: const TextStyle(color: appMuted),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: AppSpacing.lg),
-                        TextButton(
-                          onPressed: () {
-                            final cubit = context.read<EventCubit>();
-                            final lang = context.read<SettingsCubit>().currentLanguageCode;
-                            cubit.loadEvents(lang);
-                          },
-                          child: Text(t.common.retry, style: const TextStyle(color: appPrimary)),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
