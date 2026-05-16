@@ -54,6 +54,7 @@ class EventsListScreen extends StatelessWidget {
                             // const EventDurationTypeFilterSection(),
                             // const SizedBox(height: AppSpacing.xxl),
                             DanceStylesFilterSection(
+                              source: 'events',
                               onShowAll: () => const FilterDanceRoute().push(context),
                             ),
                             const SizedBox(height: AppSpacing.xxxl),

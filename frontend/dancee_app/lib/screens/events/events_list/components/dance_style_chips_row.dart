@@ -10,7 +10,13 @@ import '../../../../logic/states/event_state.dart';
 import '../../../../logic/states/filter_state.dart';
 
 class DanceStyleChipsRow extends StatelessWidget {
-  const DanceStyleChipsRow({super.key});
+  /// [source] determines which cubit provides the counts:
+  /// - 'events' (default): only count events
+  /// - 'courses': only count courses
+  /// - 'both': count events + courses (show if either has items)
+  final String source;
+
+  const DanceStyleChipsRow({super.key, this.source = 'both'});
 
   @override
   Widget build(BuildContext context) {
@@ -42,14 +48,19 @@ class DanceStyleChipsRow extends StatelessWidget {
     final eventCubit = context.read<EventCubit>();
     final courseCubit = context.read<CourseCubit>();
 
-    // Only show styles that have at least 1 event or course
-    // (respecting the current region filter).
+    // Only show styles that have at least 1 item (respecting region filter).
     final styles = allParentStyles.where((s) {
-      final eventCount =
-          eventCubit.countEventsForDanceStyle(s.code, allDanceStyles);
-      final courseCount =
-          courseCubit.countCoursesForDanceStyle(s.code, allDanceStyles);
-      return eventCount > 0 || courseCount > 0;
+      if (source == 'events') {
+        return eventCubit.countEventsForDanceStyle(s.code, allDanceStyles) > 0;
+      } else if (source == 'courses') {
+        return courseCubit.countCoursesForDanceStyle(s.code, allDanceStyles) > 0;
+      } else {
+        final eventCount =
+            eventCubit.countEventsForDanceStyle(s.code, allDanceStyles);
+        final courseCount =
+            courseCubit.countCoursesForDanceStyle(s.code, allDanceStyles);
+        return eventCount > 0 || courseCount > 0;
+      }
     }).toList();
 
     if (styles.isEmpty) return const SizedBox.shrink();

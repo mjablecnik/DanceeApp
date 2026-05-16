@@ -10,9 +10,14 @@ class DanceStylesFilterSection extends StatelessWidget {
   /// When null, shows a compact uppercase muted label instead.
   final VoidCallback? onShowAll;
 
+  /// Determines which items to count for filtering visible styles:
+  /// 'events', 'courses', or 'both' (default).
+  final String source;
+
   const DanceStylesFilterSection({
     super.key,
     this.onShowAll,
+    this.source = 'both',
   });
 
   @override
@@ -22,7 +27,7 @@ class DanceStylesFilterSection extends StatelessWidget {
       children: [
         DanceStylesFilterHeader(onShowAll: onShowAll),
         SizedBox(height: onShowAll != null ? AppSpacing.lg : AppSpacing.md),
-        const DanceStyleChipsRow(),
+        DanceStyleChipsRow(source: source),
       ],
     );
   }

@@ -83,6 +83,7 @@ class CoursesListScreen extends StatelessWidget {
                               (d) => selectedCodes.contains(d.code),
                             );
                             return DanceStylesFilterSection(
+                              source: 'courses',
                               onShowAll: () => const FilterDanceRoute(source: 'courses').push(context),
                             );
                           },
