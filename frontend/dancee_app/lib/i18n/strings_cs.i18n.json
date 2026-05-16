@@ -422,7 +422,9 @@
     "message": "Vytvořte si účet nebo se přihlaste pro přístup k uloženým akcím a profilu.",
     "actionMessage": "Pro použití této funkce se musíte přihlásit.",
     "login": "Přihlásit se",
-    "register": "Vytvořit účet"
+    "register": "Vytvořit účet",
+    "logoutTitle": "Odhlášení proběhlo úspěšně",
+    "logoutMessage": "Můžete se kdykoli znovu přihlásit."
   },
   "contact": {
     "teamName": "Tým Dancee",

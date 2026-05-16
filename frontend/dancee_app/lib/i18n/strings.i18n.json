@@ -422,7 +422,9 @@
     "message": "Create an account or sign in to access your saved events and profile.",
     "actionMessage": "You need to sign in to use this feature.",
     "login": "Log in",
-    "register": "Create account"
+    "register": "Create account",
+    "logoutTitle": "Signed out successfully",
+    "logoutMessage": "You can sign in again anytime."
   },
   "contact": {
     "teamName": "Dancee Team",

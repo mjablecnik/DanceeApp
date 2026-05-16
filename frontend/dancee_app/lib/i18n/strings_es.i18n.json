@@ -422,7 +422,9 @@
     "message": "Crea una cuenta o inicia sesión para acceder a tus eventos guardados y perfil.",
     "actionMessage": "Necesitas iniciar sesión para usar esta función.",
     "login": "Iniciar sesión",
-    "register": "Crear cuenta"
+    "register": "Crear cuenta",
+    "logoutTitle": "Sesión cerrada correctamente",
+    "logoutMessage": "Puedes iniciar sesión de nuevo en cualquier momento."
   },
   "contact": {
     "teamName": "Equipo Dancee",

@@ -54,6 +54,18 @@ class AuthCubit extends Cubit<AuthState> {
   /// Alias for external access.
   ValueNotifier<bool> get _directusLinkedNotifier => directusLinkedNotifier;
 
+  bool _didJustLogOut = false;
+
+  /// Returns true if the user just signed out (cleared on next login).
+  bool get didJustLogOut => _didJustLogOut;
+
+  /// Returns whether the user just signed out and resets the flag.
+  bool consumeLogoutFlag() {
+    final v = _didJustLogOut;
+    _didJustLogOut = false;
+    return v;
+  }
+
   @override
   Future<void> close() {
     _authStateSubscription.cancel();
@@ -67,6 +79,7 @@ class AuthCubit extends Cubit<AuthState> {
     if (user == null) {
       emit(const AuthState.unauthenticated());
     } else {
+      _didJustLogOut = false;
       emit(AuthState.authenticated(
         uid: user.uid,
         email: user.email,
@@ -229,11 +242,13 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> signOut() async {
+    _didJustLogOut = true;
     emit(const AuthState.loading());
     try {
       await _authRepository.signOut();
       // authStateChanges stream will emit unauthenticated
     } catch (e) {
+      _didJustLogOut = false;
       emit(AuthState.error(message: _errorMessage(e)));
     }
   }
