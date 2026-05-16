@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import '../../../../core/colors.dart';
 import '../../../../core/theme.dart';
 import '../../../../i18n/strings.g.dart';
+import '../../../../shared/elements/buttons/outline_action_button.dart';
 import '../components/pricing_option_card.dart';
 
 class CoursePricingSection extends StatelessWidget {
@@ -87,64 +87,18 @@ class CourseAdditionalActions extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: GestureDetector(
+          child: OutlineActionButton(
+            icon: FontAwesomeIcons.shareNodes,
+            label: t.courses.detail.shareCourse,
             onTap: onShare,
-            child: Container(
-              decoration: BoxDecoration(
-                color: appSurface,
-                border: Border.all(color: appBorder),
-                borderRadius: BorderRadius.circular(AppRadius.lg),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const FaIcon(FontAwesomeIcons.shareNodes, size: 14, color: appText),
-                    const SizedBox(width: AppSpacing.sm),
-                    Text(
-                      t.courses.detail.shareCourse,
-                      style: const TextStyle(
-                        color: appText,
-                        fontSize: AppTypography.fontSizeMd,
-                        fontWeight: AppTypography.fontWeightSemiBold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
           ),
         ),
         const SizedBox(width: AppSpacing.md),
         Expanded(
-          child: GestureDetector(
+          child: OutlineActionButton(
+            icon: FontAwesomeIcons.arrowUpRightFromSquare,
+            label: t.events.detail.originalSource,
             onTap: onSource,
-            child: Container(
-              decoration: BoxDecoration(
-                color: appSurface,
-                border: Border.all(color: appBorder),
-                borderRadius: BorderRadius.circular(AppRadius.lg),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const FaIcon(FontAwesomeIcons.arrowUpRightFromSquare, size: 14, color: appText),
-                    const SizedBox(width: AppSpacing.sm),
-                    Text(
-                      t.events.detail.originalSource,
-                      style: const TextStyle(
-                        color: appText,
-                        fontSize: AppTypography.fontSizeMd,
-                        fontWeight: AppTypography.fontWeightSemiBold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
           ),
         ),
       ],

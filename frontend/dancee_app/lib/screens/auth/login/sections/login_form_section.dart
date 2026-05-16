@@ -245,7 +245,7 @@ class _LoginFormSectionState extends State<LoginFormSection> {
                 style: const TextStyle(
                   color: appMuted,
                   fontSize: AppTypography.fontSizeSm,
-                  height: 1.5,
+                  height: AppLineHeights.normal,
                 ),
                 children: [
                   TextSpan(text: t.auth.termsPrefix),

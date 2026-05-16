@@ -20,7 +20,7 @@ class PremiumBanner extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
           gradient: AppGradients.premiumSubtle,
-          border: Border.all(color: appPrimary.withValues(alpha: 0.3)),
+          border: Border.all(color: appPrimary.withValues(alpha: AppOpacity.low)),
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
         child: Row(

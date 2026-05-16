@@ -73,7 +73,7 @@ class _DangerRow extends StatelessWidget {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: appError.withValues(alpha: 0.1),
+                    color: appError.withValues(alpha: AppOpacity.faint),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Center(

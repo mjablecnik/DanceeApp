@@ -271,7 +271,7 @@ class _ProfilePhotoSectionState extends State<ProfilePhotoSection> {
                                   imageUrl: widget.avatarUrl,
                                   fit: BoxFit.cover,
                                   errorChild: Container(
-                                    color: appPrimary.withValues(alpha: 0.15),
+                                    color: appPrimary.withValues(alpha: AppOpacity.subtle),
                                     child: Center(
                                       child: Text(
                                         getInitials(widget.name),
@@ -285,7 +285,7 @@ class _ProfilePhotoSectionState extends State<ProfilePhotoSection> {
                                   ),
                                 )
                               : Container(
-                                  color: appPrimary.withValues(alpha: 0.15),
+                                  color: appPrimary.withValues(alpha: AppOpacity.subtle),
                                   child: Center(
                                     child: Text(
                                       getInitials(widget.name),
@@ -303,7 +303,7 @@ class _ProfilePhotoSectionState extends State<ProfilePhotoSection> {
                               child: const Center(
                                 child: CircularProgressIndicator(
                                   color: appPrimary,
-                                  strokeWidth: 2,
+                                  strokeWidth: AppBorders.medium,
                                 ),
                               ),
                             ),
@@ -324,7 +324,7 @@ class _ProfilePhotoSectionState extends State<ProfilePhotoSection> {
                         decoration: BoxDecoration(
                           color: appPrimary,
                           borderRadius: BorderRadius.circular(AppRadius.xl),
-                          border: Border.all(color: appBg, width: 2),
+                          border: Border.all(color: appBg, width: AppBorders.medium),
                         ),
                         child: const Center(
                           child: FaIcon(FontAwesomeIcons.camera, size: 12, color: Colors.white),

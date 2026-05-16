@@ -13,7 +13,7 @@ class AddCourseSubmitSection extends StatelessWidget {
         Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            color: appSurface.withValues(alpha: 0.5),
+            color: appSurface.withValues(alpha: AppOpacity.medium),
             borderRadius: BorderRadius.circular(AppRadius.lg),
             border: Border.all(color: appBorder),
           ),

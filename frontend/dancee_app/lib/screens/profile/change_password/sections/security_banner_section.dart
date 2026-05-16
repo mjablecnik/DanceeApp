@@ -15,11 +15,11 @@ class SecurityBannerSection extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            appWarning.withValues(alpha: 0.1),
+            appWarning.withValues(alpha: AppOpacity.faint),
             appWarning.withValues(alpha: 0.05),
           ],
         ),
-        border: Border.all(color: appWarning.withValues(alpha: 0.3)),
+        border: Border.all(color: appWarning.withValues(alpha: AppOpacity.low)),
         borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       padding: const EdgeInsets.all(AppSpacing.lg),

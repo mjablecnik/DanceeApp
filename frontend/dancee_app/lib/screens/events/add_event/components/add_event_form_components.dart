@@ -297,7 +297,7 @@ class AddEventImageUploadArea extends StatelessWidget {
       decoration: BoxDecoration(
         color: appSurface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: appBorder, width: 2),
+        border: Border.all(color: appBorder, width: AppBorders.medium),
       ),
       padding: const EdgeInsets.all(AppSpacing.xxl),
       child: const Column(

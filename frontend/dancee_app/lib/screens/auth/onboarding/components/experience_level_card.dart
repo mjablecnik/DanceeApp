@@ -26,10 +26,10 @@ class ExperienceLevelCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: AppDurations.fast,
         padding: const EdgeInsets.all(AppSpacing.xl),
         decoration: BoxDecoration(
-          color: selected ? appPrimary.withValues(alpha: 0.1) : appSurface,
+          color: selected ? appPrimary.withValues(alpha: AppOpacity.faint) : appSurface,
           borderRadius: BorderRadius.circular(AppRadius.xl),
           border: Border.all(
             color: selected ? appPrimary : appBorder,

@@ -24,7 +24,7 @@ class CourseTitleSection extends StatelessWidget {
             color: appText,
             fontSize: AppTypography.fontSize4xl,
             fontWeight: FontWeight.bold,
-            height: 1.3,
+            height: AppLineHeights.tight,
           ),
         ),
         const SizedBox(height: AppSpacing.lg),

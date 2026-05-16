@@ -75,7 +75,7 @@ class TestimonialCard extends StatelessWidget {
             style: const TextStyle(
               color: appMuted,
               fontSize: AppTypography.fontSizeMd,
-              height: 1.5,
+              height: AppLineHeights.normal,
             ),
           ),
         ],

@@ -33,7 +33,7 @@ class HeroImageSection extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.black.withValues(alpha: 0.3),
+                  Colors.black.withValues(alpha: AppOpacity.low),
                   Colors.transparent,
                   appBg,
                 ],
@@ -104,7 +104,7 @@ class HeroPriceBadge extends StatelessWidget {
         vertical: AppSpacing.sm - 2,
       ),
       decoration: BoxDecoration(
-        color: appPrimary.withValues(alpha: 0.9),
+        color: appPrimary.withValues(alpha: AppOpacity.high),
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Text(
@@ -132,7 +132,7 @@ class HeroLabelBadge extends StatelessWidget {
         vertical: AppSpacing.sm - 2,
       ),
       decoration: BoxDecoration(
-        color: appSurface.withValues(alpha: 0.9),
+        color: appSurface.withValues(alpha: AppOpacity.high),
         border: Border.all(color: appBorder),
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),

@@ -225,7 +225,7 @@ class VerificationEmailCard extends StatelessWidget {
         style: const TextStyle(
           color: appMuted,
           fontSize: AppTypography.fontSizeMd,
-          height: 1.5,
+          height: AppLineHeights.normal,
         ),
       ),
     );
@@ -240,9 +240,9 @@ class NotVerifiedMessage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: appError.withValues(alpha: 0.1),
+        color: appError.withValues(alpha: AppOpacity.faint),
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: appError.withValues(alpha: 0.3)),
+        border: Border.all(color: appError.withValues(alpha: AppOpacity.low)),
       ),
       child: Row(
         children: [
@@ -277,9 +277,9 @@ class VerificationErrorMessage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: appError.withValues(alpha: 0.1),
+        color: appError.withValues(alpha: AppOpacity.faint),
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: appError.withValues(alpha: 0.3)),
+        border: Border.all(color: appError.withValues(alpha: AppOpacity.low)),
       ),
       child: Text(
         message,

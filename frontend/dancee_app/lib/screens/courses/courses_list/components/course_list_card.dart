@@ -101,7 +101,7 @@ class CourseCardTopRow extends StatelessWidget {
                   color: appText,
                   fontSize: AppTypography.fontSizeXl,
                   fontWeight: FontWeight.bold,
-                  height: 1.3,
+                  height: AppLineHeights.tight,
                 ),
               ),
               const SizedBox(height: AppSpacing.sm),

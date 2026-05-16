@@ -72,7 +72,7 @@ class _FaqItemState extends State<FaqItem> {
                 style: const TextStyle(
                   color: appMuted,
                   fontSize: AppTypography.fontSizeMd,
-                  height: 1.5,
+                  height: AppLineHeights.normal,
                 ),
               ),
             ),

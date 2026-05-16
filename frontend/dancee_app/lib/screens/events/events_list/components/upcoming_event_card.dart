@@ -96,7 +96,7 @@ class UpcomingEventCard extends StatelessWidget {
                               color: appText,
                               fontSize: AppTypography.fontSizeXl,
                               fontWeight: AppTypography.fontWeightBold,
-                              height: 1.3,
+                              height: AppLineHeights.tight,
                             ),
                           ),
                           const SizedBox(height: AppSpacing.xs),

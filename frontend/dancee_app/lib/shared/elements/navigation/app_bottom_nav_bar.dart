@@ -130,7 +130,7 @@ class _NavFab extends StatelessWidget {
           decoration: BoxDecoration(
             color: appPrimary,
             shape: BoxShape.circle,
-            border: Border.all(color: appBg, width: 4),
+            border: Border.all(color: appBg, width: AppBorders.thick),
             boxShadow: [AppShadows.primary],
           ),
           child: const Center(

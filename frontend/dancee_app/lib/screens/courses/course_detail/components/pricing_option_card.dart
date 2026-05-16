@@ -29,8 +29,8 @@ class PricingOptionCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: appPrimary.withValues(alpha: 0.1),
-        border: Border.all(color: appPrimary.withValues(alpha: 0.3)),
+        color: appPrimary.withValues(alpha: AppOpacity.faint),
+        border: Border.all(color: appPrimary.withValues(alpha: AppOpacity.low)),
         borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       child: Column(

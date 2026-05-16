@@ -43,7 +43,7 @@ class ProfileCardSection extends StatelessWidget {
                 imageUrl: avatarUrl,
                 fit: BoxFit.cover,
                 errorChild: Container(
-                  color: appPrimary.withValues(alpha: 0.15),
+                  color: appPrimary.withValues(alpha: AppOpacity.subtle),
                   child: Center(
                     child: Text(
                       getInitials(name),

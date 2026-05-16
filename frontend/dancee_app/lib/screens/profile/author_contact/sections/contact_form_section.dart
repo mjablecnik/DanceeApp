@@ -166,7 +166,7 @@ class _ContactFormSectionState extends State<ContactFormSection> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadius.md),
-        borderSide: const BorderSide(color: appPrimary, width: 2),
+        borderSide: const BorderSide(color: appPrimary, width: AppBorders.medium),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadius.md),
@@ -174,7 +174,7 @@ class _ContactFormSectionState extends State<ContactFormSection> {
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadius.md),
-        borderSide: const BorderSide(color: appError, width: 2),
+        borderSide: const BorderSide(color: appError, width: AppBorders.medium),
       ),
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
@@ -359,8 +359,8 @@ class _ContactFormSectionState extends State<ContactFormSection> {
         if (_errorMessage != null) ...[
           Container(
             decoration: BoxDecoration(
-              color: appError.withValues(alpha: 0.1),
-              border: Border.all(color: appError.withValues(alpha: 0.3)),
+              color: appError.withValues(alpha: AppOpacity.faint),
+              border: Border.all(color: appError.withValues(alpha: AppOpacity.low)),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             padding: const EdgeInsets.all(AppSpacing.lg),
@@ -410,7 +410,7 @@ class _ContactFormSectionState extends State<ContactFormSection> {
                     height: 16,
                     child: CircularProgressIndicator(
                       color: appWhite,
-                      strokeWidth: 2,
+                      strokeWidth: AppBorders.medium,
                     ),
                   )
                 else if (_isSent)
@@ -437,8 +437,8 @@ class _ContactFormSectionState extends State<ContactFormSection> {
         if (_isSent)
           Container(
             decoration: BoxDecoration(
-              color: appSuccessDark.withValues(alpha: 0.1),
-              border: Border.all(color: appSuccessDark.withValues(alpha: 0.3)),
+              color: appSuccessDark.withValues(alpha: AppOpacity.faint),
+              border: Border.all(color: appSuccessDark.withValues(alpha: AppOpacity.low)),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             padding: const EdgeInsets.all(AppSpacing.lg),
@@ -469,7 +469,7 @@ class _ContactFormSectionState extends State<ContactFormSection> {
         else
           Container(
             decoration: BoxDecoration(
-              color: appPrimary.withValues(alpha: 0.1),
+              color: appPrimary.withValues(alpha: AppOpacity.faint),
               border: Border.all(color: appPrimary.withValues(alpha: 0.2)),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),

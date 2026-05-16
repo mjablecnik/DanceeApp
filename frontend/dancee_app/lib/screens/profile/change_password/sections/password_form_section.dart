@@ -458,7 +458,7 @@ class PasswordActionButtons extends StatelessWidget {
                     height: 20,
                     width: 20,
                     child: CircularProgressIndicator(
-                      strokeWidth: 2,
+                      strokeWidth: AppBorders.medium,
                       valueColor: AlwaysStoppedAnimation<Color>(appWhite),
                     ),
                   )

@@ -31,7 +31,7 @@ class EventTitleSection extends StatelessWidget {
             color: appText,
             fontSize: AppTypography.fontSize4xl,
             fontWeight: AppTypography.fontWeightBold,
-            height: 1.3,
+            height: AppLineHeights.tight,
           ),
         ),
         const SizedBox(height: AppSpacing.lg),

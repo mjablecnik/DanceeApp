@@ -15,7 +15,7 @@ class PriceBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs + 2),
       decoration: BoxDecoration(
-        color: appPrimary.withValues(alpha: 0.9),
+        color: appPrimary.withValues(alpha: AppOpacity.high),
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Text(

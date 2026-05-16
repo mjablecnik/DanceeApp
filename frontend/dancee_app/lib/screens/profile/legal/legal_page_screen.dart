@@ -95,14 +95,14 @@ class _LegalPageScreenState extends State<LegalPageScreen> {
                     bottom: MediaQuery.of(context).padding.bottom + AppSpacing.xl,
                   ),
                   styleSheet: MarkdownStyleSheet(
-                    p: const TextStyle(color: appText, fontSize: AppTypography.fontSizeMd, height: 1.6),
+                    p: const TextStyle(color: appText, fontSize: AppTypography.fontSizeMd, height: AppLineHeights.relaxed),
                     h1: const TextStyle(color: appText, fontSize: AppTypography.fontSizeXl, fontWeight: FontWeight.bold),
                     h2: const TextStyle(color: appText, fontSize: AppTypography.fontSizeLg, fontWeight: FontWeight.bold),
                     h3: const TextStyle(color: appText, fontSize: AppTypography.fontSizeMd, fontWeight: FontWeight.bold),
                     listBullet: const TextStyle(color: appText, fontSize: AppTypography.fontSizeMd),
                     blockquoteDecoration: const BoxDecoration(
                       color: appSurface,
-                      border: Border(left: BorderSide(color: appBorder, width: 4)),
+                      border: Border(left: BorderSide(color: appBorder, width: AppBorders.thick)),
                     ),
                   ),
                 );

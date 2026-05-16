@@ -115,7 +115,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   ),
                 Expanded(
                   child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
+                    duration: AppDurations.normal,
                     transitionBuilder: (child, animation) {
                       return FadeTransition(
                         opacity: animation,

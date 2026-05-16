@@ -34,8 +34,8 @@ class PlanCard extends StatelessWidget {
         gradient: isPrimary
             ? LinearGradient(
                 colors: [
-                  appPrimary.withValues(alpha: 0.1),
-                  appAccent.withValues(alpha: 0.1),
+                  appPrimary.withValues(alpha: AppOpacity.faint),
+                  appAccent.withValues(alpha: AppOpacity.faint),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -43,7 +43,7 @@ class PlanCard extends StatelessWidget {
             : null,
         color: isPrimary ? null : appSurface,
         border: Border.all(
-          color: isPrimary ? appPrimary.withValues(alpha: 0.3) : appBorder,
+          color: isPrimary ? appPrimary.withValues(alpha: AppOpacity.low) : appBorder,
         ),
         borderRadius: BorderRadius.circular(AppRadius.xl),
       ),

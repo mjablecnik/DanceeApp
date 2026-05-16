@@ -89,7 +89,7 @@ class SettingsSection extends StatelessWidget {
                     value: state.notificationsEnabled,
                     onChanged: (value) =>
                         context.read<SettingsCubit>().setNotificationsEnabled(value),
-                    activeTrackColor: appPrimary.withValues(alpha: 0.5),
+                    activeTrackColor: appPrimary.withValues(alpha: AppOpacity.medium),
                     activeColor: appPrimary,
                   ),
                 ),

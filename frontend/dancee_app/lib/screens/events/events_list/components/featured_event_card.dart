@@ -111,7 +111,7 @@ class FeaturedEventCardImage extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.black.withValues(alpha: 0.3),
+                  Colors.black.withValues(alpha: AppOpacity.low),
                   Colors.transparent,
                   appCard,
                 ],
@@ -149,8 +149,8 @@ class FeaturedEventCardImage extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
               color: isFree
-                  ? appSuccess.withValues(alpha: 0.9)
-                  : appPrimary.withValues(alpha: 0.9),
+                  ? appSuccess.withValues(alpha: AppOpacity.high)
+                  : appPrimary.withValues(alpha: AppOpacity.high),
               borderRadius: BorderRadius.circular(AppRadius.sm),
             ),
             child: Text(
@@ -197,7 +197,7 @@ class FeaturedEventCardInfo extends StatelessWidget {
               color: appText,
               fontSize: AppTypography.fontSize2xl,
               fontWeight: AppTypography.fontWeightBold,
-              height: 1.3,
+              height: AppLineHeights.tight,
             ),
           ),
           const SizedBox(height: AppSpacing.md),

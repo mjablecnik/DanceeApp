@@ -71,10 +71,10 @@ class OnboardingStep1Section extends StatelessWidget {
                 return GestureDetector(
                   onTap: () => onDanceTap(index),
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
+                    duration: AppDurations.fast,
                     decoration: BoxDecoration(
                       color: selected
-                          ? appPrimary.withValues(alpha: 0.1)
+                          ? appPrimary.withValues(alpha: AppOpacity.faint)
                           : appSurface,
                       borderRadius: BorderRadius.circular(AppRadius.xl),
                       border: Border.all(

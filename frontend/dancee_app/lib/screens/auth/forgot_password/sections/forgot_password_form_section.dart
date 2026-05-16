@@ -162,7 +162,7 @@ class _ForgotPasswordFormSectionState extends State<ForgotPasswordFormSection> {
                             style: const TextStyle(
                               color: appMuted,
                               fontSize: AppTypography.fontSizeSm,
-                              height: 1.5,
+                              height: AppLineHeights.normal,
                             ),
                           ),
                         ],

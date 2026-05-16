@@ -16,13 +16,13 @@ class FinalCtaSection extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              appPrimary.withValues(alpha: 0.1),
-              appAccent.withValues(alpha: 0.1),
+              appPrimary.withValues(alpha: AppOpacity.faint),
+              appAccent.withValues(alpha: AppOpacity.faint),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          border: Border.all(color: appPrimary.withValues(alpha: 0.3)),
+          border: Border.all(color: appPrimary.withValues(alpha: AppOpacity.low)),
           borderRadius: BorderRadius.circular(AppRadius.xl),
         ),
         child: Column(

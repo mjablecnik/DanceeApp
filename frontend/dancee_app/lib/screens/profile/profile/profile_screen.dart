@@ -274,9 +274,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     Container(
                                       padding: const EdgeInsets.all(AppSpacing.lg),
                                       decoration: BoxDecoration(
-                                        color: appError.withValues(alpha: 0.1),
+                                        color: appError.withValues(alpha: AppOpacity.faint),
                                         borderRadius: BorderRadius.circular(AppRadius.lg),
-                                        border: Border.all(color: appError.withValues(alpha: 0.3)),
+                                        border: Border.all(color: appError.withValues(alpha: AppOpacity.low)),
                                       ),
                                       child: Column(
                                         children: [
@@ -374,9 +374,9 @@ class _ErrorBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: appError.withValues(alpha: 0.1),
+        color: appError.withValues(alpha: AppOpacity.faint),
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: appError.withValues(alpha: 0.3)),
+        border: Border.all(color: appError.withValues(alpha: AppOpacity.low)),
       ),
       child: Row(
         children: [

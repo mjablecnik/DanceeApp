@@ -254,7 +254,7 @@ class _RegisterFormSectionState extends State<RegisterFormSection> {
                         style: TextStyle(
                           color: _termsError ? appError : appMuted,
                           fontSize: AppTypography.fontSizeMd,
-                          height: 1.5,
+                          height: AppLineHeights.normal,
                         ),
                         children: [
                           TextSpan(text: t.auth.agreeWith),

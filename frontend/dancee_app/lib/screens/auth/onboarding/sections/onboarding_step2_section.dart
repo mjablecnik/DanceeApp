@@ -92,11 +92,11 @@ class OnboardingStep2Section extends StatelessWidget {
                 return GestureDetector(
                   onTap: () => onLevelSelected(index),
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
+                    duration: AppDurations.fast,
                     padding: const EdgeInsets.all(AppSpacing.xl),
                     decoration: BoxDecoration(
                       color: selected
-                          ? appPrimary.withValues(alpha: 0.1)
+                          ? appPrimary.withValues(alpha: AppOpacity.faint)
                           : appSurface,
                       borderRadius: BorderRadius.circular(AppRadius.xl),
                       border: Border.all(

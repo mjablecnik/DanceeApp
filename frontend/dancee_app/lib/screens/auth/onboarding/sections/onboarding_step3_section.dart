@@ -164,7 +164,7 @@ class _UseCurrentLocationButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: appSurface,
           borderRadius: BorderRadius.circular(AppRadius.xl),
-          border: Border.all(color: appPrimary.withValues(alpha: 0.3)),
+          border: Border.all(color: appPrimary.withValues(alpha: AppOpacity.low)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,

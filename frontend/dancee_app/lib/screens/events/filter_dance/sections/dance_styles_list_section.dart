@@ -113,7 +113,7 @@ class _Checkbox extends StatelessWidget {
     return GestureDetector(
       onTap: onToggle,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: AppDurations.fast,
         width: 24,
         height: 24,
         decoration: BoxDecoration(
