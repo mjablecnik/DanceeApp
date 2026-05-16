@@ -264,6 +264,31 @@ class _AppListenersState extends State<_AppListeners> with WidgetsBindingObserve
     );
     if (isAuthenticated) {
       context.read<FavoritesCubit>().loadFavorites();
+      _prefillFiltersFromProfile();
+    }
+  }
+
+  /// Loads the user profile and prefills filters from dance tags and city.
+  /// Only applies if no filters are currently active.
+  Future<void> _prefillFiltersFromProfile() async {
+    final profileCubit = context.read<ProfileCubit>();
+    final filterCubit = context.read<FilterCubit>();
+
+    await profileCubit.loadProfile();
+    if (!filterCubit.state.hasActiveFilters) {
+      profileCubit.state.maybeMap(
+        loaded: (s) {
+          debugPrint('[FilterPrefill] Cold start prefill: '
+              'danceTags=${s.profile.danceTags}, city=${s.profile.city}');
+          prefillFiltersFromProfile(s.profile, filterCubit);
+          if (context.mounted) {
+            final fs = filterCubit.state;
+            context.read<EventCubit>().applyFilters(fs, fs.danceStyles);
+            context.read<CourseCubit>().applyFilters(fs, fs.danceStyles);
+          }
+        },
+        orElse: () {},
+      );
     }
   }
 
