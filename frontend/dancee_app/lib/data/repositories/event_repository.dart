@@ -1,6 +1,7 @@
 import '../../core/clients.dart';
 import '../../core/config.dart';
 import '../entities/event.dart';
+import '../entities/translation_utils.dart';
 
 class EventRepository {
   EventRepository({
@@ -52,6 +53,35 @@ class EventRepository {
       languageCode: languageCode,
       directusBaseUrl: AppConfig.directusBaseUrl,
     );
+  }
+
+  /// Fetches a single event by [id] and returns it together with the
+  /// translation record ID for [languageCode].
+  ///
+  /// The translation ID is required when constructing PATCH payloads for edits
+  /// so Directus updates the existing translation record rather than creating a
+  /// new one.
+  Future<(Event, int?)> getEventByIdWithTranslationId(
+    int id,
+    String languageCode,
+  ) async {
+    final data = await _client.get(
+      '/items/events/$id',
+      queryParameters: {
+        'fields': '*,venue.*,translations.*',
+        'deep[translations][_filter][languages_code][_eq]': languageCode,
+      },
+    );
+    final json = data as Map<String, dynamic>;
+    final translations = (json['translations'] as List<dynamic>?) ?? [];
+    final translation = extractTranslation(translations, languageCode);
+    final translationId = translation?['id'] as int?;
+    final event = Event.fromDirectus(
+      json,
+      languageCode: languageCode,
+      directusBaseUrl: AppConfig.directusBaseUrl,
+    );
+    return (event, translationId);
   }
 
   /// Sends a PATCH request to update event [id] with [fields].
