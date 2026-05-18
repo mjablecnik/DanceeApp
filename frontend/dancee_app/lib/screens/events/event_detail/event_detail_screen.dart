@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/app_routes.dart';
 import '../../../core/colors.dart';
 import '../../../core/theme.dart';
 import '../../../data/entities/event.dart';
@@ -11,6 +12,7 @@ import '../../../i18n/strings.g.dart';
 import '../../../logic/cubits/auth_cubit.dart';
 import '../../../logic/cubits/event_cubit.dart';
 import '../../../logic/cubits/favorites_cubit.dart';
+import '../../../logic/cubits/profile_cubit.dart';
 import '../../../logic/states/event_state.dart';
 import '../../../shared/sections/description_section.dart';
 import '../../../shared/utils/date_format.dart';
@@ -145,9 +147,29 @@ class EventDetailScreen extends StatelessWidget {
       backgroundColor: appBg,
       body: Column(
         children: [
-          DetailHeaderSection(
-            title: t.events.detail.header,
-            onBack: () => context.pop(),
+          BlocBuilder<ProfileCubit, dynamic>(
+            builder: (context, _) => DetailHeaderSection(
+              title: t.events.detail.header,
+              onBack: () => context.pop(),
+              actions: context.read<ProfileCubit>().isEditor
+                  ? [
+                      GestureDetector(
+                        onTap: () => EditEventRoute(id: eventId).go(context),
+                        child: Container(
+                          width: AppSizes.iconButtonMd,
+                          height: AppSizes.iconButtonMd,
+                          decoration: BoxDecoration(
+                            color: appSurface,
+                            borderRadius: BorderRadius.circular(AppRadius.round),
+                          ),
+                          child: const Center(
+                            child: FaIcon(FontAwesomeIcons.penToSquare, size: AppIconSizes.xs, color: appText),
+                          ),
+                        ),
+                      ),
+                    ]
+                  : null,
+            ),
           ),
           Expanded(
             child: BlocBuilder<EventCubit, EventState>(
