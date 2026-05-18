@@ -1,6 +1,7 @@
 import '../../core/clients.dart';
 import '../../core/config.dart';
 import '../entities/course.dart';
+import '../entities/translation_utils.dart';
 
 class CourseRepository {
   CourseRepository({
@@ -51,6 +52,35 @@ class CourseRepository {
       languageCode: languageCode,
       directusBaseUrl: AppConfig.directusBaseUrl,
     );
+  }
+
+  /// Fetches a single course by [id] and returns it together with the
+  /// translation record ID for [languageCode].
+  ///
+  /// The translation ID is required when constructing PATCH payloads for edits
+  /// so Directus updates the existing translation record rather than creating a
+  /// new one.
+  Future<(Course, int?)> getCourseByIdWithTranslationId(
+    int id,
+    String languageCode,
+  ) async {
+    final data = await _client.get(
+      '/items/courses/$id',
+      queryParameters: {
+        'fields': '*,venue.*,translations.*',
+        'deep[translations][_filter][languages_code][_eq]': languageCode,
+      },
+    );
+    final json = data as Map<String, dynamic>;
+    final translations = (json['translations'] as List<dynamic>?) ?? [];
+    final translation = extractTranslation(translations, languageCode);
+    final translationId = translation?['id'] as int?;
+    final course = Course.fromDirectus(
+      json,
+      languageCode: languageCode,
+      directusBaseUrl: AppConfig.directusBaseUrl,
+    );
+    return (course, translationId);
   }
 
   /// Sends a PATCH request to update course [id] with [fields].
