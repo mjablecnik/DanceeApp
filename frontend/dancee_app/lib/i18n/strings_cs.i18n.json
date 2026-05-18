@@ -226,6 +226,12 @@
       "evening": "Večerní",
       "weekend": "Víkendové",
       "multiDay": "Několikadenní"
+    },
+    "edit": {
+      "header": "Upravit akci",
+      "submit": "Uložit změny",
+      "success": "Akce byla úspěšně aktualizována",
+      "error": "Nepodařilo se aktualizovat akci"
     }
   },
   "courses": {
@@ -278,6 +284,12 @@
       "durationMin": "${count} min",
       "participantsCount": "${current} / ${max} účastníků",
       "spotsAvailable": "${count} volných míst"
+    },
+    "edit": {
+      "header": "Upravit kurz",
+      "submit": "Uložit změny",
+      "success": "Kurz byl úspěšně aktualizován",
+      "error": "Nepodařilo se aktualizovat kurz"
     }
   },
   "profile": {

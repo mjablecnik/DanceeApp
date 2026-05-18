@@ -226,6 +226,12 @@
       "evening": "Evening",
       "weekend": "Weekend",
       "multiDay": "Multi-day"
+    },
+    "edit": {
+      "header": "Edit event",
+      "submit": "Save changes",
+      "success": "Event updated successfully",
+      "error": "Failed to update event"
     }
   },
   "courses": {
@@ -278,6 +284,12 @@
       "durationMin": "${count} min",
       "participantsCount": "${current} / ${max} participants",
       "spotsAvailable": "${count} spots available"
+    },
+    "edit": {
+      "header": "Edit course",
+      "submit": "Save changes",
+      "success": "Course updated successfully",
+      "error": "Failed to update course"
     }
   },
   "profile": {

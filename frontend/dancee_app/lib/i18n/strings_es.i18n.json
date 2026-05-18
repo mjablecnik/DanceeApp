@@ -226,6 +226,12 @@
       "evening": "Nocturno",
       "weekend": "Fin de semana",
       "multiDay": "Varios días"
+    },
+    "edit": {
+      "header": "Editar evento",
+      "submit": "Guardar cambios",
+      "success": "Evento actualizado correctamente",
+      "error": "Error al actualizar el evento"
     }
   },
   "courses": {
@@ -278,6 +284,12 @@
       "durationMin": "${count} min",
       "participantsCount": "${current} / ${max} participantes",
       "spotsAvailable": "${count} plazas disponibles"
+    },
+    "edit": {
+      "header": "Editar curso",
+      "submit": "Guardar cambios",
+      "success": "Curso actualizado correctamente",
+      "error": "Error al actualizar el curso"
     }
   },
   "profile": {
