@@ -33,6 +33,10 @@ class _FakeEventRepository extends EventRepository {
             accessToken: 'test-token',
             dio: Dio(),
           ),
+          workflowClient: WorkflowClient(
+            baseUrl: 'http://workflow.test.local',
+            dio: Dio(),
+          ),
         );
 
   final List<Event> _events;

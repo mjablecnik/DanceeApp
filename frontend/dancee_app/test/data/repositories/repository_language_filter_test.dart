@@ -54,6 +54,12 @@ DirectusClient _makeClientWithAdapter(_CapturingAdapter adapter) {
   );
 }
 
+WorkflowClient _makeNoOpWorkflowClient() {
+  final dio = Dio(BaseOptions(baseUrl: 'https://workflow.test.local'));
+  dio.httpClientAdapter = _CapturingAdapter();
+  return WorkflowClient(baseUrl: 'https://workflow.test.local', dio: dio);
+}
+
 const _kLanguageFilterKey = 'deep[translations][_filter][languages_code][_eq]';
 
 // ---------------------------------------------------------------------------
@@ -74,7 +80,7 @@ void _propertyDeepLanguageFilter() {
           final lang = languageCodes[rng.nextInt(languageCodes.length)];
           final adapter = _CapturingAdapter();
           final client = _makeClientWithAdapter(adapter);
-          final repo = EventRepository(client: client);
+          final repo = EventRepository(client: client, workflowClient: _makeNoOpWorkflowClient());
 
           await repo.getEvents(lang);
 
@@ -102,7 +108,7 @@ void _propertyDeepLanguageFilter() {
       for (final lang in ['en', 'cs', 'es']) {
         final adapter = _CapturingAdapter();
         final client = _makeClientWithAdapter(adapter);
-        final repo = EventRepository(client: client);
+        final repo = EventRepository(client: client, workflowClient: _makeNoOpWorkflowClient());
 
         await repo.getEvents(lang);
 
@@ -118,7 +124,7 @@ void _propertyDeepLanguageFilter() {
     test('P1: getEvents hits /items/events endpoint', () async {
       final adapter = _CapturingAdapter();
       final client = _makeClientWithAdapter(adapter);
-      final repo = EventRepository(client: client);
+      final repo = EventRepository(client: client, workflowClient: _makeNoOpWorkflowClient());
 
       await repo.getEvents('en');
 
@@ -133,7 +139,7 @@ void _propertyDeepLanguageFilter() {
     test('P1: getEvents always filters to published status', () async {
       final adapter = _CapturingAdapter();
       final client = _makeClientWithAdapter(adapter);
-      final repo = EventRepository(client: client);
+      final repo = EventRepository(client: client, workflowClient: _makeNoOpWorkflowClient());
 
       await repo.getEvents('cs');
 
@@ -157,7 +163,7 @@ void _propertyDeepLanguageFilter() {
           final lang = languageCodes[rng.nextInt(languageCodes.length)];
           final adapter = _CapturingAdapter();
           final client = _makeClientWithAdapter(adapter);
-          final repo = CourseRepository(client: client);
+          final repo = CourseRepository(client: client, workflowClient: _makeNoOpWorkflowClient());
 
           await repo.getCourses(lang);
 
@@ -184,7 +190,7 @@ void _propertyDeepLanguageFilter() {
     test('P1: getCourses hits /items/courses endpoint', () async {
       final adapter = _CapturingAdapter();
       final client = _makeClientWithAdapter(adapter);
-      final repo = CourseRepository(client: client);
+      final repo = CourseRepository(client: client, workflowClient: _makeNoOpWorkflowClient());
 
       await repo.getCourses('en');
 

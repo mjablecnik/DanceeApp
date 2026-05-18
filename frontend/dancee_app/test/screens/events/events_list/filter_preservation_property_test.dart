@@ -41,16 +41,20 @@ import 'package:go_router/go_router.dart';
 
 import 'package:dancee_app/data/entities/dance_style.dart';
 import 'package:dancee_app/data/entities/event.dart';
+import 'package:dancee_app/data/entities/course.dart';
 import 'package:dancee_app/data/repositories/auth_repository.dart';
+import 'package:dancee_app/data/repositories/course_repository.dart';
 import 'package:dancee_app/data/repositories/dance_style_repository.dart';
 import 'package:dancee_app/data/repositories/event_repository.dart';
 import 'package:dancee_app/data/repositories/favorites_repository.dart';
 import 'package:dancee_app/i18n/strings.g.dart';
 import 'package:dancee_app/logic/cubits/auth_cubit.dart';
+import 'package:dancee_app/logic/cubits/course_cubit.dart';
 import 'package:dancee_app/logic/cubits/event_cubit.dart';
 import 'package:dancee_app/logic/cubits/favorites_cubit.dart';
 import 'package:dancee_app/logic/cubits/filter_cubit.dart';
 import 'package:dancee_app/logic/cubits/settings_cubit.dart';
+import 'package:dancee_app/logic/states/course_state.dart';
 import 'package:dancee_app/logic/states/event_state.dart';
 import 'package:dancee_app/screens/events/events_list/events_list_screen.dart';
 import 'package:dancee_app/screens/events/events_list/sections/featured_events_section.dart';
@@ -115,6 +119,11 @@ class _PresetEventRepository extends Fake implements EventRepository {
   Future<List<Event>> getEvents(String languageCode) async => events;
 }
 
+class _FakeCourseRepository extends Fake implements CourseRepository {
+  @override
+  Future<List<Course>> getCourses(String languageCode) async => [];
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -145,6 +154,7 @@ GoRouter _buildRouter({
   required AuthCubit authCubit,
   required FavoritesCubit favoritesCubit,
   required SettingsCubit settingsCubit,
+  required CourseCubit courseCubit,
 }) {
   return GoRouter(
     routes: [
@@ -157,6 +167,7 @@ GoRouter _buildRouter({
             BlocProvider<AuthCubit>.value(value: authCubit),
             BlocProvider<FavoritesCubit>.value(value: favoritesCubit),
             BlocProvider<SettingsCubit>.value(value: settingsCubit),
+            BlocProvider<CourseCubit>.value(value: courseCubit),
           ],
           child: const Scaffold(body: EventsListScreen()),
         ),
@@ -561,6 +572,7 @@ void main() {
       late FavoritesCubit favoritesCubit;
       late FilterCubit filterCubit;
       late EventCubit eventCubit;
+      late CourseCubit courseCubit;
       late SettingsCubit settingsCubit;
 
       setUp(() async {
@@ -579,6 +591,9 @@ void main() {
           eventRepository: _PresetEventRepository(events: _mixedEvents),
         );
         await eventCubit.loadEvents('en');
+        courseCubit = CourseCubit(
+          courseRepository: _FakeCourseRepository(),
+        );
         settingsCubit = SettingsCubit();
       });
 
@@ -587,6 +602,7 @@ void main() {
         await filterCubit.close();
         await favoritesCubit.close();
         await authCubit.close();
+        await courseCubit.close();
         await settingsCubit.close();
         await fakeAuthRepo.dispose();
       });
@@ -605,6 +621,7 @@ void main() {
                 authCubit: authCubit,
                 favoritesCubit: favoritesCubit,
                 settingsCubit: settingsCubit,
+                courseCubit: courseCubit,
               ),
             ),
           );
@@ -643,6 +660,7 @@ void main() {
                 authCubit: authCubit,
                 favoritesCubit: favoritesCubit,
                 settingsCubit: settingsCubit,
+                courseCubit: courseCubit,
               ),
             ),
           );
@@ -681,6 +699,7 @@ void main() {
                 authCubit: authCubit,
                 favoritesCubit: favoritesCubit,
                 settingsCubit: settingsCubit,
+                courseCubit: courseCubit,
               ),
             ),
           );
@@ -736,6 +755,7 @@ void main() {
                 authCubit: authCubit,
                 favoritesCubit: favoritesCubit,
                 settingsCubit: settingsCubit,
+                courseCubit: courseCubit,
               ),
             ),
           );
