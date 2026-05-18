@@ -33,6 +33,7 @@ class UserProfile extends Equatable {
     required this.danceTags,
     required this.experienceLevel,
     required this.notificationPreferences,
+    this.role,
   });
 
   final String directusUserId;
@@ -47,6 +48,7 @@ class UserProfile extends Equatable {
   final List<String> danceTags;
   final String experienceLevel;
   final Map<String, bool> notificationPreferences;
+  final String? role;
 
   String get fullName => '$firstName $lastName'.trim();
 
@@ -104,6 +106,7 @@ class UserProfile extends Equatable {
       danceTags: danceTags,
       experienceLevel: (json['experience_level'] as String?) ?? '',
       notificationPreferences: notificationPreferences,
+      role: json['role'] as String?,
     );
   }
 
@@ -135,5 +138,6 @@ class UserProfile extends Equatable {
         danceTags,
         experienceLevel,
         notificationPreferences,
+        role,
       ];
 }

@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../core/config.dart';
 import '../../data/entities/contact_message.dart';
 import '../../data/repositories/profile_repository.dart';
 import '../cubits/auth_cubit.dart';
@@ -15,6 +16,15 @@ class ProfileCubit extends Cubit<ProfileState> {
 
   final ProfileRepository _profileRepository;
   final AuthCubit _authCubit;
+
+  bool get isEditor {
+    final profile = state.maybeMap(
+      loaded: (s) => s.profile,
+      orElse: () => null,
+    );
+    if (profile == null) return false;
+    return profile.role == AppConfig.editorRoleId;
+  }
 
   /// Loads the profile for the currently authenticated user.
   Future<void> loadProfile() async {

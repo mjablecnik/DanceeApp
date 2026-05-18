@@ -30,4 +30,7 @@ class AppConfig {
   /// Minimum time the app must spend in background before auto-refreshing
   /// data on resume (events, courses, dance styles, favorites).
   static const int staleDataThresholdMinutes = 60;
+
+  /// Directus role UUID that grants editor permissions (can edit events/courses).
+  static const String editorRoleId = sensitive.editorRoleId;
 }
