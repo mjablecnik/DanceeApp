@@ -12,12 +12,19 @@ import '../screens/auth/forgot_password/forgot_password_screen.dart';
 import '../screens/auth/login/login_screen.dart';
 import '../screens/auth/onboarding/onboarding_screen.dart';
 import '../screens/auth/register/register_screen.dart';
+import '../data/repositories/course_repository.dart';
+import '../data/repositories/event_repository.dart';
+import '../logic/cubits/course_detail_cubit.dart';
+import '../logic/cubits/event_detail_cubit.dart';
 import '../screens/courses/add_course/add_course_screen.dart';
 import '../screens/courses/course_detail/course_detail_screen.dart';
 import '../screens/courses/courses_list/courses_list_screen.dart';
+import '../screens/courses/edit_course/edit_course_screen.dart';
 import '../screens/events/add_event/add_event_screen.dart';
+import '../screens/events/edit_event/edit_event_screen.dart';
 import '../screens/events/event_detail/event_detail_screen.dart';
 import '../screens/events/events_list/events_list_screen.dart';
+import 'service_locator.dart';
 import '../screens/events/filter_dance/filter_dance_screen.dart';
 import '../screens/events/filter_location/filter_location_screen.dart';
 import '../screens/profile/author_contact/author_contact_screen.dart';
@@ -243,6 +250,44 @@ class CourseDetailRoute extends GoRouteData {
   @override
   Page<void> buildPage(BuildContext context, GoRouterState state) =>
       NoTransitionPage(child: CourseDetailScreen(courseId: id));
+}
+
+@TypedGoRoute<EditEventRoute>(path: '/events/edit')
+@immutable
+class EditEventRoute extends GoRouteData {
+  const EditEventRoute({required this.id});
+
+  final int id;
+
+  @override
+  Page<void> buildPage(BuildContext context, GoRouterState state) =>
+      NoTransitionPage(
+        child: BlocProvider(
+          create: (_) => EventDetailCubit(
+            eventRepository: sl<EventRepository>(),
+          ),
+          child: EditEventScreen(eventId: id),
+        ),
+      );
+}
+
+@TypedGoRoute<EditCourseRoute>(path: '/courses/edit')
+@immutable
+class EditCourseRoute extends GoRouteData {
+  const EditCourseRoute({required this.id});
+
+  final int id;
+
+  @override
+  Page<void> buildPage(BuildContext context, GoRouterState state) =>
+      NoTransitionPage(
+        child: BlocProvider(
+          create: (_) => CourseDetailCubit(
+            courseRepository: sl<CourseRepository>(),
+          ),
+          child: EditCourseScreen(courseId: id),
+        ),
+      );
 }
 
 @TypedGoRoute<ProfileEditRoute>(path: '/profile/edit')

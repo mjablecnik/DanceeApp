@@ -3,9 +3,22 @@ import 'package:go_router/go_router.dart';
 
 import 'service_locator.dart';
 import '../logic/cubits/auth_cubit.dart';
+import '../logic/cubits/profile_cubit.dart';
 
 /// Auth-only screens that authenticated+verified users should be redirected away from.
 const _authOnlyScreens = ['/login', '/register', '/forgot-password'];
+
+/// Editor-only route paths.
+const _editorOnlyPaths = ['/events/edit', '/courses/edit'];
+
+/// Returns the detail redirect path for an editor-only path, falling back to
+/// the collection if [id] is null.
+String _editorRedirect(String path, String? id) {
+  if (path == '/events/edit') {
+    return id != null ? '/events/detail?id=$id' : '/events';
+  }
+  return id != null ? '/courses/detail?id=$id' : '/courses';
+}
 
 /// GoRouter redirect callback. Reads [AuthCubit] state from the service locator
 /// and returns the appropriate redirect path, or null for no redirect.
@@ -19,6 +32,10 @@ String? routerGuard(BuildContext context, GoRouterState state) {
       // Protected routes are handled in-page (AuthGatePage renders inside shell).
       if (location == '/onboarding' || location == '/verify-email') {
         return '/events';
+      }
+      // Editor-only routes require authentication; redirect to detail page.
+      if (_editorOnlyPaths.contains(location)) {
+        return _editorRedirect(location, state.uri.queryParameters['id']);
       }
       return null;
     },
@@ -39,6 +56,12 @@ String? routerGuard(BuildContext context, GoRouterState state) {
       // Email is verified — redirect away from auth screens
       if (_authOnlyScreens.contains(location) || location == '/verify-email') {
         return '/events';
+      }
+      // Editor-only routes: redirect non-editors to the detail page.
+      if (_editorOnlyPaths.contains(location)) {
+        if (!sl<ProfileCubit>().isEditor) {
+          return _editorRedirect(location, state.uri.queryParameters['id']);
+        }
       }
       return null;
     },
