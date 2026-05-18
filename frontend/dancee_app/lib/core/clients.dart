@@ -3,6 +3,31 @@ import 'package:dio/dio.dart';
 import 'config.dart';
 import 'exceptions.dart';
 
+/// Simple Dio-based HTTP client for the Dancee workflow service.
+///
+/// Used for fire-and-forget requests (e.g., triggering retranslation after an
+/// edit). Errors are not mapped — callers are expected to catch and swallow.
+class WorkflowClient {
+  WorkflowClient({required String baseUrl, Dio? dio})
+      : _dio = dio ??
+            Dio(
+              BaseOptions(
+                baseUrl: baseUrl,
+                headers: {'Content-Type': 'application/json'},
+                connectTimeout:
+                    const Duration(milliseconds: AppConfig.connectionTimeoutMs),
+                receiveTimeout:
+                    const Duration(milliseconds: AppConfig.receiveTimeoutMs),
+              ),
+            );
+
+  final Dio _dio;
+
+  Future<void> post(String path, {dynamic data}) async {
+    await _dio.post<dynamic>(path, data: data);
+  }
+}
+
 /// Dio-based HTTP client for the Directus CMS REST API.
 ///
 /// Handles authentication, Directus envelope unwrapping (`data` field

@@ -49,6 +49,9 @@ void setupServiceLocator() {
       onTokenExpired: () => sl<AuthRepository>().ensureDirectusLinked(),
     ),
   );
+  sl.registerLazySingleton<WorkflowClient>(
+    () => WorkflowClient(baseUrl: AppConfig.workflowBaseUrl),
+  );
 
   // Auth
   sl.registerLazySingleton<AuthRepository>(
@@ -66,10 +69,16 @@ void setupServiceLocator() {
 
   // Repositories
   sl.registerLazySingleton<EventRepository>(
-    () => EventRepository(client: sl<DirectusClient>()),
+    () => EventRepository(
+      client: sl<DirectusClient>(),
+      workflowClient: sl<WorkflowClient>(),
+    ),
   );
   sl.registerLazySingleton<CourseRepository>(
-    () => CourseRepository(client: sl<DirectusClient>()),
+    () => CourseRepository(
+      client: sl<DirectusClient>(),
+      workflowClient: sl<WorkflowClient>(),
+    ),
   );
   sl.registerLazySingleton<FavoritesRepository>(
     () => FavoritesRepository(client: sl<DirectusClient>()),

@@ -33,4 +33,7 @@ class AppConfig {
 
   /// Directus role UUID that grants editor permissions (can edit events/courses).
   static const String editorRoleId = sensitive.editorRoleId;
+
+  /// Base URL of the Dancee workflow service (Restate HTTP proxy).
+  static const String workflowBaseUrl = sensitive.workflowBaseUrl;
 }
