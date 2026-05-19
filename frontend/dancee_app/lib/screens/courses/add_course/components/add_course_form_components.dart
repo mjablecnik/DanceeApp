@@ -95,8 +95,9 @@ class AddCourseTextInput extends StatelessWidget {
 class AddCourseTextAreaInput extends StatelessWidget {
   final String? hintText;
   final int minLines;
+  final TextEditingController? controller;
 
-  const AddCourseTextAreaInput({super.key, this.hintText, this.minLines = 4});
+  const AddCourseTextAreaInput({super.key, this.hintText, this.minLines = 4, this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -107,6 +108,7 @@ class AddCourseTextAreaInput extends StatelessWidget {
         border: Border.all(color: appBorder),
       ),
       child: TextField(
+        controller: controller,
         maxLines: null,
         minLines: minLines,
         style: const TextStyle(
