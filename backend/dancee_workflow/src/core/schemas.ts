@@ -234,6 +234,10 @@ export const DirectusEventSchema = z.object({
   event_type: z.string().nullable().optional(),
   registration_url: z.string().nullable().optional(),
   status: z.enum(["published", "draft", "archived", "incomplete"]).optional(),
+  published: z.boolean().default(true),
+  reviewed: z.boolean().default(false),
+  price: z.string().nullable().optional(),
+  additional_info: z.array(z.object({ key: z.string(), value: z.string() })).nullable().optional(),
   translation_status: z.enum(["complete", "partial", "missing"]).optional(),
   // Directus returns translations as full objects when expanded (?fields=*.*),
   // but as an array of IDs (numbers/strings) when not expanded. Accept both.
@@ -396,6 +400,8 @@ export const DirectusCourseSchema = z.object({
   registration_url: z.string().nullable().optional(),
   original_description: z.string().nullable().optional(),
   status: z.enum(["published", "draft", "archived"]).optional(),
+  published: z.boolean().default(true),
+  reviewed: z.boolean().default(false),
   translation_status: z.enum(["complete", "partial", "missing"]).optional(),
   translations: z.array(z.union([z.any(), z.number(), z.string()])).optional(),
 });

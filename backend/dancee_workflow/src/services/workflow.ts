@@ -303,6 +303,8 @@ async function runWorkflow(ctx: restate.WorkflowContext, eventUrl: string) {
         event_type: eventType,
         registration_url: info.find((i) => i.type === "url")?.value ?? null,
         status: isIncomplete ? "incomplete" : "published",
+        published: true,
+        reviewed: false,
         translation_status: translationStatus,
         translations,
       };
@@ -460,6 +462,8 @@ async function runCourseWorkflow(
     registration_url: courseData.registration_url,
     original_description: facebookEvent.description ?? "",
     status: "published",
+    published: true,
+    reviewed: false,
     translation_status: translationStatus,
     translations: courseTranslations,
   };
