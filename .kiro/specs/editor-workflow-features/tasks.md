@@ -168,14 +168,14 @@ This plan implements editorial workflow capabilities for the Dancee App: editor/
     - Use glados (Dart PBT)
     - **Validates: Requirements 1.2**
 
-- [ ] 8. Implement price and additional info editing on edit event screen
-  - [ ] 8.1 Add price input field to the edit event screen
+- [x] 8. Implement price and additional info editing on edit event screen
+  - [x] 8.1 Add price input field to the edit event screen
     - Add a text field for price with currency indicator (e.g., "500 CZK")
     - Store as a string value in the event record
     - Display existing price value when editing
     - _Requirements: 2.1, 2.2, 2.3_
 
-  - [ ] 8.2 Add additional info entries editing to the edit event screen
+  - [x] 8.2 Add additional info entries editing to the edit event screen
     - Display existing info entries with key/value pairs
     - Allow adding new entries (key + value)
     - Allow removing existing entries

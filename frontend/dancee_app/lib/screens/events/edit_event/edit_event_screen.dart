@@ -12,6 +12,20 @@ import '../../../logic/cubits/event_detail_cubit.dart';
 import '../../../logic/states/event_detail_state.dart';
 import '../add_event/components/add_event_form_components.dart';
 
+class _EditableInfoEntry {
+  final TextEditingController keyController;
+  final TextEditingController valueController;
+
+  _EditableInfoEntry({String key = '', String value = ''})
+      : keyController = TextEditingController(text: key),
+        valueController = TextEditingController(text: value);
+
+  void dispose() {
+    keyController.dispose();
+    valueController.dispose();
+  }
+}
+
 class EditEventScreen extends StatefulWidget {
   const EditEventScreen({super.key, required this.eventId});
 
@@ -27,6 +41,8 @@ class _EditEventScreenState extends State<EditEventScreen> {
   late final TextEditingController _organizerController;
   late final TextEditingController _registrationUrlController;
   late final TextEditingController _originalUrlController;
+  late final TextEditingController _priceController;
+  List<_EditableInfoEntry> _infoEntries = [];
 
   DateTime? _startDate;
   DateTime? _endDate;
@@ -52,6 +68,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
     _organizerController = TextEditingController();
     _registrationUrlController = TextEditingController();
     _originalUrlController = TextEditingController();
+    _priceController = TextEditingController();
   }
 
   @override
@@ -70,6 +87,10 @@ class _EditEventScreenState extends State<EditEventScreen> {
     _organizerController.dispose();
     _registrationUrlController.dispose();
     _originalUrlController.dispose();
+    _priceController.dispose();
+    for (final entry in _infoEntries) {
+      entry.dispose();
+    }
     super.dispose();
   }
 
@@ -84,6 +105,10 @@ class _EditEventScreenState extends State<EditEventScreen> {
     _organizerController.text = event.organizer;
     _registrationUrlController.text = event.registrationUrl ?? '';
     _originalUrlController.text = event.originalUrl ?? '';
+    _priceController.text = event.price ?? '';
+    _infoEntries = event.info
+        .map((info) => _EditableInfoEntry(key: info.key, value: info.value))
+        .toList();
 
     final selectedDances = <String>{};
     for (final eventDance in event.dances) {
@@ -170,6 +195,24 @@ class _EditEventScreenState extends State<EditEventScreen> {
     });
   }
 
+  void _removeInfoEntry(int index) {
+    _infoEntries[index].dispose();
+    _infoEntries.removeAt(index);
+  }
+
+  bool _infoListsEqual(
+    List<Map<String, String>> a,
+    List<Map<String, String>> b,
+  ) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i]['key'] != b[i]['key'] || a[i]['value'] != b[i]['value']) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   Map<String, dynamic> _buildPayload(String languageCode) {
     final original = _originalEvent;
     if (original == null) return {};
@@ -230,6 +273,22 @@ class _EditEventScreenState extends State<EditEventScreen> {
     final normalizedOriginal = original.dances.map((d) => d.toLowerCase()).toSet();
     if (!_setsEqual(normalizedSelected, normalizedOriginal)) {
       rootFields['dances'] = normalizedSelected.toList();
+    }
+
+    final priceVal = _priceController.text.isEmpty ? null : _priceController.text;
+    if (priceVal != original.price) {
+      rootFields['price'] = priceVal;
+    }
+
+    final newInfoList = _infoEntries
+        .where((e) => e.keyController.text.isNotEmpty || e.valueController.text.isNotEmpty)
+        .map((e) => <String, String>{'key': e.keyController.text, 'value': e.valueController.text})
+        .toList();
+    final originalInfoList = original.info
+        .map((i) => <String, String>{'key': i.key, 'value': i.value})
+        .toList();
+    if (!_infoListsEqual(newInfoList, originalInfoList)) {
+      rootFields['info'] = newInfoList;
     }
 
     final payload = Map<String, dynamic>.from(rootFields);
@@ -449,6 +508,96 @@ class _EditEventScreenState extends State<EditEventScreen> {
     );
   }
 
+  Widget _buildAdditionalInfoSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const AddEventSectionHeading(
+          icon: FontAwesomeIcons.listUl,
+          label: 'Klíčové informace',
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        const Text(
+          'Přidejte vlastní informace k akci (např. dresscode, vstupné)',
+          style: TextStyle(
+            color: appMuted,
+            fontSize: AppTypography.fontSizeMd,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        ..._infoEntries.asMap().entries.map((entry) {
+          final index = entry.key;
+          final infoEntry = entry.value;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.md),
+            child: Row(
+              children: [
+                Expanded(
+                  child: AddEventTextInput(
+                    controller: infoEntry.keyController,
+                    hintText: 'Název',
+                    isSmall: true,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  flex: 2,
+                  child: AddEventTextInput(
+                    controller: infoEntry.valueController,
+                    hintText: 'Hodnota',
+                    isSmall: true,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                GestureDetector(
+                  onTap: () => setState(() => _removeInfoEntry(index)),
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: appSurface,
+                      borderRadius: BorderRadius.circular(AppRadius.md),
+                      border: Border.all(color: appBorder),
+                    ),
+                    child: const Center(
+                      child: FaIcon(FontAwesomeIcons.trash, size: 12, color: appMuted),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+        GestureDetector(
+          onTap: () => setState(() => _infoEntries.add(_EditableInfoEntry())),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+            decoration: BoxDecoration(
+              color: appSurface,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              border: Border.all(color: appBorder),
+            ),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                FaIcon(FontAwesomeIcons.plus, size: 12, color: appMuted),
+                SizedBox(width: AppSpacing.sm),
+                Text(
+                  'Přidat položku',
+                  style: TextStyle(
+                    color: appMuted,
+                    fontSize: AppTypography.fontSizeMd,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildForm(bool isSubmitting) {
     return SingleChildScrollView(
       padding: const EdgeInsets.only(
@@ -621,6 +770,14 @@ class _EditEventScreenState extends State<EditEventScreen> {
               ),
               const SizedBox(height: AppSpacing.lg),
               AddEventFormField(
+                label: 'Cena',
+                child: AddEventTextInput(
+                  controller: _priceController,
+                  hintText: 'např. 500 CZK',
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              AddEventFormField(
                 label: 'URL na nákup vstupenek',
                 child: AddEventTextInput(
                   controller: _registrationUrlController,
@@ -639,6 +796,9 @@ class _EditEventScreenState extends State<EditEventScreen> {
               ),
             ],
           ),
+          const SizedBox(height: AppSpacing.xxl),
+          // Additional info entries
+          _buildAdditionalInfoSection(),
           const SizedBox(height: AppSpacing.xxl),
           // Submit
           Container(
