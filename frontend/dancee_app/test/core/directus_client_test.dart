@@ -72,6 +72,19 @@ DirectusClient _makeClient(HttpClientAdapter adapter) {
   );
 }
 
+/// Creates a client that simulates an authenticated session (directus token
+/// present), so 401 errors return the auth-specific message key.
+DirectusClient _makeAuthenticatedClient(HttpClientAdapter adapter) {
+  final dio = Dio(BaseOptions(baseUrl: 'https://test.local'));
+  dio.httpClientAdapter = adapter;
+  return DirectusClient(
+    baseUrl: 'https://test.local',
+    accessToken: 'test-token',
+    directusTokenProvider: () async => 'directus-test-token',
+    dio: dio,
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Property 2: HTTP error to ApiException mapping
 // ---------------------------------------------------------------------------
@@ -212,7 +225,7 @@ void _propertyErrorMapping() {
     }
 
     test('P2: 401 response includes authentication message', () async {
-      final client = _makeClient(_StatusCodeAdapter(401));
+      final client = _makeAuthenticatedClient(_StatusCodeAdapter(401));
 
       expect(
         () => client.get('/items/test'),
