@@ -119,6 +119,17 @@ class EventCubit extends Cubit<EventState> {
     );
   }
 
+  /// Replaces the event matching [eventId] with [updatedEvent] in the cache.
+  void replaceEvent(int eventId, Event updatedEvent) {
+    _allEvents = _allEvents
+        .map((e) => e.id == eventId ? updatedEvent : e)
+        .toList();
+    state.maybeMap(
+      loaded: (_) => _recompute(),
+      orElse: () {},
+    );
+  }
+
   void _recompute() {
     final filtered = _filterEvents(_allEvents, _currentFilters, _currentDanceStyles);
     final deduped = _deduplicateEvents(filtered);

@@ -7,6 +7,7 @@ import '../../../core/colors.dart';
 import '../../../core/theme.dart';
 import '../../../data/entities/course.dart';
 import '../../../i18n/strings.g.dart';
+import '../../../logic/cubits/course_cubit.dart';
 import '../../../logic/cubits/course_detail_cubit.dart';
 import '../../../logic/states/course_detail_state.dart';
 import '../add_course/components/add_course_form_components.dart';
@@ -817,10 +818,11 @@ class _EditCourseScreenState extends State<EditCourseScreen> {
             context.read<CourseDetailCubit>().startEditing();
           },
           editing: (s) => _initFromCourse(s.course, s.translationId),
-          success: (_) {
+          success: (s) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(t.courses.edit.success)),
             );
+            context.read<CourseCubit>().replaceCourse(widget.courseId, s.course);
             context.pop();
           },
           error: (_) {

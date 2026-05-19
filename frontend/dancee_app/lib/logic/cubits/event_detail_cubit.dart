@@ -89,7 +89,19 @@ class EventDetailCubit extends Cubit<EventDetailState> {
         );
       }
 
-      emit(EventDetailState.success(event: currentEvent));
+      // Re-fetch the updated event so the success state contains fresh data.
+      try {
+        final (freshEvent, _) =
+            await _eventRepository.getEventByIdWithTranslationId(
+          eventId,
+          languageCode,
+        );
+        emit(EventDetailState.success(event: freshEvent));
+      } catch (_) {
+        // If re-fetch fails, emit success with the stale event — the edit
+        // itself succeeded.
+        emit(EventDetailState.success(event: currentEvent));
+      }
     } catch (e) {
       emit(EventDetailState.error(
         event: currentEvent,

@@ -89,6 +89,17 @@ class CourseCubit extends Cubit<CourseState> {
     );
   }
 
+  /// Replaces the course matching [courseId] with [updatedCourse] in the cache.
+  void replaceCourse(int courseId, Course updatedCourse) {
+    _allCourses = _allCourses
+        .map((c) => c.id == courseId ? updatedCourse : c)
+        .toList();
+    state.maybeMap(
+      loaded: (_) => _recompute(),
+      orElse: () {},
+    );
+  }
+
   void _recompute() {
     final filtered = _filterCourses(_allCourses, _currentFilters, _currentDanceStyles);
     emit(CourseState.loaded(

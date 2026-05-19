@@ -89,7 +89,19 @@ class CourseDetailCubit extends Cubit<CourseDetailState> {
         );
       }
 
-      emit(CourseDetailState.success(course: currentCourse));
+      // Re-fetch the updated course so the success state contains fresh data.
+      try {
+        final (freshCourse, _) =
+            await _courseRepository.getCourseByIdWithTranslationId(
+          courseId,
+          languageCode,
+        );
+        emit(CourseDetailState.success(course: freshCourse));
+      } catch (_) {
+        // If re-fetch fails, emit success with the stale course — the edit
+        // itself succeeded.
+        emit(CourseDetailState.success(course: currentCourse));
+      }
     } catch (e) {
       emit(CourseDetailState.error(
         course: currentCourse,

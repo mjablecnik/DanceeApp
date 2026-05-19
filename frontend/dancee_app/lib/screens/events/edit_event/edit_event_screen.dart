@@ -7,6 +7,7 @@ import '../../../core/colors.dart';
 import '../../../core/theme.dart';
 import '../../../data/entities/event.dart';
 import '../../../i18n/strings.g.dart';
+import '../../../logic/cubits/event_cubit.dart';
 import '../../../logic/cubits/event_detail_cubit.dart';
 import '../../../logic/states/event_detail_state.dart';
 import '../add_event/components/add_event_form_components.dart';
@@ -695,10 +696,11 @@ class _EditEventScreenState extends State<EditEventScreen> {
             context.read<EventDetailCubit>().startEditing();
           },
           editing: (s) => _initFromEvent(s.event, s.translationId),
-          success: (_) {
+          success: (s) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(t.events.edit.success)),
             );
+            context.read<EventCubit>().replaceEvent(widget.eventId, s.event);
             context.pop();
           },
           error: (_) {
