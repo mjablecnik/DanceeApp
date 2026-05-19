@@ -6,6 +6,7 @@ import '../../data/entities/event.dart';
 import '../../data/repositories/event_repository.dart';
 import '../states/event_state.dart';
 import '../states/filter_state.dart';
+import 'editor_mode_cubit.dart';
 
 /// Sentinel key used to represent the "Abroad" filter option in region filters.
 /// Events whose venue country is not in [kCzCountryValues] are grouped under
@@ -16,20 +17,31 @@ const kAbroadRegionKey = '__abroad__';
 const kCzCountryValues = {'CZ', 'Česká republika', 'Česko', 'Czech Republic', 'Czechia'};
 
 class EventCubit extends Cubit<EventState> {
-  EventCubit({required EventRepository eventRepository})
-      : _eventRepository = eventRepository,
+  EventCubit({
+    required EventRepository eventRepository,
+    EditorModeCubit? editorModeCubit,
+  })  : _eventRepository = eventRepository,
+        _editorModeCubit = editorModeCubit,
         super(const EventState.initial());
 
   final EventRepository _eventRepository;
+  final EditorModeCubit? _editorModeCubit;
   List<Event> _allEvents = [];
   FilterState _currentFilters = const FilterState();
   List<DanceStyle> _currentDanceStyles = [];
 
+  bool get _isEditorMode => _editorModeCubit?.isEditorMode ?? false;
+
   /// Fetches events from CMS for [languageCode], applies current filters, emits loaded state.
+  /// In editor mode, fetches all events (published and unpublished).
   Future<void> loadEvents(String languageCode) async {
     emit(const EventState.loading());
     try {
-      _allEvents = await _eventRepository.getEvents(languageCode);
+      if (_isEditorMode) {
+        _allEvents = await _eventRepository.getEventsForEditor(languageCode);
+      } else {
+        _allEvents = await _eventRepository.getEvents(languageCode);
+      }
       _recompute();
     } catch (e) {
       emit(EventState.error(
@@ -196,6 +208,14 @@ List<Event> _filterEvents(
         if (czRegions.isEmpty) return false;
         if (!czRegions.contains(venue.region)) return false;
       }
+    }
+    if (filters.publishedFilter != null) {
+      final wantPublished = filters.publishedFilter == 'published';
+      if (event.published != wantPublished) return false;
+    }
+    if (filters.reviewedFilter != null) {
+      final wantReviewed = filters.reviewedFilter == 'reviewed';
+      if (event.reviewed != wantReviewed) return false;
     }
     return true;
   }).toList();

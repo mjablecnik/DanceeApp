@@ -6,22 +6,34 @@ import '../../data/entities/dance_style.dart';
 import '../../data/repositories/course_repository.dart';
 import '../states/course_state.dart';
 import '../states/filter_state.dart';
+import 'editor_mode_cubit.dart';
 
 class CourseCubit extends Cubit<CourseState> {
-  CourseCubit({required CourseRepository courseRepository})
-      : _courseRepository = courseRepository,
+  CourseCubit({
+    required CourseRepository courseRepository,
+    EditorModeCubit? editorModeCubit,
+  })  : _courseRepository = courseRepository,
+        _editorModeCubit = editorModeCubit,
         super(const CourseState.initial());
 
   final CourseRepository _courseRepository;
+  final EditorModeCubit? _editorModeCubit;
   List<Course> _allCourses = [];
   FilterState _currentFilters = const FilterState();
   List<DanceStyle> _currentDanceStyles = [];
 
+  bool get _isEditorMode => _editorModeCubit?.isEditorMode ?? false;
+
   /// Fetches courses from CMS for [languageCode], applies current filters, emits loaded state.
+  /// In editor mode, fetches all courses (including past ones and unpublished).
   Future<void> loadCourses(String languageCode) async {
     emit(const CourseState.loading());
     try {
-      _allCourses = await _courseRepository.getCourses(languageCode);
+      if (_isEditorMode) {
+        _allCourses = await _courseRepository.getCoursesForEditor(languageCode);
+      } else {
+        _allCourses = await _courseRepository.getCourses(languageCode);
+      }
       _recompute();
     } catch (e) {
       emit(CourseState.error(
@@ -101,7 +113,12 @@ class CourseCubit extends Cubit<CourseState> {
   }
 
   void _recompute() {
-    final filtered = _filterCourses(_allCourses, _currentFilters, _currentDanceStyles);
+    final filtered = _filterCourses(
+      _allCourses,
+      _currentFilters,
+      _currentDanceStyles,
+      isEditorMode: _isEditorMode,
+    );
     emit(CourseState.loaded(
       allCourses: _allCourses,
       filteredCourses: filtered,
@@ -112,9 +129,19 @@ class CourseCubit extends Cubit<CourseState> {
 List<Course> _filterCourses(
   List<Course> courses,
   FilterState filters,
-  List<DanceStyle> allStyles,
-) {
+  List<DanceStyle> allStyles, {
+  bool isEditorMode = false,
+}) {
+  final today = DateTime.now();
+  final todayStr =
+      '${today.year.toString().padLeft(4, '0')}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+
   return courses.where((course) {
+    // User mode: hide courses whose start date has already passed.
+    if (!isEditorMode) {
+      final startDate = course.startDate;
+      if (startDate != null && startDate.compareTo(todayStr) < 0) return false;
+    }
     if (filters.selectedCourseTypes.isNotEmpty) {
       if (!filters.selectedCourseTypes.contains(course.courseType.name)) {
         return false;
@@ -142,6 +169,14 @@ List<Course> _filterCourses(
           !filters.selectedRegions.contains(course.venue!.region)) {
         return false;
       }
+    }
+    if (filters.publishedFilter != null) {
+      final wantPublished = filters.publishedFilter == 'published';
+      if (course.published != wantPublished) return false;
+    }
+    if (filters.reviewedFilter != null) {
+      final wantReviewed = filters.reviewedFilter == 'reviewed';
+      if (course.reviewed != wantReviewed) return false;
     }
     return true;
   }).toList();
