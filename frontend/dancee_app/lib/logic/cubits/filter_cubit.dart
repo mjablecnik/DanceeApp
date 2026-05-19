@@ -86,12 +86,24 @@ class FilterCubit extends Cubit<FilterState> with ChangeNotifier {
     notifyListeners();
   }
 
+  void setPublishedFilter(String? value) {
+    emit(state.copyWith(publishedFilter: value));
+    notifyListeners();
+  }
+
+  void setReviewedFilter(String? value) {
+    emit(state.copyWith(reviewedFilter: value));
+    notifyListeners();
+  }
+
   void clearAll() {
     emit(state.copyWith(
       selectedDanceStyles: {},
       selectedRegions: {},
       selectedEventDurationTypes: {},
       selectedCourseTypes: {},
+      publishedFilter: null,
+      reviewedFilter: null,
     ));
     notifyListeners();
   }

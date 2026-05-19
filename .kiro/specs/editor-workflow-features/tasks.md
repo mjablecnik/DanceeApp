@@ -100,14 +100,14 @@ This plan implements editorial workflow capabilities for the Dancee App: editor/
 - [x] 4. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 5. Extend FilterState and FilterCubit with editor filters
-  - [ ] 5.1 Add `publishedFilter` and `reviewedFilter` fields to `FilterState`
+- [x] 5. Extend FilterState and FilterCubit with editor filters
+  - [x] 5.1 Add `publishedFilter` and `reviewedFilter` fields to `FilterState`
     - Add `final String? publishedFilter` (values: 'published', 'unpublished', or null for all)
     - Add `final String? reviewedFilter` (values: 'reviewed', 'unreviewed', or null for all)
     - Update `copyWith`, `props`, and `hasActiveFilters`
     - _Requirements: 7.1, 7.6_
 
-  - [ ] 5.2 Add `setPublishedFilter` and `setReviewedFilter` methods to `FilterCubit`
+  - [x] 5.2 Add `setPublishedFilter` and `setReviewedFilter` methods to `FilterCubit`
     - These methods update the filter state with the new editor-specific filter values
     - _Requirements: 7.2, 7.3, 7.4, 7.5_
 

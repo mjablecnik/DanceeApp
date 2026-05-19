@@ -9,12 +9,20 @@ class FilterState extends Equatable {
     this.danceStyles = const [],
     this.selectedEventDurationTypes = const {},
     this.selectedCourseTypes = const {},
+    this.publishedFilter,
+    this.reviewedFilter,
   });
 
   final Set<String> selectedDanceStyles;
   final Set<String> selectedRegions;
   final Set<String> selectedEventDurationTypes;
   final Set<String> selectedCourseTypes;
+
+  /// Editor filter: 'published', 'unpublished', or null for all.
+  final String? publishedFilter;
+
+  /// Editor filter: 'reviewed', 'unreviewed', or null for all.
+  final String? reviewedFilter;
 
   /// All dance styles loaded from the CMS (both parents and children).
   final List<DanceStyle> danceStyles;
@@ -27,7 +35,9 @@ class FilterState extends Equatable {
       selectedDanceStyles.isNotEmpty ||
       selectedRegions.isNotEmpty ||
       selectedEventDurationTypes.isNotEmpty ||
-      selectedCourseTypes.isNotEmpty;
+      selectedCourseTypes.isNotEmpty ||
+      publishedFilter != null ||
+      reviewedFilter != null;
 
   FilterState copyWith({
     Set<String>? selectedDanceStyles,
@@ -35,6 +45,8 @@ class FilterState extends Equatable {
     List<DanceStyle>? danceStyles,
     Set<String>? selectedEventDurationTypes,
     Set<String>? selectedCourseTypes,
+    Object? publishedFilter = _sentinel,
+    Object? reviewedFilter = _sentinel,
   }) {
     return FilterState(
       selectedDanceStyles: selectedDanceStyles ?? this.selectedDanceStyles,
@@ -42,6 +54,8 @@ class FilterState extends Equatable {
       danceStyles: danceStyles ?? this.danceStyles,
       selectedEventDurationTypes: selectedEventDurationTypes ?? this.selectedEventDurationTypes,
       selectedCourseTypes: selectedCourseTypes ?? this.selectedCourseTypes,
+      publishedFilter: publishedFilter == _sentinel ? this.publishedFilter : publishedFilter as String?,
+      reviewedFilter: reviewedFilter == _sentinel ? this.reviewedFilter : reviewedFilter as String?,
     );
   }
 
@@ -52,5 +66,9 @@ class FilterState extends Equatable {
         danceStyles,
         selectedEventDurationTypes,
         selectedCourseTypes,
+        publishedFilter,
+        reviewedFilter,
       ];
 }
+
+const Object _sentinel = Object();
