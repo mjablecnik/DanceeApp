@@ -52,8 +52,15 @@ class _EditEventScreenState extends State<EditEventScreen> {
     _organizerController = TextEditingController();
     _registrationUrlController = TextEditingController();
     _originalUrlController = TextEditingController();
-    final locale = Localizations.localeOf(context).languageCode;
-    context.read<EventDetailCubit>().loadEvent(widget.eventId, locale);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      final locale = Localizations.localeOf(context).languageCode;
+      context.read<EventDetailCubit>().loadEvent(widget.eventId, locale);
+    }
   }
 
   @override

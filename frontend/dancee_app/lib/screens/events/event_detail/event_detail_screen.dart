@@ -36,19 +36,24 @@ class EventDetailScreen extends StatefulWidget {
 }
 
 class _EventDetailScreenState extends State<EventDetailScreen> {
+  bool _loaded = false;
+
   @override
-  void initState() {
-    super.initState();
-    final cachedEvents = context.read<EventCubit>().state.maybeMap(
-          loaded: (s) => s.allEvents,
-          orElse: () => null,
-        );
-    final locale = Localizations.localeOf(context).languageCode;
-    context.read<EventDetailCubit>().loadEvent(
-          widget.eventId,
-          locale,
-          cachedEvents: cachedEvents,
-        );
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_loaded) {
+      _loaded = true;
+      final cachedEvents = context.read<EventCubit>().state.maybeMap(
+            loaded: (s) => s.allEvents,
+            orElse: () => null,
+          );
+      final locale = Localizations.localeOf(context).languageCode;
+      context.read<EventDetailCubit>().loadEvent(
+            widget.eventId,
+            locale,
+            cachedEvents: cachedEvents,
+          );
+    }
   }
 
   List<KeyInfoItem> _buildKeyInfo(Event event) {

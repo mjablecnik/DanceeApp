@@ -35,19 +35,24 @@ class CourseDetailScreen extends StatefulWidget {
 }
 
 class _CourseDetailScreenState extends State<CourseDetailScreen> {
+  bool _loaded = false;
+
   @override
-  void initState() {
-    super.initState();
-    final cachedCourses = context.read<CourseCubit>().state.maybeMap(
-          loaded: (s) => s.allCourses,
-          orElse: () => null,
-        );
-    final locale = Localizations.localeOf(context).languageCode;
-    context.read<CourseDetailCubit>().loadCourse(
-          widget.courseId,
-          locale,
-          cachedCourses: cachedCourses,
-        );
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_loaded) {
+      _loaded = true;
+      final cachedCourses = context.read<CourseCubit>().state.maybeMap(
+            loaded: (s) => s.allCourses,
+            orElse: () => null,
+          );
+      final locale = Localizations.localeOf(context).languageCode;
+      context.read<CourseDetailCubit>().loadCourse(
+            widget.courseId,
+            locale,
+            cachedCourses: cachedCourses,
+          );
+    }
   }
 
   List<KeyInfoItem> _buildKeyInfo(Course course) {

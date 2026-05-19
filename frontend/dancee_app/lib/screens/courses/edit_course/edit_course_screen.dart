@@ -73,8 +73,15 @@ class _EditCourseScreenState extends State<EditCourseScreen> {
     _lessonDurationController = TextEditingController();
     _maxParticipantsController = TextEditingController();
     _scheduleTimeController = TextEditingController();
-    final locale = Localizations.localeOf(context).languageCode;
-    context.read<CourseDetailCubit>().loadCourse(widget.courseId, locale);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      final locale = Localizations.localeOf(context).languageCode;
+      context.read<CourseDetailCubit>().loadCourse(widget.courseId, locale);
+    }
   }
 
   @override
