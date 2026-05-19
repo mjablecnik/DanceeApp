@@ -25,6 +25,9 @@ class Event extends Equatable {
     this.originalUrl,
     this.registrationUrl,
     required this.isFavorited,
+    this.published = true,
+    this.reviewed = false,
+    this.price,
   });
 
   final int id;
@@ -43,6 +46,9 @@ class Event extends Equatable {
   final String? originalUrl;
   final String? registrationUrl;
   final bool isFavorited;
+  final bool published;
+  final bool reviewed;
+  final String? price;
 
   /// Computed duration type for filtering.
   EventDurationType get durationType {
@@ -152,10 +158,18 @@ class Event extends Equatable {
       originalUrl: json['original_url'] as String?,
       registrationUrl: json['registration_url'] as String?,
       isFavorited: favoriteEventIds.contains(id),
+      published: (json['published'] as bool?) ?? true,
+      reviewed: (json['reviewed'] as bool?) ?? false,
+      price: json['price'] as String?,
     );
   }
 
-  Event copyWith({bool? isFavorited}) {
+  Event copyWith({
+    bool? isFavorited,
+    bool? published,
+    bool? reviewed,
+    String? price,
+  }) {
     return Event(
       id: id,
       imageUrl: imageUrl,
@@ -173,6 +187,9 @@ class Event extends Equatable {
       originalUrl: originalUrl,
       registrationUrl: registrationUrl,
       isFavorited: isFavorited ?? this.isFavorited,
+      published: published ?? this.published,
+      reviewed: reviewed ?? this.reviewed,
+      price: price ?? this.price,
     );
   }
 
@@ -194,6 +211,9 @@ class Event extends Equatable {
         originalUrl,
         registrationUrl,
         isFavorited,
+        published,
+        reviewed,
+        price,
       ];
 }
 

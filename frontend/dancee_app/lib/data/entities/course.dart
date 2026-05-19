@@ -31,6 +31,8 @@ class Course extends Equatable {
     this.originalUrl,
     this.registrationUrl,
     required this.isFavorited,
+    this.published = true,
+    this.reviewed = false,
   });
 
   final int id;
@@ -57,6 +59,8 @@ class Course extends Equatable {
   final String? originalUrl;
   final String? registrationUrl;
   final bool isFavorited;
+  final bool published;
+  final bool reviewed;
 
   /// Computed course type for filtering.
   CourseType get courseType {
@@ -138,10 +142,16 @@ class Course extends Equatable {
       originalUrl: json['original_url'] as String?,
       registrationUrl: json['registration_url'] as String?,
       isFavorited: favoriteCourseIds.contains(id),
+      published: (json['published'] as bool?) ?? true,
+      reviewed: (json['reviewed'] as bool?) ?? false,
     );
   }
 
-  Course copyWith({bool? isFavorited}) {
+  Course copyWith({
+    bool? isFavorited,
+    bool? published,
+    bool? reviewed,
+  }) {
     return Course(
       id: id,
       imageUrl: imageUrl,
@@ -167,6 +177,8 @@ class Course extends Equatable {
       originalUrl: originalUrl,
       registrationUrl: registrationUrl,
       isFavorited: isFavorited ?? this.isFavorited,
+      published: published ?? this.published,
+      reviewed: reviewed ?? this.reviewed,
     );
   }
 
@@ -196,6 +208,8 @@ class Course extends Equatable {
         originalUrl,
         registrationUrl,
         isFavorited,
+        published,
+        reviewed,
       ];
 }
 

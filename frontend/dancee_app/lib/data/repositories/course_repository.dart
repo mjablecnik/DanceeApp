@@ -37,6 +37,39 @@ class CourseRepository {
         .toList();
   }
 
+  /// Fetches all courses (published and unpublished) for editor use.
+  Future<List<Course>> getCoursesForEditor(String languageCode) async {
+    final data = await _client.get(
+      '/items/courses',
+      queryParameters: {
+        'fields': '*,venue.*,translations.*',
+        'sort': 'start_date',
+        'limit': '-1',
+        'deep[translations][_filter][languages_code][_eq]': languageCode,
+      },
+    );
+
+    final items = (data as List<dynamic>?) ?? [];
+    return items
+        .cast<Map<String, dynamic>>()
+        .map((json) => Course.fromDirectus(
+              json,
+              languageCode: languageCode,
+              directusBaseUrl: AppConfig.directusBaseUrl,
+            ))
+        .toList();
+  }
+
+  /// Updates the published status of course [id].
+  Future<void> updatePublishedStatus(int id, bool published) async {
+    await _client.patch('/items/courses/$id', data: {'published': published});
+  }
+
+  /// Updates the reviewed status of course [id].
+  Future<void> updateReviewedStatus(int id, bool reviewed) async {
+    await _client.patch('/items/courses/$id', data: {'reviewed': reviewed});
+  }
+
   /// Fetches a single course by [id] with venue and translations for [languageCode].
   Future<Course> getCourseById(int id, String languageCode) async {
     final data = await _client.get(

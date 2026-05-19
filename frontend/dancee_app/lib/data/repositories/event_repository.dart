@@ -38,6 +38,39 @@ class EventRepository {
         .toList();
   }
 
+  /// Fetches all events (published and unpublished) for editor use.
+  Future<List<Event>> getEventsForEditor(String languageCode) async {
+    final data = await _client.get(
+      '/items/events',
+      queryParameters: {
+        'fields': '*,venue.*,translations.*',
+        'sort': 'start_time',
+        'limit': '-1',
+        'deep[translations][_filter][languages_code][_eq]': languageCode,
+      },
+    );
+
+    final items = (data as List<dynamic>?) ?? [];
+    return items
+        .cast<Map<String, dynamic>>()
+        .map((json) => Event.fromDirectus(
+              json,
+              languageCode: languageCode,
+              directusBaseUrl: AppConfig.directusBaseUrl,
+            ))
+        .toList();
+  }
+
+  /// Updates the published status of event [id].
+  Future<void> updatePublishedStatus(int id, bool published) async {
+    await _client.patch('/items/events/$id', data: {'published': published});
+  }
+
+  /// Updates the reviewed status of event [id].
+  Future<void> updateReviewedStatus(int id, bool reviewed) async {
+    await _client.patch('/items/events/$id', data: {'reviewed': reviewed});
+  }
+
   /// Fetches a single event by [id] with venue and translations for [languageCode].
   Future<Event> getEventById(int id, String languageCode) async {
     final data = await _client.get(
