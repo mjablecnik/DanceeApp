@@ -326,6 +326,20 @@ export async function createCourse(course: DirectusCourse): Promise<DirectusCour
   return DirectusCourseSchema.parse(extractDirectusData(data, "createCourse"));
 }
 
+export async function getCourseById(id: string | number): Promise<DirectusCourse | null> {
+  try {
+    const data = await directusGet(`/items/courses/${id}?fields=*,translations.*`);
+    return DirectusCourseSchema.parse(extractDirectusData(data, "getCourseById"));
+  } catch {
+    return null;
+  }
+}
+
+export async function updateCourse(id: string | number, patch: Partial<DirectusCourse>): Promise<DirectusCourse> {
+  const data = await directusPatch(`/items/courses/${id}`, patch);
+  return DirectusCourseSchema.parse(extractDirectusData(data, "updateCourse"));
+}
+
 export async function findCourseByOriginalUrl(originalUrl: string): Promise<DirectusCourse | null> {
   const encoded = encodeURIComponent(originalUrl);
   const data = await directusGet(`/items/courses?filter[original_url][_eq]=${encoded}&limit=1`);

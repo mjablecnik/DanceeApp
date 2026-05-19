@@ -1,13 +1,14 @@
 import * as restate from "@restatedev/restate-sdk";
-import { listPublishedEvents, findEventByOriginalUrl, getEventById, updateEvent, deleteEventTranslations, createError, getDanceStyleCodes, listPublishedCourses, createFavorite, deleteFavorite, listFavorites, listDanceStyles } from "../clients/directus-client";
+import { z } from "zod";
+import { listPublishedEvents, findEventByOriginalUrl, getEventById, updateEvent, deleteEventTranslations, createError, getDanceStyleCodes, listPublishedCourses, createFavorite, deleteFavorite, listFavorites, listDanceStyles, getCourseById, updateCourse } from "../clients/directus-client";
 import { config, captureError } from "../core/config";
 import { log } from "../core/logger";
 import { normalizeEventUrl } from "../core/utils";
 import { extractEventParts, extractEventInfo, validateDanceCodes } from "./event-parser";
-import { translateEventContent } from "./event-translator";
+import { translateEventContent, translateCourseContent } from "./event-translator";
 import { computeDances } from "../core/schemas";
 import { computeTranslationStatus } from "./workflow";
-import type { DirectusEventTranslation, DirectusFavorite } from "../core/schemas";
+import type { DirectusEventTranslation, DirectusCourseTranslation, DirectusFavorite } from "../core/schemas";
 import type { EventWorkflow } from "./workflow";
 import type { BatchService } from "./batch";
 
@@ -410,6 +411,182 @@ export const apiService = restate.service({
 
     listDanceStyles: async (ctx: restate.Context) => {
       return ctx.run("listDanceStyles", () => listDanceStyles());
+    },
+
+    retranslateItem: async (
+      ctx: restate.Context,
+      request: { itemId?: unknown; itemType?: unknown; sourceLang?: unknown; modifiedTextFields?: unknown },
+    ) => {
+      const RetranslateRequestSchema = z.object({
+        itemId: z.number(),
+        itemType: z.enum(["event", "course"]),
+        sourceLang: z.enum(["cs", "en", "es"]),
+        modifiedTextFields: z.record(z.string()),
+      });
+
+      let parsed: z.infer<typeof RetranslateRequestSchema>;
+      try {
+        parsed = RetranslateRequestSchema.parse(request);
+      } catch (err) {
+        throw new restate.TerminalError(
+          `Invalid request: ${err instanceof Error ? err.message : String(err)}`,
+          { errorCode: 400 },
+        );
+      }
+
+      const { itemId, itemType, sourceLang } = parsed;
+
+      const allLangs = [
+        { code: "cs", name: "Czech" },
+        { code: "en", name: "English" },
+        { code: "es", name: "Spanish" },
+      ];
+      const targetLangs = allLangs.filter((l) => l.code !== sourceLang);
+
+      if (itemType === "event") {
+        const event = await ctx.run("getEvent", () => getEventById(itemId));
+        if (!event) {
+          throw new restate.TerminalError(`Event ${itemId} not found`, { errorCode: 404 });
+        }
+
+        const sourceTrans = Array.isArray(event.translations)
+          ? event.translations.find(
+              (t) => typeof t === "object" && t !== null && "languages_code" in t &&
+                (t as { languages_code: string }).languages_code === sourceLang,
+            )
+          : undefined;
+
+        const contentInput = {
+          title: (sourceTrans && typeof sourceTrans === "object" && "title" in sourceTrans)
+            ? String((sourceTrans as { title: unknown }).title ?? "")
+            : "",
+          description: (sourceTrans && typeof sourceTrans === "object" && "description" in sourceTrans)
+            ? String((sourceTrans as { description: unknown }).description ?? "")
+            : "",
+          parts: event.parts ?? [],
+          info: event.info ?? [],
+        };
+
+        const idByLang = new Map<string, number | string>();
+        if (Array.isArray(event.translations)) {
+          for (const t of event.translations) {
+            if (typeof t === "object" && t !== null && "languages_code" in t && "id" in t) {
+              const obj = t as { id: number | string; languages_code: string };
+              idByLang.set(obj.languages_code, obj.id);
+            }
+          }
+        }
+
+        const newTranslations: DirectusEventTranslation[] = [];
+        for (const lang of targetLangs) {
+          try {
+            const translated = await ctx.run(`translate_${lang.code}`, () =>
+              translateEventContent(contentInput, lang.name),
+            );
+            newTranslations.push({
+              languages_code: lang.code,
+              title: translated.title,
+              description: translated.description,
+              parts_translations: translated.parts_translations,
+              info_translations: translated.info_translations,
+            });
+          } catch (err) {
+            log({ level: "error", message: `retranslateItem: event translation to ${lang.code} failed`, error: String(err) });
+          }
+        }
+
+        const translationsPatch = newTranslations.map((t) => ({
+          ...t,
+          ...(idByLang.has(t.languages_code) ? { id: idByLang.get(t.languages_code) } : {}),
+        }));
+
+        const sourceTransObj = sourceTrans && typeof sourceTrans === "object" && "languages_code" in sourceTrans
+          ? (sourceTrans as DirectusEventTranslation)
+          : null;
+        const allForStatus: DirectusEventTranslation[] = [
+          ...(sourceTransObj ? [sourceTransObj] : []),
+          ...newTranslations,
+        ];
+        const translationStatus = computeTranslationStatus(allForStatus);
+
+        await ctx.run("updateEvent", () => updateEvent(itemId, {
+          translations: translationsPatch,
+          translation_status: translationStatus,
+        }));
+
+      } else {
+        const course = await ctx.run("getCourse", () => getCourseById(itemId));
+        if (!course) {
+          throw new restate.TerminalError(`Course ${itemId} not found`, { errorCode: 404 });
+        }
+
+        const sourceTrans = Array.isArray(course.translations)
+          ? course.translations.find(
+              (t) => typeof t === "object" && t !== null && "languages_code" in t &&
+                (t as { languages_code: string }).languages_code === sourceLang,
+            )
+          : undefined;
+
+        const contentInput = {
+          title: (sourceTrans && typeof sourceTrans === "object" && "title" in sourceTrans)
+            ? String((sourceTrans as { title: unknown }).title ?? "")
+            : "",
+          description: (sourceTrans && typeof sourceTrans === "object" && "description" in sourceTrans)
+            ? String((sourceTrans as { description: unknown }).description ?? "")
+            : "",
+          learning_items: (sourceTrans && typeof sourceTrans === "object" && "learning_items" in sourceTrans)
+            ? ((sourceTrans as { learning_items?: string[] }).learning_items ?? [])
+            : [],
+        };
+
+        const idByLang = new Map<string, number | string>();
+        if (Array.isArray(course.translations)) {
+          for (const t of course.translations) {
+            if (typeof t === "object" && t !== null && "languages_code" in t && "id" in t) {
+              const obj = t as { id: number | string; languages_code: string };
+              idByLang.set(obj.languages_code, obj.id);
+            }
+          }
+        }
+
+        const newTranslations: DirectusCourseTranslation[] = [];
+        for (const lang of targetLangs) {
+          try {
+            const translated = await ctx.run(`translateCourse_${lang.code}`, () =>
+              translateCourseContent(contentInput, lang.name),
+            );
+            newTranslations.push({
+              languages_code: lang.code,
+              title: translated.title,
+              description: translated.description,
+              learning_items: translated.learning_items,
+            });
+          } catch (err) {
+            log({ level: "error", message: `retranslateItem: course translation to ${lang.code} failed`, error: String(err) });
+          }
+        }
+
+        const translationsPatch = newTranslations.map((t) => ({
+          ...t,
+          ...(idByLang.has(t.languages_code) ? { id: idByLang.get(t.languages_code) } : {}),
+        }));
+
+        const sourceTransObj = sourceTrans && typeof sourceTrans === "object" && "languages_code" in sourceTrans
+          ? (sourceTrans as DirectusCourseTranslation)
+          : null;
+        const allForStatus: DirectusEventTranslation[] = [
+          ...(sourceTransObj ? [sourceTransObj as unknown as DirectusEventTranslation] : []),
+          ...(newTranslations as unknown as DirectusEventTranslation[]),
+        ];
+        const translationStatus = computeTranslationStatus(allForStatus);
+
+        await ctx.run("updateCourse", () => updateCourse(itemId, {
+          translations: translationsPatch,
+          translation_status: translationStatus,
+        }));
+      }
+
+      return { success: true };
     },
 
     listEvents: async (ctx: restate.Context) => {

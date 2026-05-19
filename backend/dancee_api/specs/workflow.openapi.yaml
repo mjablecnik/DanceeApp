@@ -80,6 +80,72 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /api/event/retranslate:
+    post:
+      tags:
+        - Events
+      summary: Trigger retranslation of a modified event or course
+      description: |
+        Asynchronously retranslates a modified event or course to the other two languages.
+
+        Called by the Flutter app after successfully PATCHing an event or course in Directus.
+        The handler fetches the current content for the source language from Directus (already
+        updated by the PATCH), then translates it to the remaining two languages, and PATCHes
+        the translations back to Directus.
+
+        This endpoint is fire-and-forget from the app perspective — the app shows success as
+        soon as the original PATCH to Directus succeeds. Translation retries are handled by
+        Restate's built-in exponential backoff. On terminal failure, `translation_status` is
+        set to `"partial"` and the original edit is never reverted.
+      operationId: retranslateItem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RetranslateItemRequest'
+            examples:
+              event:
+                summary: Retranslate a modified event
+                value:
+                  itemId: 42
+                  itemType: "event"
+                  sourceLang: "cs"
+                  modifiedTextFields:
+                    title: "Nový název"
+                    description: "Nový popis"
+              course:
+                summary: Retranslate a modified course
+                value:
+                  itemId: 7
+                  itemType: "course"
+                  sourceLang: "en"
+                  modifiedTextFields:
+                    title: "Updated course title"
+      responses:
+        '200':
+          description: Retranslation accepted and started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '400':
+          description: Invalid request body (missing or wrong fields)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Event or course not found in Directus
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /api/event/reprocess:
     post:
       tags:
@@ -887,6 +953,37 @@ components:
           type: integer
           description: Display ordering
           example: 1
+
+    RetranslateItemRequest:
+      type: object
+      required:
+        - itemId
+        - itemType
+        - sourceLang
+        - modifiedTextFields
+      properties:
+        itemId:
+          type: integer
+          description: Directus ID of the event or course to retranslate
+          example: 42
+        itemType:
+          type: string
+          enum: [event, course]
+          description: Whether the item is an event or a course
+          example: "event"
+        sourceLang:
+          type: string
+          enum: [cs, en, es]
+          description: Language code of the edited translation (source for retranslation)
+          example: "cs"
+        modifiedTextFields:
+          type: object
+          additionalProperties:
+            type: string
+          description: Map of modified text field names to their new values (only translatable fields)
+          example:
+            title: "Nový název"
+            description: "Nový popis"
 
     DirectusFavorite:
       type: object
