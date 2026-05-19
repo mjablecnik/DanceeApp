@@ -9,9 +9,10 @@ import '../../../data/entities/course.dart';
 import '../../../i18n/strings.g.dart';
 import '../../../logic/cubits/auth_cubit.dart';
 import '../../../logic/cubits/course_cubit.dart';
+import '../../../logic/cubits/course_detail_cubit.dart';
 import '../../../logic/cubits/favorites_cubit.dart';
 import '../../../logic/cubits/profile_cubit.dart';
-import '../../../logic/states/course_state.dart';
+import '../../../logic/states/course_detail_state.dart';
 import '../../../shared/sections/description_section.dart';
 import '../../../shared/utils/date_format.dart';
 import '../../../shared/utils/url_launcher.dart';
@@ -24,10 +25,30 @@ import 'sections/course_pricing_section.dart';
 import 'sections/course_schedule_section.dart';
 import 'sections/course_title_section.dart';
 
-class CourseDetailScreen extends StatelessWidget {
+class CourseDetailScreen extends StatefulWidget {
   final int courseId;
 
   const CourseDetailScreen({super.key, required this.courseId});
+
+  @override
+  State<CourseDetailScreen> createState() => _CourseDetailScreenState();
+}
+
+class _CourseDetailScreenState extends State<CourseDetailScreen> {
+  @override
+  void initState() {
+    super.initState();
+    final cachedCourses = context.read<CourseCubit>().state.maybeMap(
+          loaded: (s) => s.allCourses,
+          orElse: () => null,
+        );
+    final locale = Localizations.localeOf(context).languageCode;
+    context.read<CourseDetailCubit>().loadCourse(
+          widget.courseId,
+          locale,
+          cachedCourses: cachedCourses,
+        );
+  }
 
   List<KeyInfoItem> _buildKeyInfo(Course course) {
     final items = <KeyInfoItem>[];
@@ -143,6 +164,119 @@ class CourseDetailScreen extends StatelessWidget {
     return details;
   }
 
+  Widget _buildCourseContent(Course course) {
+    final spotsAvailable = course.maxParticipants != null
+        ? '${(course.maxParticipants! - (course.currentParticipants ?? 0))}'
+        : '';
+    final spotsTotal = course.maxParticipants != null
+        ? '${course.maxParticipants}'
+        : '';
+
+    return BlocBuilder<FavoritesCubit, dynamic>(
+      builder: (context, _) {
+        final isFavorited = context
+            .read<FavoritesCubit>()
+            .isFavorited('course', course.id);
+        final isAuthenticated = context
+            .read<AuthCubit>()
+            .state
+            .maybeMap(
+              authenticated: (_) => true,
+              orElse: () => false,
+            );
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 100),
+          child: Column(
+            children: [
+              HeroImageSection(
+                imageUrl: course.imageUrl ?? '',
+                topLeft: course.level != null
+                    ? HeroLabelBadge(label: translateLevel(course.level!))
+                    : null,
+                topRight: isAuthenticated
+                    ? HeroFavoriteButton(
+                        isFavorite: isFavorited,
+                        onTap: () => context
+                            .read<FavoritesCubit>()
+                            .toggleFavorite(
+                              itemType: 'course',
+                              itemId: course.id,
+                            ),
+                      )
+                    : null,
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xl),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: AppSpacing.xxl),
+                    CourseTitleSection(
+                      title: course.title,
+                      styleChips: course.dances
+                          .map((d) => StyleChipData(
+                                label: d,
+                                color: appPrimary,
+                              ))
+                          .toList(),
+                    ),
+                    const SizedBox(height: AppSpacing.xxl),
+                    KeyInfoSection(
+                      items: _buildKeyInfo(course),
+                    ),
+                    if (course.description.isNotEmpty) ...[
+                      const SizedBox(height: AppSpacing.xxl),
+                      DescriptionSection(
+                        title: t.courses.detail.description,
+                        paragraphs: course.description
+                            .split('\n\n')
+                            .where((p) => p.trim().isNotEmpty)
+                            .toList(),
+                      ),
+                    ],
+                    const SizedBox(height: AppSpacing.xxl),
+                    CourseScheduleSection(
+                      details: _buildScheduleDetails(course),
+                      learningItems: course.learningItems,
+                    ),
+                    if (course.instructorName != null &&
+                        course.instructorName!.isNotEmpty &&
+                        course.instructorBio != null &&
+                        course.instructorBio!.isNotEmpty) ...[
+                      const SizedBox(height: AppSpacing.xxl),
+                      CourseInstructorSection(
+                        avatarUrl: course.instructorAvatarUrl ?? '',
+                        name: course.instructorName!,
+                        bio: course.instructorBio ?? '',
+                      ),
+                    ],
+                    const SizedBox(height: AppSpacing.xxl),
+                    CoursePricingSection(
+                      price: course.price ?? '',
+                      priceNote: course.priceNote ?? '',
+                      spotsAvailable: spotsAvailable,
+                      spotsTotal: spotsTotal,
+                      onRegister: course.registrationUrl != null
+                          ? () => openUrl(course.registrationUrl!)
+                          : null,
+                      onShare: () {},
+                      onSource: course.originalUrl != null
+                          ? () => openUrl(course.originalUrl!)
+                          : null,
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -156,7 +290,13 @@ class CourseDetailScreen extends StatelessWidget {
               actions: context.read<ProfileCubit>().isEditor
                   ? [
                       GestureDetector(
-                        onTap: () => EditCourseRoute(id: courseId).go(context),
+                        onTap: () async {
+                          await EditCourseRoute(id: widget.courseId).push(context);
+                          if (mounted) {
+                            final locale = Localizations.localeOf(context).languageCode;
+                            context.read<CourseDetailCubit>().refreshCourse(widget.courseId, locale);
+                          }
+                        },
                         child: Container(
                           width: AppSizes.iconButtonMd,
                           height: AppSizes.iconButtonMd,
@@ -174,11 +314,14 @@ class CourseDetailScreen extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: BlocBuilder<CourseCubit, CourseState>(
+            child: BlocBuilder<CourseDetailCubit, CourseDetailState>(
               builder: (context, state) {
                 final course = state.maybeMap(
-                  loaded: (s) =>
-                      s.allCourses.where((c) => c.id == courseId).firstOrNull,
+                  loaded: (s) => s.course,
+                  editing: (s) => s.course,
+                  success: (s) => s.course,
+                  submitting: (s) => s.course,
+                  error: (s) => s.course,
                   orElse: () => null,
                 );
 
@@ -196,117 +339,7 @@ class CourseDetailScreen extends StatelessWidget {
                   );
                 }
 
-                return BlocBuilder<FavoritesCubit, dynamic>(
-                  builder: (context, _) {
-                    final isFavorited = context
-                        .read<FavoritesCubit>()
-                        .isFavorited('course', course.id);
-                    final isAuthenticated = context
-                        .read<AuthCubit>()
-                        .state
-                        .maybeMap(
-                          authenticated: (_) => true,
-                          orElse: () => false,
-                        );
-
-                    final spotsAvailable = course.maxParticipants != null
-                        ? '${(course.maxParticipants! - (course.currentParticipants ?? 0))}'
-                        : '';
-                    final spotsTotal = course.maxParticipants != null
-                        ? '${course.maxParticipants}'
-                        : '';
-
-                    return SingleChildScrollView(
-                      padding: const EdgeInsets.only(bottom: 100),
-                      child: Column(
-                        children: [
-                          HeroImageSection(
-                            imageUrl: course.imageUrl ?? '',
-                            topLeft: course.level != null
-                                ? HeroLabelBadge(label: translateLevel(course.level!))
-                                : null,
-                            topRight: isAuthenticated
-                                ? HeroFavoriteButton(
-                                    isFavorite: isFavorited,
-                                    onTap: () => context
-                                        .read<FavoritesCubit>()
-                                        .toggleFavorite(
-                                          itemType: 'course',
-                                          itemId: course.id,
-                                        ),
-                                  )
-                                : null,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: AppSpacing.xl),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: AppSpacing.xxl),
-                                CourseTitleSection(
-                                  title: course.title,
-                                  styleChips: course.dances
-                                      .map((d) => StyleChipData(
-                                            label: d,
-                                            color: appPrimary,
-                                          ))
-                                      .toList(),
-                                ),
-                                const SizedBox(height: AppSpacing.xxl),
-                                KeyInfoSection(
-                                  items: _buildKeyInfo(course),
-                                ),
-                                if (course.description.isNotEmpty) ...[
-                                  const SizedBox(height: AppSpacing.xxl),
-                                  DescriptionSection(
-                                    title: t.courses.detail.description,
-                                    paragraphs: course.description
-                                        .split('\n\n')
-                                        .where((p) => p.trim().isNotEmpty)
-                                        .toList(),
-                                  ),
-                                ],
-                                const SizedBox(height: AppSpacing.xxl),
-                                CourseScheduleSection(
-                                  details: _buildScheduleDetails(course),
-                                  learningItems: course.learningItems,
-                                ),
-                                if (course.instructorName != null &&
-                                    course.instructorName!.isNotEmpty &&
-                                    course.instructorBio != null &&
-                                    course.instructorBio!.isNotEmpty) ...[
-                                  const SizedBox(height: AppSpacing.xxl),
-                                  CourseInstructorSection(
-                                    avatarUrl:
-                                        course.instructorAvatarUrl ?? '',
-                                    name: course.instructorName!,
-                                    bio: course.instructorBio ?? '',
-                                  ),
-                                ],
-                                const SizedBox(height: AppSpacing.xxl),
-                                CoursePricingSection(
-                                  price: course.price ?? '',
-                                  priceNote: course.priceNote ?? '',
-                                  spotsAvailable: spotsAvailable,
-                                  spotsTotal: spotsTotal,
-                                  onRegister: course.registrationUrl != null
-                                      ? () => openUrl(course.registrationUrl!)
-                                      : null,
-                                  onShare: () {},
-                                  onSource: course.originalUrl != null
-                                      ? () => openUrl(course.originalUrl!)
-                                      : null,
-                                ),
-                                const SizedBox(height: AppSpacing.lg),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                );
+                return _buildCourseContent(course);
               },
             ),
           ),

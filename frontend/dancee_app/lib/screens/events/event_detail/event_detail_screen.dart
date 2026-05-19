@@ -11,9 +11,10 @@ import '../../../data/entities/event_part.dart';
 import '../../../i18n/strings.g.dart';
 import '../../../logic/cubits/auth_cubit.dart';
 import '../../../logic/cubits/event_cubit.dart';
+import '../../../logic/cubits/event_detail_cubit.dart';
 import '../../../logic/cubits/favorites_cubit.dart';
 import '../../../logic/cubits/profile_cubit.dart';
-import '../../../logic/states/event_state.dart';
+import '../../../logic/states/event_detail_state.dart';
 import '../../../shared/sections/description_section.dart';
 import '../../../shared/utils/date_format.dart';
 import '../../../shared/utils/url_launcher.dart';
@@ -25,10 +26,30 @@ import 'sections/additional_info_section.dart';
 import 'sections/event_program_section.dart';
 import 'sections/event_title_section.dart';
 
-class EventDetailScreen extends StatelessWidget {
+class EventDetailScreen extends StatefulWidget {
   final int eventId;
 
   const EventDetailScreen({super.key, required this.eventId});
+
+  @override
+  State<EventDetailScreen> createState() => _EventDetailScreenState();
+}
+
+class _EventDetailScreenState extends State<EventDetailScreen> {
+  @override
+  void initState() {
+    super.initState();
+    final cachedEvents = context.read<EventCubit>().state.maybeMap(
+          loaded: (s) => s.allEvents,
+          orElse: () => null,
+        );
+    final locale = Localizations.localeOf(context).languageCode;
+    context.read<EventDetailCubit>().loadEvent(
+          widget.eventId,
+          locale,
+          cachedEvents: cachedEvents,
+        );
+  }
 
   List<KeyInfoItem> _buildKeyInfo(Event event) {
     final items = <KeyInfoItem>[];
@@ -50,13 +71,10 @@ class EventDetailScreen extends StatelessWidget {
     final sameTime = endTime != null && startTime == endTime;
 
     if (sameTime) {
-      // Placeholder data (e.g. 03:00 – 03:00) — hide time
       timeSubtitle = '';
     } else if (isMultiDay && endTime != null) {
-      // Multi-day: show start time only
       timeSubtitle = t.common.from(time: startTime);
     } else if (endTime != null) {
-      // Single day with range
       timeSubtitle = '$startTime – $endTime';
     } else {
       timeSubtitle = t.common.from(time: startTime);
@@ -141,6 +159,126 @@ class EventDetailScreen extends StatelessWidget {
     }).toList();
   }
 
+  Widget _buildEventContent(Event event) {
+    final priceInfo = event.info
+        .where((i) => i.type == EventInfoType.price)
+        .firstOrNull;
+    final dresscodeInfo = event.info
+        .where((i) => i.type == EventInfoType.dresscode)
+        .firstOrNull;
+
+    final priceRange = priceInfo?.value ?? '';
+    final dresscode = dresscodeInfo?.value ?? '';
+
+    return BlocBuilder<FavoritesCubit, dynamic>(
+      builder: (context, _) {
+        final isFavorited = context
+            .read<FavoritesCubit>()
+            .isFavorited('event', event.id);
+        final isAuthenticated = context
+            .read<AuthCubit>()
+            .state
+            .maybeMap(
+              authenticated: (_) => true,
+              orElse: () => false,
+            );
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 100),
+          child: Column(
+            children: [
+              HeroImageSection(
+                imageUrl: event.imageUrl ?? '',
+                topLeft: priceRange.isNotEmpty
+                    ? HeroPriceBadge(price: priceRange)
+                    : null,
+                topRight: isAuthenticated
+                    ? HeroFavoriteButton(
+                        isFavorite: isFavorited,
+                        onTap: () => context
+                            .read<FavoritesCubit>()
+                            .toggleFavorite(
+                              itemType: 'event',
+                              itemId: event.id,
+                            ),
+                      )
+                    : null,
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xl),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: AppSpacing.xxl),
+                    EventTitleSection(
+                      title: event.title,
+                      chips: event.dances
+                          .map((d) => EventTitleChip(
+                                label: d,
+                                color: appPrimary,
+                              ))
+                          .toList(),
+                    ),
+                    const SizedBox(height: AppSpacing.xxl),
+                    KeyInfoSection(
+                      items: _buildKeyInfo(event),
+                    ),
+                    const SizedBox(height: AppSpacing.xxl),
+                    ActionButtonsSection(
+                      onShare: null,
+                      onMap: event.venue != null &&
+                              (event.venue!.latitude != 0 ||
+                                  event.venue!.longitude != 0 ||
+                                  event.venue!.fullAddress.isNotEmpty)
+                          ? () => openMap(
+                                event.venue!.latitude,
+                                event.venue!.longitude,
+                                event.venue!.name,
+                                fullAddress: event.venue!.fullAddress,
+                              )
+                          : null,
+                    ),
+                    const SizedBox(height: AppSpacing.xxl),
+                    if (event.description.isNotEmpty)
+                      DescriptionSection(
+                        title: t.events.detail.description,
+                        paragraphs: event.description
+                            .split('\n\n')
+                            .where((p) => p.trim().isNotEmpty)
+                            .toList(),
+                      ),
+                    if (priceRange.isNotEmpty ||
+                        dresscode.isNotEmpty ||
+                        event.registrationUrl != null ||
+                        event.originalUrl != null) ...[
+                      if (event.description.isNotEmpty)
+                        const SizedBox(height: AppSpacing.xxl),
+                      AdditionalInfoSection(
+                        priceRange: priceRange,
+                        dresscode: dresscode,
+                        onBuyTickets: event.registrationUrl != null
+                            ? () => openUrl(event.registrationUrl!)
+                            : null,
+                        onSource: event.originalUrl != null ? () => openUrl(event.originalUrl!) : null,
+                      ),
+                    ],
+                    if (event.parts.isNotEmpty) ...[
+                      const SizedBox(height: AppSpacing.xxl),
+                      EventProgramSection(
+                        days: _buildProgram(event.parts),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -154,7 +292,13 @@ class EventDetailScreen extends StatelessWidget {
               actions: context.read<ProfileCubit>().isEditor
                   ? [
                       GestureDetector(
-                        onTap: () => EditEventRoute(id: eventId).go(context),
+                        onTap: () async {
+                          await EditEventRoute(id: widget.eventId).push(context);
+                          if (mounted) {
+                            final locale = Localizations.localeOf(context).languageCode;
+                            context.read<EventDetailCubit>().refreshEvent(widget.eventId, locale);
+                          }
+                        },
                         child: Container(
                           width: AppSizes.iconButtonMd,
                           height: AppSizes.iconButtonMd,
@@ -172,12 +316,14 @@ class EventDetailScreen extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: BlocBuilder<EventCubit, EventState>(
+            child: BlocBuilder<EventDetailCubit, EventDetailState>(
               builder: (context, state) {
                 final event = state.maybeMap(
-                  loaded: (s) => s.allEvents
-                      .where((e) => e.id == eventId)
-                      .firstOrNull,
+                  loaded: (s) => s.event,
+                  editing: (s) => s.event,
+                  success: (s) => s.event,
+                  submitting: (s) => s.event,
+                  error: (s) => s.event,
                   orElse: () => null,
                 );
 
@@ -195,123 +341,7 @@ class EventDetailScreen extends StatelessWidget {
                   );
                 }
 
-                final priceInfo = event.info
-                    .where((i) => i.type == EventInfoType.price)
-                    .firstOrNull;
-                final dresscodeInfo = event.info
-                    .where((i) => i.type == EventInfoType.dresscode)
-                    .firstOrNull;
-
-                final priceRange = priceInfo?.value ?? '';
-                final dresscode = dresscodeInfo?.value ?? '';
-
-                return BlocBuilder<FavoritesCubit, dynamic>(
-                  builder: (context, _) {
-                    final isFavorited = context
-                        .read<FavoritesCubit>()
-                        .isFavorited('event', event.id);
-                    final isAuthenticated = context
-                        .read<AuthCubit>()
-                        .state
-                        .maybeMap(
-                          authenticated: (_) => true,
-                          orElse: () => false,
-                        );
-
-                    return SingleChildScrollView(
-                      padding: const EdgeInsets.only(bottom: 100),
-                      child: Column(
-                        children: [
-                          HeroImageSection(
-                            imageUrl: event.imageUrl ?? '',
-                            topLeft: priceRange.isNotEmpty
-                                ? HeroPriceBadge(price: priceRange)
-                                : null,
-                            topRight: isAuthenticated
-                                ? HeroFavoriteButton(
-                                    isFavorite: isFavorited,
-                                    onTap: () => context
-                                        .read<FavoritesCubit>()
-                                        .toggleFavorite(
-                                          itemType: 'event',
-                                          itemId: event.id,
-                                        ),
-                                  )
-                                : null,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: AppSpacing.xl),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: AppSpacing.xxl),
-                                EventTitleSection(
-                                  title: event.title,
-                                  chips: event.dances
-                                      .map((d) => EventTitleChip(
-                                            label: d,
-                                            color: appPrimary,
-                                          ))
-                                      .toList(),
-                                ),
-                                const SizedBox(height: AppSpacing.xxl),
-                                KeyInfoSection(
-                                  items: _buildKeyInfo(event),
-                                ),
-                                const SizedBox(height: AppSpacing.xxl),
-                                ActionButtonsSection(
-                                  onShare: null,
-                                  onMap: event.venue != null &&
-                                          (event.venue!.latitude != 0 ||
-                                              event.venue!.longitude != 0 ||
-                                              event.venue!.fullAddress.isNotEmpty)
-                                      ? () => openMap(
-                                            event.venue!.latitude,
-                                            event.venue!.longitude,
-                                            event.venue!.name,
-                                            fullAddress: event.venue!.fullAddress,
-                                          )
-                                      : null,
-                                ),
-                                const SizedBox(height: AppSpacing.xxl),
-                                if (event.description.isNotEmpty)
-                                  DescriptionSection(
-                                    title: t.events.detail.description,
-                                    paragraphs: event.description
-                                        .split('\n\n')
-                                        .where((p) => p.trim().isNotEmpty)
-                                        .toList(),
-                                  ),
-                                if (priceRange.isNotEmpty ||
-                                    dresscode.isNotEmpty ||
-                                    event.registrationUrl != null ||
-                                    event.originalUrl != null) ...[
-                                  if (event.description.isNotEmpty)
-                                    const SizedBox(height: AppSpacing.xxl),
-                                  AdditionalInfoSection(
-                                    priceRange: priceRange,
-                                    dresscode: dresscode,
-                                    onBuyTickets: event.registrationUrl != null
-                                        ? () => openUrl(event.registrationUrl!)
-                                        : null,
-                                    onSource: event.originalUrl != null ? () => openUrl(event.originalUrl!) : null,
-                                  ),
-                                ],
-                                if (event.parts.isNotEmpty) ...[
-                                  const SizedBox(height: AppSpacing.xxl),
-                                  EventProgramSection(
-                                    days: _buildProgram(event.parts),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                );
+                return _buildEventContent(event);
               },
             ),
           ),

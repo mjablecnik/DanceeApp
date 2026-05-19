@@ -213,7 +213,14 @@ class EventDetailRoute extends GoRouteData {
 
   @override
   Page<void> buildPage(BuildContext context, GoRouterState state) =>
-      NoTransitionPage(child: EventDetailScreen(eventId: id));
+      NoTransitionPage(
+        child: BlocProvider(
+          create: (_) => EventDetailCubit(
+            eventRepository: sl<EventRepository>(),
+          ),
+          child: EventDetailScreen(eventId: id),
+        ),
+      );
 }
 
 @TypedGoRoute<FilterDanceRoute>(path: '/events/filter-dance')
@@ -249,7 +256,14 @@ class CourseDetailRoute extends GoRouteData {
 
   @override
   Page<void> buildPage(BuildContext context, GoRouterState state) =>
-      NoTransitionPage(child: CourseDetailScreen(courseId: id));
+      NoTransitionPage(
+        child: BlocProvider(
+          create: (_) => CourseDetailCubit(
+            courseRepository: sl<CourseRepository>(),
+          ),
+          child: CourseDetailScreen(courseId: id),
+        ),
+      );
 }
 
 @TypedGoRoute<EditEventRoute>(path: '/events/edit')
