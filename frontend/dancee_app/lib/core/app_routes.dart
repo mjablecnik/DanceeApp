@@ -25,6 +25,7 @@ import '../screens/events/edit_event/edit_event_screen.dart';
 import '../screens/events/event_detail/event_detail_screen.dart';
 import '../screens/events/events_list/events_list_screen.dart';
 import 'service_locator.dart';
+import '../screens/events/dance_style_selector/dance_style_selector_page.dart';
 import '../screens/events/filter_dance/filter_dance_screen.dart';
 import '../screens/events/filter_location/filter_location_screen.dart';
 import '../screens/profile/author_contact/author_contact_screen.dart';
@@ -220,6 +221,20 @@ class EventDetailRoute extends GoRouteData {
           ),
           child: EventDetailScreen(eventId: id),
         ),
+      );
+}
+
+@TypedGoRoute<DanceStyleSelectorRoute>(path: '/events/dance-style-selector')
+@immutable
+class DanceStyleSelectorRoute extends GoRouteData {
+  const DanceStyleSelectorRoute({this.$extra = const []});
+
+  final List<String> $extra;
+
+  @override
+  Page<void> buildPage(BuildContext context, GoRouterState state) =>
+      NoTransitionPage(
+        child: DanceStyleSelectorPage(initialSelection: $extra),
       );
 }
 

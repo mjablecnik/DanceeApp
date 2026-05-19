@@ -15,12 +15,13 @@ List<RouteBase> get $appRoutes => [
       $mainShellRouteData,
       $addCourseRoute,
       $addEventRoute,
-      $editEventRoute,
-      $editCourseRoute,
       $eventDetailRoute,
+      $danceStyleSelectorRoute,
       $filterDanceRoute,
       $filterLocationRoute,
       $courseDetailRoute,
+      $editEventRoute,
+      $editCourseRoute,
       $profileEditRoute,
       $changePasswordRoute,
       $premiumRoute,
@@ -281,60 +282,6 @@ extension $AddEventRouteExtension on AddEventRoute {
   void replace(BuildContext context) => context.replace(location);
 }
 
-RouteBase get $editEventRoute => GoRouteData.$route(
-      path: '/events/edit',
-      factory: $EditEventRouteExtension._fromState,
-    );
-
-extension $EditEventRouteExtension on EditEventRoute {
-  static EditEventRoute _fromState(GoRouterState state) => EditEventRoute(
-        id: int.parse(state.uri.queryParameters['id']!)!,
-      );
-
-  String get location => GoRouteData.$location(
-        '/events/edit',
-        queryParams: {
-          'id': id.toString(),
-        },
-      );
-
-  void go(BuildContext context) => context.go(location);
-
-  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
-
-  void pushReplacement(BuildContext context) =>
-      context.pushReplacement(location);
-
-  void replace(BuildContext context) => context.replace(location);
-}
-
-RouteBase get $editCourseRoute => GoRouteData.$route(
-      path: '/courses/edit',
-      factory: $EditCourseRouteExtension._fromState,
-    );
-
-extension $EditCourseRouteExtension on EditCourseRoute {
-  static EditCourseRoute _fromState(GoRouterState state) => EditCourseRoute(
-        id: int.parse(state.uri.queryParameters['id']!)!,
-      );
-
-  String get location => GoRouteData.$location(
-        '/courses/edit',
-        queryParams: {
-          'id': id.toString(),
-        },
-      );
-
-  void go(BuildContext context) => context.go(location);
-
-  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
-
-  void pushReplacement(BuildContext context) =>
-      context.pushReplacement(location);
-
-  void replace(BuildContext context) => context.replace(location);
-}
-
 RouteBase get $eventDetailRoute => GoRouteData.$route(
       path: '/events/detail',
       factory: $EventDetailRouteExtension._fromState,
@@ -360,6 +307,32 @@ extension $EventDetailRouteExtension on EventDetailRoute {
       context.pushReplacement(location);
 
   void replace(BuildContext context) => context.replace(location);
+}
+
+RouteBase get $danceStyleSelectorRoute => GoRouteData.$route(
+      path: '/events/dance-style-selector',
+      factory: $DanceStyleSelectorRouteExtension._fromState,
+    );
+
+extension $DanceStyleSelectorRouteExtension on DanceStyleSelectorRoute {
+  static DanceStyleSelectorRoute _fromState(GoRouterState state) =>
+      DanceStyleSelectorRoute(
+        $extra: state.extra as List<String>? ?? const [],
+      );
+
+  String get location => GoRouteData.$location(
+        '/events/dance-style-selector',
+      );
+
+  void go(BuildContext context) => context.go(location, extra: $extra);
+
+  Future<T?> push<T>(BuildContext context) =>
+      context.push<T>(location, extra: $extra);
+
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location, extra: $extra);
+
+  void replace(BuildContext context) => context.replace(location, extra: $extra);
 }
 
 RouteBase get $filterDanceRoute => GoRouteData.$route(
@@ -429,6 +402,60 @@ extension $CourseDetailRouteExtension on CourseDetailRoute {
 
   String get location => GoRouteData.$location(
         '/courses/detail',
+        queryParams: {
+          'id': id.toString(),
+        },
+      );
+
+  void go(BuildContext context) => context.go(location);
+
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  void replace(BuildContext context) => context.replace(location);
+}
+
+RouteBase get $editEventRoute => GoRouteData.$route(
+      path: '/events/edit',
+      factory: $EditEventRouteExtension._fromState,
+    );
+
+extension $EditEventRouteExtension on EditEventRoute {
+  static EditEventRoute _fromState(GoRouterState state) => EditEventRoute(
+        id: int.parse(state.uri.queryParameters['id']!)!,
+      );
+
+  String get location => GoRouteData.$location(
+        '/events/edit',
+        queryParams: {
+          'id': id.toString(),
+        },
+      );
+
+  void go(BuildContext context) => context.go(location);
+
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  void replace(BuildContext context) => context.replace(location);
+}
+
+RouteBase get $editCourseRoute => GoRouteData.$route(
+      path: '/courses/edit',
+      factory: $EditCourseRouteExtension._fromState,
+    );
+
+extension $EditCourseRouteExtension on EditCourseRoute {
+  static EditCourseRoute _fromState(GoRouterState state) => EditCourseRoute(
+        id: int.parse(state.uri.queryParameters['id']!)!,
+      );
+
+  String get location => GoRouteData.$location(
+        '/courses/edit',
         queryParams: {
           'id': id.toString(),
         },

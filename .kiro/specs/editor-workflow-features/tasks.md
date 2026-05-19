@@ -118,15 +118,15 @@ This plan implements editorial workflow capabilities for the Dancee App: editor/
     - Use vitest + fast-check (test the pure filtering logic)
     - **Validates: Requirements 7.2, 7.3, 7.4, 7.5, 7.6**
 
-- [ ] 6. Update EventCubit and CourseCubit for editor mode
-  - [ ] 6.1 Update `EventCubit` to support editor mode fetching and filtering
+- [x] 6. Update EventCubit and CourseCubit for editor mode
+  - [x] 6.1 Update `EventCubit` to support editor mode fetching and filtering
     - Accept `EditorModeCubit` state to determine fetch strategy
     - In editor mode: call `getEventsForEditor`, apply client-side published/reviewed filters
     - In user mode: call existing `getEvents` (only published items)
     - Apply editor filters (publishedFilter, reviewedFilter) in `_filterEvents`
     - _Requirements: 6.4, 6.5, 7.2, 7.3, 7.4, 7.5_
 
-  - [ ] 6.2 Update `CourseCubit` to support editor mode fetching and date filtering
+  - [x] 6.2 Update `CourseCubit` to support editor mode fetching and date filtering
     - Accept `EditorModeCubit` state to determine fetch strategy
     - In editor mode: call `getCoursesForEditor`, show all courses regardless of start date
     - In user mode: call existing `getCourses`, additionally filter by `startDate >= today`
@@ -147,8 +147,8 @@ This plan implements editorial workflow capabilities for the Dancee App: editor/
     - Use vitest + fast-check
     - **Validates: Requirements 9.1, 9.3**
 
-- [ ] 7. Implement Dance Style Selector page
-  - [ ] 7.1 Create `DanceStyleSelectorPage` screen
+- [x] 7. Implement Dance Style Selector page
+  - [x] 7.1 Create `DanceStyleSelectorPage` screen
     - Create `frontend/dancee_app/lib/screens/events/dance_style_selector_page.dart`
     - Display all dance styles from `DanceStyleRepository` as a multi-select checklist
     - Receive current selection as a route parameter (list of style codes)
@@ -156,7 +156,7 @@ This plan implements editorial workflow capabilities for the Dancee App: editor/
     - Show each style with a checkbox indicating current selection state
     - _Requirements: 1.1, 1.2, 1.3, 1.4_
 
-  - [ ] 7.2 Add GoRouter route for the Dance Style Selector page
+  - [x] 7.2 Add GoRouter route for the Dance Style Selector page
     - Register the route in `frontend/dancee_app/lib/core/app_routes.dart`
     - Accept current selection as route extra parameter
     - _Requirements: 1.1_
