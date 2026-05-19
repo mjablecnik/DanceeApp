@@ -15,6 +15,7 @@ import '../data/repositories/favorites_repository.dart';
 import '../data/repositories/dance_style_repository.dart';
 import '../data/repositories/profile_repository.dart';
 import '../logic/cubits/auth_cubit.dart';
+import '../logic/cubits/editor_mode_cubit.dart';
 import '../logic/cubits/event_cubit.dart';
 import '../logic/cubits/course_cubit.dart';
 import '../logic/cubits/favorites_cubit.dart';
@@ -117,4 +118,5 @@ void setupServiceLocator() {
       authCubit: sl<AuthCubit>(),
     ),
   );
+  sl.registerLazySingleton<EditorModeCubit>(() => EditorModeCubit());
 }
