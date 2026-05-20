@@ -39,12 +39,14 @@ class CourseRepository {
 
   /// Fetches all courses (published and unpublished) for editor use.
   Future<List<Course>> getCoursesForEditor(String languageCode) async {
+    final today = DateTime.now().toIso8601String().substring(0, 10);
     final data = await _client.get(
       '/items/courses',
       queryParameters: {
         'fields': '*,venue.*,translations.*',
         'sort': 'start_date',
         'limit': '-1',
+        'filter[start_date][_gte]': today,
         'deep[translations][_filter][languages_code][_eq]': languageCode,
       },
     );

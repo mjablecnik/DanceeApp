@@ -40,12 +40,14 @@ class EventRepository {
 
   /// Fetches all events (published and unpublished) for editor use.
   Future<List<Event>> getEventsForEditor(String languageCode) async {
+    final today = DateTime.now().toIso8601String().substring(0, 10);
     final data = await _client.get(
       '/items/events',
       queryParameters: {
         'fields': '*,venue.*,translations.*',
         'sort': 'start_time',
         'limit': '-1',
+        'filter[start_time][_gte]': today,
         'deep[translations][_filter][languages_code][_eq]': languageCode,
       },
     );
