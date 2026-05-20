@@ -14,7 +14,6 @@ import '../../../logic/cubits/editor_mode_cubit.dart';
 import '../../../logic/cubits/event_cubit.dart';
 import '../../../logic/cubits/event_detail_cubit.dart';
 import '../../../logic/cubits/favorites_cubit.dart';
-import '../../../logic/cubits/profile_cubit.dart';
 import '../../../logic/states/editor_mode_state.dart';
 import '../../../logic/states/event_detail_state.dart';
 import '../../../shared/sections/description_section.dart';
@@ -111,21 +110,8 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
       ));
     }
 
-    // Additional info items (url type shown as key info)
-    for (final info in event.info) {
-      if (info.type == EventInfoType.url && info.key.isNotEmpty) {
-        var url = info.value;
-        if (url.isNotEmpty && !url.startsWith('http://') && !url.startsWith('https://')) {
-          url = 'https://$url';
-        }
-        items.add(KeyInfoItem(
-          icon: FontAwesomeIcons.link,
-          title: info.key,
-          subtitle: info.value,
-          onTap: url.isNotEmpty ? () => openUrl(url) : null,
-        ));
-      }
-    }
+    // Additional info items (url type shown as key info — only registration-like links, not workshops)
+    // Workshop-type entries (url with key containing price) are shown in AdditionalInfoSection below.
 
     return items;
   }
@@ -180,13 +166,12 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     final dresscode = dresscodeInfo?.value ?? '';
 
     // Collect info entries not already shown elsewhere:
-    // - price/dresscode types are shown in AdditionalInfoSection above
-    // - url type entries with non-empty keys are shown in KeyInfoSection
+    // - price/dresscode types are shown in AdditionalInfoSection
+    // - All other entries (including url type with non-empty keys like workshops) go here
     final extraInfoEntries = event.info
         .where((i) =>
             i.type != EventInfoType.price &&
-            i.type != EventInfoType.dresscode &&
-            !(i.type == EventInfoType.url && i.key.isNotEmpty))
+            i.type != EventInfoType.dresscode)
         .where((i) => i.key.isNotEmpty || i.value.isNotEmpty)
         .map((i) => MapEntry(i.key, i.value))
         .toList();
@@ -311,13 +296,11 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
           BlocBuilder<EditorModeCubit, EditorModeState>(
             builder: (context, editorState) {
               final isEditorMode = editorState.isEditorMode && editorState.isEditor;
-              final isEditor = context.read<ProfileCubit>().isEditor;
 
               List<Widget>? actions;
-              if (isEditor) {
+              if (isEditorMode) {
                 actions = [
-                  if (isEditorMode)
-                    BlocBuilder<EventDetailCubit, EventDetailState>(
+                  BlocBuilder<EventDetailCubit, EventDetailState>(
                       builder: (context, detailState) {
                         final event = detailState.maybeMap(
                           loaded: (s) => s.event,

@@ -12,7 +12,6 @@ import '../../../logic/cubits/course_cubit.dart';
 import '../../../logic/cubits/course_detail_cubit.dart';
 import '../../../logic/cubits/editor_mode_cubit.dart';
 import '../../../logic/cubits/favorites_cubit.dart';
-import '../../../logic/cubits/profile_cubit.dart';
 import '../../../logic/states/course_detail_state.dart';
 import '../../../logic/states/editor_mode_state.dart';
 import '../../../shared/sections/description_section.dart';
@@ -293,13 +292,11 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
           BlocBuilder<EditorModeCubit, EditorModeState>(
             builder: (context, editorState) {
               final isEditorMode = editorState.isEditorMode && editorState.isEditor;
-              final isEditor = context.read<ProfileCubit>().isEditor;
 
               List<Widget>? actions;
-              if (isEditor) {
+              if (isEditorMode) {
                 actions = [
-                  if (isEditorMode)
-                    BlocBuilder<CourseDetailCubit, CourseDetailState>(
+                  BlocBuilder<CourseDetailCubit, CourseDetailState>(
                       builder: (context, detailState) {
                         final course = detailState.maybeMap(
                           loaded: (s) => s.course,

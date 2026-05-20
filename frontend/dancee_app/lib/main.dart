@@ -281,9 +281,12 @@ class _AppListenersState extends State<_AppListeners> with WidgetsBindingObserve
     // Initialize editor mode with the user's role so editor users see all content.
     profileCubit.state.maybeMap(
       loaded: (s) {
-        sl<EditorModeCubit>().init(isEditor: s.profile.role == 'editor');
+        debugPrint('[EditorMode] profile.role=${s.profile.role}, editorRoleId=${AppConfig.editorRoleId}, isEditor=${s.profile.role == AppConfig.editorRoleId}');
+        sl<EditorModeCubit>().init(isEditor: s.profile.role == AppConfig.editorRoleId);
       },
-      orElse: () {},
+      orElse: () {
+        debugPrint('[EditorMode] Profile not in loaded state: ${profileCubit.state}');
+      },
     );
 
     if (!filterCubit.state.hasActiveFilters) {
@@ -461,7 +464,7 @@ class _AppListenersState extends State<_AppListeners> with WidgetsBindingObserve
             // Initialize editor mode with the user's role after sign-in.
             profileCubit.state.maybeMap(
               loaded: (s) {
-                sl<EditorModeCubit>().init(isEditor: s.profile.role == 'editor');
+                sl<EditorModeCubit>().init(isEditor: s.profile.role == AppConfig.editorRoleId);
               },
               orElse: () {},
             );

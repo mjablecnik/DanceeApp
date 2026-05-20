@@ -106,8 +106,15 @@ class UserProfile extends Equatable {
       danceTags: danceTags,
       experienceLevel: (json['experience_level'] as String?) ?? '',
       notificationPreferences: notificationPreferences,
-      role: json['role'] as String?,
+      role: _parseRole(json['role']),
     );
+  }
+
+  static String? _parseRole(dynamic raw) {
+    if (raw == null) return null;
+    if (raw is String) return raw;
+    if (raw is Map<String, dynamic>) return raw['id']?.toString();
+    return raw.toString();
   }
 
   Map<String, dynamic> toDirectus() {
