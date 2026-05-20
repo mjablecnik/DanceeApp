@@ -458,13 +458,13 @@ class _EditEventScreenState extends State<EditEventScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const AddEventSectionHeading(
+        AddEventSectionHeading(
           icon: FontAwesomeIcons.tag,
-          label: 'Typ akce',
+          label: t.events.edit.eventTypeSection,
         ),
         const SizedBox(height: AppSpacing.lg),
         AddEventFormField(
-          label: 'Typ akce',
+          label: t.events.edit.eventTypeSection,
           child: Container(
             decoration: BoxDecoration(
               color: appSurface,
@@ -479,7 +479,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
               child: DropdownButton<String>(
                 value: _eventTypes.contains(_eventType) ? _eventType : null,
                 hint: Text(
-                  _eventType.isNotEmpty ? _eventType : 'Vyberte typ akce',
+                  _eventType.isNotEmpty ? _eventType : t.events.edit.eventTypeHint,
                   style: const TextStyle(
                     color: appMutedDark,
                     fontSize: AppTypography.fontSizeMd,
@@ -512,14 +512,14 @@ class _EditEventScreenState extends State<EditEventScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const AddEventSectionHeading(
+        AddEventSectionHeading(
           icon: FontAwesomeIcons.listUl,
-          label: 'Klíčové informace',
+          label: t.events.edit.keyInfoSection,
         ),
         const SizedBox(height: AppSpacing.sm),
-        const Text(
-          'Přidejte vlastní informace k akci (např. dresscode, vstupné)',
-          style: TextStyle(
+        Text(
+          t.events.edit.keyInfoHint,
+          style: const TextStyle(
             color: appMuted,
             fontSize: AppTypography.fontSizeMd,
           ),
@@ -535,7 +535,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
                 Expanded(
                   child: AddEventTextInput(
                     controller: infoEntry.keyController,
-                    hintText: 'Název',
+                    hintText: t.events.edit.infoKeyHint,
                     isSmall: true,
                   ),
                 ),
@@ -544,7 +544,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
                   flex: 2,
                   child: AddEventTextInput(
                     controller: infoEntry.valueController,
-                    hintText: 'Hodnota',
+                    hintText: t.events.edit.infoValueHint,
                     isSmall: true,
                   ),
                 ),
@@ -578,14 +578,14 @@ class _EditEventScreenState extends State<EditEventScreen> {
               borderRadius: BorderRadius.circular(AppRadius.lg),
               border: Border.all(color: appBorder),
             ),
-            child: const Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                FaIcon(FontAwesomeIcons.plus, size: 12, color: appMuted),
-                SizedBox(width: AppSpacing.sm),
+                const FaIcon(FontAwesomeIcons.plus, size: 12, color: appMuted),
+                const SizedBox(width: AppSpacing.sm),
                 Text(
-                  'Přidat položku',
-                  style: TextStyle(
+                  t.events.edit.addInfoEntry,
+                  style: const TextStyle(
                     color: appMuted,
                     fontSize: AppTypography.fontSizeMd,
                   ),
@@ -613,32 +613,32 @@ class _EditEventScreenState extends State<EditEventScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const AddEventSectionHeading(
+              AddEventSectionHeading(
                 icon: FontAwesomeIcons.circleInfo,
-                label: 'Základní informace',
+                label: t.events.edit.basicInfoSection,
               ),
               const SizedBox(height: AppSpacing.lg),
               AddEventFormField(
-                label: 'Název akce *',
+                label: t.events.edit.eventTitle,
                 child: AddEventTextInput(
                   controller: _titleController,
-                  hintText: 'např. Prague Latin Festival 2025',
+                  hintText: t.events.edit.eventTitleHint,
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
               AddEventFormField(
-                label: 'Popis akce *',
+                label: t.events.edit.eventDescription,
                 child: AddEventTextAreaInput(
                   controller: _descriptionController,
-                  hintText: 'Popište vaši akci, co účastníky čeká...',
+                  hintText: t.events.edit.eventDescriptionHint,
                   minLines: 4,
                 ),
               ),
               if (_originalEvent?.imageUrl != null) ...[
                 const SizedBox(height: AppSpacing.lg),
-                const AddEventFormField(
-                  label: 'Obrázek akce',
-                  child: SizedBox.shrink(),
+                AddEventFormField(
+                  label: t.events.edit.eventImage,
+                  child: const SizedBox.shrink(),
                 ),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -658,24 +658,24 @@ class _EditEventScreenState extends State<EditEventScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const AddEventSectionHeading(
+              AddEventSectionHeading(
                 icon: FontAwesomeIcons.calendar,
-                label: 'Datum a čas',
+                label: t.events.edit.dateTimeSection,
               ),
               const SizedBox(height: AppSpacing.lg),
               Row(
                 children: [
-                  Expanded(child: _buildDateField('Datum od *', _startDate, true)),
+                  Expanded(child: _buildDateField(t.events.edit.startDate, _startDate, true)),
                   const SizedBox(width: AppSpacing.md),
-                  Expanded(child: _buildDateField('Datum do *', _endDate, false)),
+                  Expanded(child: _buildDateField(t.events.edit.endDate, _endDate, false)),
                 ],
               ),
               const SizedBox(height: AppSpacing.lg),
               Row(
                 children: [
-                  Expanded(child: _buildTimeField('Čas začátku *', _startTime, true)),
+                  Expanded(child: _buildTimeField(t.events.edit.startTime, _startTime, true)),
                   const SizedBox(width: AppSpacing.md),
-                  Expanded(child: _buildTimeField('Čas konce *', _endTime, false)),
+                  Expanded(child: _buildTimeField(t.events.edit.endTime, _endTime, false)),
                 ],
               ),
             ],
@@ -685,16 +685,16 @@ class _EditEventScreenState extends State<EditEventScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const AddEventSectionHeading(
+              AddEventSectionHeading(
                 icon: FontAwesomeIcons.userTie,
-                label: 'Organizátor',
+                label: t.events.edit.organizerSection,
               ),
               const SizedBox(height: AppSpacing.lg),
               AddEventFormField(
-                label: 'Název organizátora *',
+                label: t.events.edit.organizerName,
                 child: AddEventTextInput(
                   controller: _organizerController,
-                  hintText: 'např. Prague Latin Events',
+                  hintText: t.events.edit.organizerNameHint,
                 ),
               ),
             ],
@@ -704,14 +704,14 @@ class _EditEventScreenState extends State<EditEventScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const AddEventSectionHeading(
+              AddEventSectionHeading(
                 icon: FontAwesomeIcons.music,
-                label: 'Typy tanců *',
+                label: t.events.edit.danceStylesSection,
               ),
               const SizedBox(height: AppSpacing.sm),
-              const Text(
-                'Vyberte taneční styly, které se na akci objeví',
-                style: TextStyle(
+              Text(
+                t.events.edit.danceStylesHint,
+                style: const TextStyle(
                   color: appMuted,
                   fontSize: AppTypography.fontSizeMd,
                 ),
@@ -756,29 +756,29 @@ class _EditEventScreenState extends State<EditEventScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const AddEventSectionHeading(
+              AddEventSectionHeading(
                 icon: FontAwesomeIcons.circlePlus,
-                label: 'Dodatečné informace',
+                label: t.events.edit.additionalSection,
               ),
               const SizedBox(height: AppSpacing.sm),
-              const Text(
-                'Nepovinné údaje',
-                style: TextStyle(
+              Text(
+                t.events.edit.optionalData,
+                style: const TextStyle(
                   color: appMuted,
                   fontSize: AppTypography.fontSizeMd,
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
               AddEventFormField(
-                label: 'Cena',
+                label: t.events.edit.price,
                 child: AddEventTextInput(
                   controller: _priceController,
-                  hintText: 'např. 500 CZK',
+                  hintText: t.events.edit.priceHint,
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
               AddEventFormField(
-                label: 'URL na nákup vstupenek',
+                label: t.events.edit.ticketUrl,
                 child: AddEventTextInput(
                   controller: _registrationUrlController,
                   hintText: 'https://...',
@@ -787,7 +787,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
               ),
               const SizedBox(height: AppSpacing.lg),
               AddEventFormField(
-                label: 'URL na původní zdroj',
+                label: t.events.edit.originalSourceUrl,
                 child: AddEventTextInput(
                   controller: _originalUrlController,
                   hintText: 'https://...',
