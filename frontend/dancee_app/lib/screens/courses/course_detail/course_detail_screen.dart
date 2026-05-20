@@ -297,88 +297,100 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
               if (isEditorMode) {
                 actions = [
                   BlocBuilder<CourseDetailCubit, CourseDetailState>(
-                      builder: (context, detailState) {
-                        final course = detailState.maybeMap(
-                          loaded: (s) => s.course,
-                          success: (s) => s.course,
-                          error: (s) => s.course,
-                          orElse: () => null,
-                        );
-                        if (course == null) return const SizedBox.shrink();
-                        final locale = Localizations.localeOf(context).languageCode;
-                        return Row(
-                          children: [
-                            GestureDetector(
-                              onTap: () => context
-                                  .read<CourseDetailCubit>()
-                                  .toggleReviewed(widget.courseId, locale),
-                              child: Container(
-                                width: AppSizes.iconButtonMd,
-                                height: AppSizes.iconButtonMd,
-                                decoration: BoxDecoration(
-                                  color: appSurface,
-                                  borderRadius: BorderRadius.circular(AppRadius.round),
-                                ),
-                                child: Center(
-                                  child: FaIcon(
-                                    course.reviewed
-                                        ? FontAwesomeIcons.solidSquareCheck
-                                        : FontAwesomeIcons.square,
-                                    size: AppIconSizes.xs,
-                                    color: course.reviewed ? appSuccess : appMuted,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: AppSpacing.sm),
-                            GestureDetector(
-                              onTap: () => context
-                                  .read<CourseDetailCubit>()
-                                  .togglePublished(widget.courseId, locale),
-                              child: Container(
-                                width: AppSizes.iconButtonMd,
-                                height: AppSizes.iconButtonMd,
-                                decoration: BoxDecoration(
-                                  color: course.published
-                                      ? appSuccess.withValues(alpha: 0.15)
-                                      : appError.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(AppRadius.round),
-                                ),
-                                child: Center(
-                                  child: FaIcon(
-                                    course.published
-                                        ? FontAwesomeIcons.eye
-                                        : FontAwesomeIcons.eyeSlash,
-                                    size: AppIconSizes.xs,
-                                    color: course.published ? appSuccess : appError,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: AppSpacing.sm),
-                          ],
-                        );
-                      },
-                    ),
-                  GestureDetector(
-                    onTap: () async {
-                      await EditCourseRoute(id: widget.courseId).push(context);
-                      if (mounted) {
-                        final locale = Localizations.localeOf(context).languageCode;
-                        context.read<CourseDetailCubit>().refreshCourse(widget.courseId, locale);
-                      }
-                    },
-                    child: Container(
-                      width: AppSizes.iconButtonMd,
-                      height: AppSizes.iconButtonMd,
-                      decoration: BoxDecoration(
+                    builder: (context, detailState) {
+                      final course = detailState.maybeMap(
+                        loaded: (s) => s.course,
+                        success: (s) => s.course,
+                        error: (s) => s.course,
+                        orElse: () => null,
+                      );
+                      if (course == null) return const SizedBox.shrink();
+                      final locale = Localizations.localeOf(context).languageCode;
+                      return PopupMenuButton<String>(
+                        icon: Container(
+                          width: AppSizes.iconButtonMd,
+                          height: AppSizes.iconButtonMd,
+                          decoration: BoxDecoration(
+                            color: appSurface,
+                            borderRadius: BorderRadius.circular(AppRadius.round),
+                          ),
+                          child: const Center(
+                            child: FaIcon(FontAwesomeIcons.ellipsisVertical, size: AppIconSizes.xs, color: appText),
+                          ),
+                        ),
                         color: appSurface,
-                        borderRadius: BorderRadius.circular(AppRadius.round),
-                      ),
-                      child: const Center(
-                        child: FaIcon(FontAwesomeIcons.penToSquare, size: AppIconSizes.xs, color: appText),
-                      ),
-                    ),
+                        onSelected: (value) async {
+                          switch (value) {
+                            case 'review':
+                              context.read<CourseDetailCubit>().toggleReviewed(widget.courseId, locale);
+                            case 'publish':
+                              context.read<CourseDetailCubit>().togglePublished(widget.courseId, locale);
+                            case 'edit':
+                              await EditCourseRoute(id: widget.courseId).push(context);
+                              if (mounted) {
+                                context.read<CourseDetailCubit>().refreshCourse(widget.courseId, locale);
+                              }
+                          }
+                        },
+                        itemBuilder: (context) => [
+                          PopupMenuItem(
+                            value: 'review',
+                            child: Row(
+                              children: [
+                                FaIcon(
+                                  course.reviewed
+                                      ? FontAwesomeIcons.solidSquareCheck
+                                      : FontAwesomeIcons.square,
+                                  size: AppIconSizes.xs,
+                                  color: course.reviewed ? appSuccess : appMuted,
+                                ),
+                                const SizedBox(width: AppSpacing.md),
+                                Text(
+                                  course.reviewed ? t.editor.markAsUnreviewed : t.editor.markAsReviewed,
+                                  style: const TextStyle(color: appText),
+                                ),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 'publish',
+                            child: Row(
+                              children: [
+                                FaIcon(
+                                  course.published
+                                      ? FontAwesomeIcons.eyeSlash
+                                      : FontAwesomeIcons.eye,
+                                  size: AppIconSizes.xs,
+                                  color: course.published ? appError : appSuccess,
+                                ),
+                                const SizedBox(width: AppSpacing.md),
+                                Text(
+                                  course.published ? t.editor.unpublish : t.editor.publish,
+                                  style: const TextStyle(color: appText),
+                                ),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 'edit',
+                            child: Row(
+                              children: [
+                                const FaIcon(
+                                  FontAwesomeIcons.penToSquare,
+                                  size: AppIconSizes.xs,
+                                  color: appText,
+                                ),
+                                const SizedBox(width: AppSpacing.md),
+                                Text(
+                                  t.common.edit,
+                                  style: const TextStyle(color: appText),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ];
               }

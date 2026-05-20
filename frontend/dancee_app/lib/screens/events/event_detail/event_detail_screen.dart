@@ -301,88 +301,100 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
               if (isEditorMode) {
                 actions = [
                   BlocBuilder<EventDetailCubit, EventDetailState>(
-                      builder: (context, detailState) {
-                        final event = detailState.maybeMap(
-                          loaded: (s) => s.event,
-                          success: (s) => s.event,
-                          error: (s) => s.event,
-                          orElse: () => null,
-                        );
-                        if (event == null) return const SizedBox.shrink();
-                        final locale = Localizations.localeOf(context).languageCode;
-                        return Row(
-                          children: [
-                            GestureDetector(
-                              onTap: () => context
-                                  .read<EventDetailCubit>()
-                                  .toggleReviewed(widget.eventId, locale),
-                              child: Container(
-                                width: AppSizes.iconButtonMd,
-                                height: AppSizes.iconButtonMd,
-                                decoration: BoxDecoration(
-                                  color: appSurface,
-                                  borderRadius: BorderRadius.circular(AppRadius.round),
-                                ),
-                                child: Center(
-                                  child: FaIcon(
-                                    event.reviewed
-                                        ? FontAwesomeIcons.solidSquareCheck
-                                        : FontAwesomeIcons.square,
-                                    size: AppIconSizes.xs,
-                                    color: event.reviewed ? appSuccess : appMuted,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: AppSpacing.sm),
-                            GestureDetector(
-                              onTap: () => context
-                                  .read<EventDetailCubit>()
-                                  .togglePublished(widget.eventId, locale),
-                              child: Container(
-                                width: AppSizes.iconButtonMd,
-                                height: AppSizes.iconButtonMd,
-                                decoration: BoxDecoration(
-                                  color: event.published
-                                      ? appSuccess.withValues(alpha: 0.15)
-                                      : appError.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(AppRadius.round),
-                                ),
-                                child: Center(
-                                  child: FaIcon(
-                                    event.published
-                                        ? FontAwesomeIcons.eye
-                                        : FontAwesomeIcons.eyeSlash,
-                                    size: AppIconSizes.xs,
-                                    color: event.published ? appSuccess : appError,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: AppSpacing.sm),
-                          ],
-                        );
-                      },
-                    ),
-                  GestureDetector(
-                    onTap: () async {
-                      await EditEventRoute(id: widget.eventId).push(context);
-                      if (mounted) {
-                        final locale = Localizations.localeOf(context).languageCode;
-                        context.read<EventDetailCubit>().refreshEvent(widget.eventId, locale);
-                      }
-                    },
-                    child: Container(
-                      width: AppSizes.iconButtonMd,
-                      height: AppSizes.iconButtonMd,
-                      decoration: BoxDecoration(
+                    builder: (context, detailState) {
+                      final event = detailState.maybeMap(
+                        loaded: (s) => s.event,
+                        success: (s) => s.event,
+                        error: (s) => s.event,
+                        orElse: () => null,
+                      );
+                      if (event == null) return const SizedBox.shrink();
+                      final locale = Localizations.localeOf(context).languageCode;
+                      return PopupMenuButton<String>(
+                        icon: Container(
+                          width: AppSizes.iconButtonMd,
+                          height: AppSizes.iconButtonMd,
+                          decoration: BoxDecoration(
+                            color: appSurface,
+                            borderRadius: BorderRadius.circular(AppRadius.round),
+                          ),
+                          child: const Center(
+                            child: FaIcon(FontAwesomeIcons.ellipsisVertical, size: AppIconSizes.xs, color: appText),
+                          ),
+                        ),
                         color: appSurface,
-                        borderRadius: BorderRadius.circular(AppRadius.round),
-                      ),
-                      child: const Center(
-                        child: FaIcon(FontAwesomeIcons.penToSquare, size: AppIconSizes.xs, color: appText),
-                      ),
-                    ),
+                        onSelected: (value) async {
+                          switch (value) {
+                            case 'review':
+                              context.read<EventDetailCubit>().toggleReviewed(widget.eventId, locale);
+                            case 'publish':
+                              context.read<EventDetailCubit>().togglePublished(widget.eventId, locale);
+                            case 'edit':
+                              await EditEventRoute(id: widget.eventId).push(context);
+                              if (mounted) {
+                                context.read<EventDetailCubit>().refreshEvent(widget.eventId, locale);
+                              }
+                          }
+                        },
+                        itemBuilder: (context) => [
+                          PopupMenuItem(
+                            value: 'review',
+                            child: Row(
+                              children: [
+                                FaIcon(
+                                  event.reviewed
+                                      ? FontAwesomeIcons.solidSquareCheck
+                                      : FontAwesomeIcons.square,
+                                  size: AppIconSizes.xs,
+                                  color: event.reviewed ? appSuccess : appMuted,
+                                ),
+                                const SizedBox(width: AppSpacing.md),
+                                Text(
+                                  event.reviewed ? t.editor.markAsUnreviewed : t.editor.markAsReviewed,
+                                  style: const TextStyle(color: appText),
+                                ),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 'publish',
+                            child: Row(
+                              children: [
+                                FaIcon(
+                                  event.published
+                                      ? FontAwesomeIcons.eyeSlash
+                                      : FontAwesomeIcons.eye,
+                                  size: AppIconSizes.xs,
+                                  color: event.published ? appError : appSuccess,
+                                ),
+                                const SizedBox(width: AppSpacing.md),
+                                Text(
+                                  event.published ? t.editor.unpublish : t.editor.publish,
+                                  style: const TextStyle(color: appText),
+                                ),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 'edit',
+                            child: Row(
+                              children: [
+                                const FaIcon(
+                                  FontAwesomeIcons.penToSquare,
+                                  size: AppIconSizes.xs,
+                                  color: appText,
+                                ),
+                                const SizedBox(width: AppSpacing.md),
+                                Text(
+                                  t.common.edit,
+                                  style: const TextStyle(color: appText),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ];
               }

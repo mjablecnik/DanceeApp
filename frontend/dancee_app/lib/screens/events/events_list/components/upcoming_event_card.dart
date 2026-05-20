@@ -135,12 +135,12 @@ class UpcomingEventCard extends StatelessWidget {
                             Row(
                               children: [
                                 _StatusBadge(
-                                  label: isPublished ? 'pub' : 'unpub',
+                                  label: isPublished ? t.editor.published : t.editor.unpublished,
                                   color: isPublished ? appSuccess : appError,
                                 ),
                                 const SizedBox(width: AppSpacing.xs),
                                 _StatusBadge(
-                                  label: isReviewed ? 'rev' : '!rev',
+                                  label: isReviewed ? t.editor.reviewed : t.editor.unreviewed,
                                   color: isReviewed ? appSuccess : appWarning,
                                 ),
                               ],

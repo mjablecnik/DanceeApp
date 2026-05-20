@@ -239,11 +239,11 @@ class CourseCardBottomRow extends StatelessWidget {
                   )),
               if (isEditorMode) ...[
                 _StatusBadge(
-                  label: isPublished ? 'pub' : 'unpub',
+                  label: isPublished ? t.editor.published : t.editor.unpublished,
                   color: isPublished ? appSuccess : appError,
                 ),
                 _StatusBadge(
-                  label: isReviewed ? 'rev' : '!rev',
+                  label: isReviewed ? t.editor.reviewed : t.editor.unreviewed,
                   color: isReviewed ? appSuccess : appWarning,
                 ),
               ],
