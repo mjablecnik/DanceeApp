@@ -20,6 +20,7 @@ class CourseRepository {
       queryParameters: {
         'fields': '*,venue.*,translations.*',
         'filter[status][_eq]': 'published',
+        'filter[published][_eq]': 'true',
         'sort': 'start_date',
         'limit': '-1',
         'deep[translations][_filter][languages_code][_eq]': languageCode,

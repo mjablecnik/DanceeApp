@@ -20,6 +20,7 @@ class EventRepository {
       queryParameters: {
         'fields': '*,venue.*,translations.*',
         'filter[status][_eq]': 'published',
+        'filter[published][_eq]': 'true',
         'filter[start_time][_gte]': '\$NOW',
         'sort': 'start_time',
         'limit': '-1',
