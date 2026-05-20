@@ -310,6 +310,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                       );
                       if (event == null) return const SizedBox.shrink();
                       final locale = Localizations.localeOf(context).languageCode;
+                      final detailCubit = context.read<EventDetailCubit>();
                       return PopupMenuButton<String>(
                         icon: Container(
                           width: AppSizes.iconButtonMd,
@@ -326,13 +327,20 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                         onSelected: (value) async {
                           switch (value) {
                             case 'review':
-                              context.read<EventDetailCubit>().toggleReviewed(widget.eventId, locale);
+                              await detailCubit.toggleReviewed(widget.eventId, locale);
+                              if (mounted) {
+                                context.read<EventCubit>().loadEvents(locale);
+                              }
                             case 'publish':
-                              context.read<EventDetailCubit>().togglePublished(widget.eventId, locale);
+                              await detailCubit.togglePublished(widget.eventId, locale);
+                              if (mounted) {
+                                context.read<EventCubit>().loadEvents(locale);
+                              }
                             case 'edit':
                               await EditEventRoute(id: widget.eventId).push(context);
                               if (mounted) {
-                                context.read<EventDetailCubit>().refreshEvent(widget.eventId, locale);
+                                detailCubit.refreshEvent(widget.eventId, locale);
+                                context.read<EventCubit>().loadEvents(locale);
                               }
                           }
                         },

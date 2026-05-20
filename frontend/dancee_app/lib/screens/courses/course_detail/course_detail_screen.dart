@@ -306,6 +306,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                       );
                       if (course == null) return const SizedBox.shrink();
                       final locale = Localizations.localeOf(context).languageCode;
+                      final detailCubit = context.read<CourseDetailCubit>();
                       return PopupMenuButton<String>(
                         icon: Container(
                           width: AppSizes.iconButtonMd,
@@ -322,13 +323,20 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                         onSelected: (value) async {
                           switch (value) {
                             case 'review':
-                              context.read<CourseDetailCubit>().toggleReviewed(widget.courseId, locale);
+                              await detailCubit.toggleReviewed(widget.courseId, locale);
+                              if (mounted) {
+                                context.read<CourseCubit>().loadCourses(locale);
+                              }
                             case 'publish':
-                              context.read<CourseDetailCubit>().togglePublished(widget.courseId, locale);
+                              await detailCubit.togglePublished(widget.courseId, locale);
+                              if (mounted) {
+                                context.read<CourseCubit>().loadCourses(locale);
+                              }
                             case 'edit':
                               await EditCourseRoute(id: widget.courseId).push(context);
                               if (mounted) {
-                                context.read<CourseDetailCubit>().refreshCourse(widget.courseId, locale);
+                                detailCubit.refreshCourse(widget.courseId, locale);
+                                context.read<CourseCubit>().loadCourses(locale);
                               }
                           }
                         },
