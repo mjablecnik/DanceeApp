@@ -7,10 +7,12 @@ import '../../../../data/entities/course.dart';
 import '../../../../i18n/strings.g.dart';
 import '../../../../logic/cubits/auth_cubit.dart';
 import '../../../../logic/cubits/course_cubit.dart';
+import '../../../../logic/cubits/editor_mode_cubit.dart';
 import '../../../../logic/cubits/favorites_cubit.dart';
 import '../../../../logic/cubits/filter_cubit.dart';
 import '../../../../logic/cubits/settings_cubit.dart';
 import '../../../../logic/states/course_state.dart';
+import '../../../../logic/states/editor_mode_state.dart';
 import '../../../../shared/sections/dance_styles_filter_section.dart';
 import '../../../../shared/utils/auth_translations.dart';
 import '../../../../shared/utils/dance_names.dart';
@@ -181,8 +183,9 @@ class _CoursesListContent extends StatelessWidget {
             ),
           )
         else
-          Builder(
-            builder: (context) {
+          BlocBuilder<EditorModeCubit, EditorModeState>(
+            builder: (context, editorModeState) {
+              final isEditorMode = editorModeState.isEditorMode && editorModeState.isEditor;
               final isAuthenticated = context.read<AuthCubit>().state.maybeMap(
                     authenticated: (_) => true,
                     orElse: () => false,
@@ -215,8 +218,11 @@ class _CoursesListContent extends StatelessWidget {
                               .toList(),
                           price: course.price ?? '',
                           isFavorited: course.isFavorited,
+                          isEditorMode: isEditorMode,
+                          isReviewed: course.reviewed,
+                          isPublished: course.published,
                           onTap: () => CourseDetailRoute(id: course.id).push(context),
-                          onFavoriteTap: isAuthenticated
+                          onFavoriteTap: !isEditorMode && isAuthenticated
                               ? () => context.read<FavoritesCubit>().toggleFavorite(
                                     itemType: 'course',
                                     itemId: course.id,

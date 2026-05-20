@@ -110,6 +110,46 @@ class CourseDetailCubit extends Cubit<CourseDetailState> {
     }
   }
 
+  /// Toggles the published status and re-fetches the course.
+  Future<void> togglePublished(int courseId, String languageCode) async {
+    final currentCourse = state.maybeMap(
+      loaded: (s) => s.course,
+      success: (s) => s.course,
+      error: (s) => s.course,
+      orElse: () => null,
+    );
+    if (currentCourse == null) return;
+    try {
+      await _courseRepository.updatePublishedStatus(courseId, !currentCourse.published);
+      await refreshCourse(courseId, languageCode);
+    } catch (e) {
+      emit(CourseDetailState.error(
+        course: currentCourse,
+        message: e is ApiException ? e.message : 'api.errors.generic',
+      ));
+    }
+  }
+
+  /// Toggles the reviewed status and re-fetches the course.
+  Future<void> toggleReviewed(int courseId, String languageCode) async {
+    final currentCourse = state.maybeMap(
+      loaded: (s) => s.course,
+      success: (s) => s.course,
+      error: (s) => s.course,
+      orElse: () => null,
+    );
+    if (currentCourse == null) return;
+    try {
+      await _courseRepository.updateReviewedStatus(courseId, !currentCourse.reviewed);
+      await refreshCourse(courseId, languageCode);
+    } catch (e) {
+      emit(CourseDetailState.error(
+        course: currentCourse,
+        message: e is ApiException ? e.message : 'api.errors.generic',
+      ));
+    }
+  }
+
   /// Re-fetches the course from the API after a successful edit so the detail
   /// page shows the latest saved data.
   Future<void> refreshCourse(int courseId, String languageCode) async {

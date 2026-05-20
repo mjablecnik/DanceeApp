@@ -110,6 +110,46 @@ class EventDetailCubit extends Cubit<EventDetailState> {
     }
   }
 
+  /// Toggles the published status and re-fetches the event.
+  Future<void> togglePublished(int eventId, String languageCode) async {
+    final currentEvent = state.maybeMap(
+      loaded: (s) => s.event,
+      success: (s) => s.event,
+      error: (s) => s.event,
+      orElse: () => null,
+    );
+    if (currentEvent == null) return;
+    try {
+      await _eventRepository.updatePublishedStatus(eventId, !currentEvent.published);
+      await refreshEvent(eventId, languageCode);
+    } catch (e) {
+      emit(EventDetailState.error(
+        event: currentEvent,
+        message: e is ApiException ? e.message : 'api.errors.generic',
+      ));
+    }
+  }
+
+  /// Toggles the reviewed status and re-fetches the event.
+  Future<void> toggleReviewed(int eventId, String languageCode) async {
+    final currentEvent = state.maybeMap(
+      loaded: (s) => s.event,
+      success: (s) => s.event,
+      error: (s) => s.event,
+      orElse: () => null,
+    );
+    if (currentEvent == null) return;
+    try {
+      await _eventRepository.updateReviewedStatus(eventId, !currentEvent.reviewed);
+      await refreshEvent(eventId, languageCode);
+    } catch (e) {
+      emit(EventDetailState.error(
+        event: currentEvent,
+        message: e is ApiException ? e.message : 'api.errors.generic',
+      ));
+    }
+  }
+
   /// Re-fetches the event from the API after a successful edit so the detail
   /// page shows the latest saved data.
   Future<void> refreshEvent(int eventId, String languageCode) async {

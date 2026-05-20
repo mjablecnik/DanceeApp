@@ -10,10 +10,12 @@ import '../../../data/entities/event_info.dart';
 import '../../../data/entities/event_part.dart';
 import '../../../i18n/strings.g.dart';
 import '../../../logic/cubits/auth_cubit.dart';
+import '../../../logic/cubits/editor_mode_cubit.dart';
 import '../../../logic/cubits/event_cubit.dart';
 import '../../../logic/cubits/event_detail_cubit.dart';
 import '../../../logic/cubits/favorites_cubit.dart';
 import '../../../logic/cubits/profile_cubit.dart';
+import '../../../logic/states/editor_mode_state.dart';
 import '../../../logic/states/event_detail_state.dart';
 import '../../../shared/sections/description_section.dart';
 import '../../../shared/utils/date_format.dart';
@@ -290,35 +292,108 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
       backgroundColor: appBg,
       body: Column(
         children: [
-          BlocBuilder<ProfileCubit, dynamic>(
-            builder: (context, _) => DetailHeaderSection(
-              title: t.events.detail.header,
-              onBack: () => context.pop(),
-              actions: context.read<ProfileCubit>().isEditor
-                  ? [
-                      GestureDetector(
-                        onTap: () async {
-                          await EditEventRoute(id: widget.eventId).push(context);
-                          if (mounted) {
-                            final locale = Localizations.localeOf(context).languageCode;
-                            context.read<EventDetailCubit>().refreshEvent(widget.eventId, locale);
-                          }
-                        },
-                        child: Container(
-                          width: AppSizes.iconButtonMd,
-                          height: AppSizes.iconButtonMd,
-                          decoration: BoxDecoration(
-                            color: appSurface,
-                            borderRadius: BorderRadius.circular(AppRadius.round),
-                          ),
-                          child: const Center(
-                            child: FaIcon(FontAwesomeIcons.penToSquare, size: AppIconSizes.xs, color: appText),
-                          ),
-                        ),
+          BlocBuilder<EditorModeCubit, EditorModeState>(
+            builder: (context, editorState) {
+              final isEditorMode = editorState.isEditorMode && editorState.isEditor;
+              final isEditor = context.read<ProfileCubit>().isEditor;
+
+              List<Widget>? actions;
+              if (isEditor) {
+                actions = [
+                  if (isEditorMode)
+                    BlocBuilder<EventDetailCubit, EventDetailState>(
+                      builder: (context, detailState) {
+                        final event = detailState.maybeMap(
+                          loaded: (s) => s.event,
+                          success: (s) => s.event,
+                          error: (s) => s.event,
+                          orElse: () => null,
+                        );
+                        if (event == null) return const SizedBox.shrink();
+                        final locale = Localizations.localeOf(context).languageCode;
+                        return Row(
+                          children: [
+                            GestureDetector(
+                              onTap: () => context
+                                  .read<EventDetailCubit>()
+                                  .toggleReviewed(widget.eventId, locale),
+                              child: Container(
+                                width: AppSizes.iconButtonMd,
+                                height: AppSizes.iconButtonMd,
+                                decoration: BoxDecoration(
+                                  color: appSurface,
+                                  borderRadius: BorderRadius.circular(AppRadius.round),
+                                ),
+                                child: Center(
+                                  child: FaIcon(
+                                    event.reviewed
+                                        ? FontAwesomeIcons.solidSquareCheck
+                                        : FontAwesomeIcons.square,
+                                    size: AppIconSizes.xs,
+                                    color: event.reviewed ? appSuccess : appMuted,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                            GestureDetector(
+                              onTap: () => context
+                                  .read<EventDetailCubit>()
+                                  .togglePublished(widget.eventId, locale),
+                              child: Container(
+                                width: AppSizes.iconButtonMd,
+                                height: AppSizes.iconButtonMd,
+                                decoration: BoxDecoration(
+                                  color: event.published
+                                      ? appSuccess.withValues(alpha: 0.15)
+                                      : appError.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(AppRadius.round),
+                                ),
+                                child: Center(
+                                  child: FaIcon(
+                                    event.published
+                                        ? FontAwesomeIcons.eye
+                                        : FontAwesomeIcons.eyeSlash,
+                                    size: AppIconSizes.xs,
+                                    color: event.published ? appSuccess : appError,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                          ],
+                        );
+                      },
+                    ),
+                  GestureDetector(
+                    onTap: () async {
+                      await EditEventRoute(id: widget.eventId).push(context);
+                      if (mounted) {
+                        final locale = Localizations.localeOf(context).languageCode;
+                        context.read<EventDetailCubit>().refreshEvent(widget.eventId, locale);
+                      }
+                    },
+                    child: Container(
+                      width: AppSizes.iconButtonMd,
+                      height: AppSizes.iconButtonMd,
+                      decoration: BoxDecoration(
+                        color: appSurface,
+                        borderRadius: BorderRadius.circular(AppRadius.round),
                       ),
-                    ]
-                  : null,
-            ),
+                      child: const Center(
+                        child: FaIcon(FontAwesomeIcons.penToSquare, size: AppIconSizes.xs, color: appText),
+                      ),
+                    ),
+                  ),
+                ];
+              }
+
+              return DetailHeaderSection(
+                title: t.events.detail.header,
+                onBack: () => context.pop(),
+                actions: actions,
+              );
+            },
           ),
           Expanded(
             child: BlocBuilder<EventDetailCubit, EventDetailState>(

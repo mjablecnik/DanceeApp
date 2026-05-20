@@ -192,31 +192,31 @@ This plan implements editorial workflow capabilities for the Dancee App: editor/
 - [x] 9. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 10. Implement editor mode UI — mode toggle and status indicators
-  - [ ] 10.1 Add Mode Toggle to the profile page
+- [x] 10. Implement editor mode UI — mode toggle and status indicators
+  - [x] 10.1 Add Mode Toggle to the profile page
     - Display a switch/toggle control on the profile page when user has editor role (`role == "editor"`)
     - Hide the toggle entirely for non-editor users
     - Wire toggle to `EditorModeCubit.toggleMode()`
     - _Requirements: 4.1, 4.5_
 
-  - [ ] 10.2 Add reviewed checkbox icon to item cards in editor mode
+  - [x] 10.2 Add reviewed checkbox icon to item cards in editor mode
     - In editor mode: replace the favorite/heart icon with a checkbox icon on event and course cards
     - Checked state reflects `item.reviewed` value
     - In user mode: display the standard heart/favorite icon
     - _Requirements: 5.1, 5.2, 5.3, 5.5_
 
-  - [ ] 10.3 Add publish/unpublish button to item detail views
+  - [x] 10.3 Add publish/unpublish button to item detail views
     - In editor mode: display a publish/unpublish button in event and course detail views
     - Tapping calls `updatePublishedStatus` on the repository and re-fetches the item
     - In user mode: hide the button entirely
     - _Requirements: 6.1, 6.2, 6.3_
 
-  - [ ] 10.4 Add reviewed toggle button to item detail views
+  - [x] 10.4 Add reviewed toggle button to item detail views
     - In editor mode: display a review toggle button in event and course detail views
     - Tapping calls `updateReviewedStatus` on the repository and re-fetches the item
     - _Requirements: 5.4_
 
-  - [ ] 10.5 Add visual distinction for unpublished items in editor list views
+  - [x] 10.5 Add visual distinction for unpublished items in editor list views
     - Display a clear published/unpublished status indicator on each item card
     - Display a clear reviewed/unreviewed status indicator on each item card
     - Visually distinguish unpublished items (e.g., reduced opacity, badge, or border)

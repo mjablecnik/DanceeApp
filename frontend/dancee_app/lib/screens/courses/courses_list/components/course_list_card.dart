@@ -20,6 +20,9 @@ class CourseListCard extends StatelessWidget {
   final List<CourseTag> tags;
   final String price;
   final bool isFavorited;
+  final bool isEditorMode;
+  final bool isReviewed;
+  final bool isPublished;
   final VoidCallback? onTap;
   final VoidCallback? onFavoriteTap;
 
@@ -33,19 +36,26 @@ class CourseListCard extends StatelessWidget {
     required this.tags,
     required this.price,
     this.isFavorited = false,
+    this.isEditorMode = false,
+    this.isReviewed = false,
+    this.isPublished = true,
     this.onTap,
     this.onFavoriteTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    final card = GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
           color: appSurface,
-          border: Border.all(color: appBorder),
+          border: Border.all(
+            color: isEditorMode && !isPublished
+                ? appError.withValues(alpha: 0.4)
+                : appBorder,
+          ),
           borderRadius: BorderRadius.circular(AppRadius.xl),
         ),
         child: Column(
@@ -63,12 +73,20 @@ class CourseListCard extends StatelessWidget {
               tags: tags,
               price: price,
               isFavorited: isFavorited,
+              isEditorMode: isEditorMode,
+              isReviewed: isReviewed,
+              isPublished: isPublished,
               onFavoriteTap: onFavoriteTap,
             ),
           ],
         ),
       ),
     );
+
+    if (isEditorMode && !isPublished) {
+      return Opacity(opacity: 0.65, child: card);
+    }
+    return card;
   }
 }
 
@@ -175,6 +193,9 @@ class CourseCardBottomRow extends StatelessWidget {
   final List<CourseTag> tags;
   final String price;
   final bool isFavorited;
+  final bool isEditorMode;
+  final bool isReviewed;
+  final bool isPublished;
   final VoidCallback? onFavoriteTap;
 
   const CourseCardBottomRow({
@@ -182,6 +203,9 @@ class CourseCardBottomRow extends StatelessWidget {
     required this.tags,
     required this.price,
     required this.isFavorited,
+    this.isEditorMode = false,
+    this.isReviewed = false,
+    this.isPublished = true,
     this.onFavoriteTap,
   });
 
@@ -191,30 +215,39 @@ class CourseCardBottomRow extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Expanded(
-          child: Row(
-            children: tags
-                .map((tag) => Padding(
-                      padding: const EdgeInsets.only(right: AppSpacing.xs),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.sm,
-                          vertical: AppSpacing.xs,
-                        ),
-                        decoration: BoxDecoration(
-                          color: appCard,
-                          borderRadius: BorderRadius.circular(AppRadius.xs),
-                        ),
-                        child: Text(
-                          tag.label,
-                          style: TextStyle(
-                            color: tag.color,
-                            fontSize: AppTypography.fontSizeXs,
-                            fontWeight: AppTypography.fontWeightSemiBold,
-                          ),
-                        ),
+          child: Wrap(
+            spacing: AppSpacing.xs,
+            runSpacing: AppSpacing.xs,
+            children: [
+              ...tags.map((tag) => Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: AppSpacing.xs,
+                    ),
+                    decoration: BoxDecoration(
+                      color: appCard,
+                      borderRadius: BorderRadius.circular(AppRadius.xs),
+                    ),
+                    child: Text(
+                      tag.label,
+                      style: TextStyle(
+                        color: tag.color,
+                        fontSize: AppTypography.fontSizeXs,
+                        fontWeight: AppTypography.fontWeightSemiBold,
                       ),
-                    ))
-                .toList(),
+                    ),
+                  )),
+              if (isEditorMode) ...[
+                _StatusBadge(
+                  label: isPublished ? 'pub' : 'unpub',
+                  color: isPublished ? appSuccess : appError,
+                ),
+                _StatusBadge(
+                  label: isReviewed ? 'rev' : '!rev',
+                  color: isReviewed ? appSuccess : appWarning,
+                ),
+              ],
+            ],
           ),
         ),
         Row(
@@ -227,8 +260,16 @@ class CourseCardBottomRow extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            if (onFavoriteTap != null) ...[
-              const SizedBox(width: AppSpacing.md),
+            const SizedBox(width: AppSpacing.md),
+            if (isEditorMode)
+              FaIcon(
+                isReviewed
+                    ? FontAwesomeIcons.solidSquareCheck
+                    : FontAwesomeIcons.square,
+                size: AppIconSizes.xs,
+                color: isReviewed ? appSuccess : appMuted,
+              )
+            else if (onFavoriteTap != null)
               GestureDetector(
                 onTap: onFavoriteTap,
                 child: FaIcon(
@@ -239,10 +280,36 @@ class CourseCardBottomRow extends StatelessWidget {
                   color: isFavorited ? Colors.red : appMuted,
                 ),
               ),
-            ],
           ],
         ),
       ],
+    );
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  final String label;
+  final Color color;
+
+  const _StatusBadge({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(AppRadius.xs),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 9,
+          fontWeight: AppTypography.fontWeightBold,
+        ),
+      ),
     );
   }
 }

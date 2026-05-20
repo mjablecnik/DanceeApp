@@ -304,6 +304,7 @@
     "sections": {
       "account": "Account",
       "settings": "Settings",
+      "editorMode": "Editor mode",
       "support": "Support",
       "appInfo": "About app",
       "dangerZone": "Danger zone"
@@ -437,6 +438,18 @@
     "register": "Create account",
     "logoutTitle": "Signed out successfully",
     "logoutMessage": "You can sign in again anytime."
+  },
+  "editor": {
+    "modeToggle": "Editor mode",
+    "modeToggleSubtitle": "Enable to manage and publish content",
+    "publish": "Publish",
+    "unpublish": "Unpublish",
+    "published": "Published",
+    "unpublished": "Unpublished",
+    "reviewed": "Reviewed",
+    "unreviewed": "Unreviewed",
+    "markAsReviewed": "Mark as reviewed",
+    "markAsUnreviewed": "Mark as unreviewed"
   },
   "contact": {
     "teamName": "Dancee Team",

@@ -12,6 +12,9 @@ class UpcomingEventCard extends StatelessWidget {
   final String date;
   final List<EventTagData> tags;
   final bool isFavorited;
+  final bool isEditorMode;
+  final bool isReviewed;
+  final bool isPublished;
   final VoidCallback? onTap;
   final VoidCallback? onFavoriteTap;
 
@@ -23,19 +26,26 @@ class UpcomingEventCard extends StatelessWidget {
     required this.date,
     required this.tags,
     required this.isFavorited,
+    this.isEditorMode = false,
+    this.isReviewed = false,
+    this.isPublished = true,
     this.onTap,
     this.onFavoriteTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    final card = GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
           color: appSurface,
-          border: Border.all(color: appBorder),
+          border: Border.all(
+            color: isEditorMode && !isPublished
+                ? appError.withValues(alpha: 0.4)
+                : appBorder,
+          ),
           borderRadius: BorderRadius.circular(AppRadius.xl),
         ),
         child: IntrinsicHeight(
@@ -118,9 +128,25 @@ class UpcomingEventCard extends StatelessWidget {
                               ),
                             ],
                           ),
-                          // Spacer pushes tags to bottom
                           const SizedBox(height: AppSpacing.md),
                           const Spacer(),
+                          // Editor status badges
+                          if (isEditorMode) ...[
+                            Row(
+                              children: [
+                                _StatusBadge(
+                                  label: isPublished ? 'pub' : 'unpub',
+                                  color: isPublished ? appSuccess : appError,
+                                ),
+                                const SizedBox(width: AppSpacing.xs),
+                                _StatusBadge(
+                                  label: isReviewed ? 'rev' : '!rev',
+                                  color: isReviewed ? appSuccess : appWarning,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: AppSpacing.xs),
+                          ],
                           // Dance style tags — clipped to 2 lines
                           if (tags.isNotEmpty)
                             ConstrainedBox(
@@ -162,8 +188,31 @@ class UpcomingEventCard extends StatelessWidget {
                   ),
                 ],
               ),
-              // Heart button — absolute top right
-              if (onFavoriteTap != null)
+              // Action button — absolute top right
+              // In editor mode: show reviewed checkbox. In user mode: show heart.
+              if (isEditorMode)
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(AppRadius.xl),
+                    ),
+                    child: Center(
+                      child: FaIcon(
+                        isReviewed
+                            ? FontAwesomeIcons.solidSquareCheck
+                            : FontAwesomeIcons.square,
+                        size: 14,
+                        color: isReviewed ? appSuccess : appMuted,
+                      ),
+                    ),
+                  ),
+                )
+              else if (onFavoriteTap != null)
                 Positioned(
                   top: 0,
                   right: 0,
@@ -190,6 +239,38 @@ class UpcomingEventCard extends StatelessWidget {
                 ),
             ],
           ),
+        ),
+      ),
+    );
+
+    if (isEditorMode && !isPublished) {
+      return Opacity(opacity: 0.65, child: card);
+    }
+    return card;
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  final String label;
+  final Color color;
+
+  const _StatusBadge({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(AppRadius.xs),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 9,
+          fontWeight: AppTypography.fontWeightBold,
         ),
       ),
     );

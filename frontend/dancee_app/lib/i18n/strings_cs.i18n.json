@@ -304,6 +304,7 @@
     "sections": {
       "account": "Účet",
       "settings": "Nastavení",
+      "editorMode": "Režim editora",
       "support": "Podpora",
       "appInfo": "O aplikaci",
       "dangerZone": "Nebezpečná zóna"
@@ -437,6 +438,18 @@
     "register": "Vytvořit účet",
     "logoutTitle": "Odhlášení proběhlo úspěšně",
     "logoutMessage": "Můžete se kdykoli znovu přihlásit."
+  },
+  "editor": {
+    "modeToggle": "Režim editora",
+    "modeToggleSubtitle": "Aktivujte pro správu a publikování obsahu",
+    "publish": "Publikovat",
+    "unpublish": "Zrušit publikování",
+    "published": "Publikováno",
+    "unpublished": "Nepublikováno",
+    "reviewed": "Zkontrolováno",
+    "unreviewed": "Nezkontrolováno",
+    "markAsReviewed": "Označit jako zkontrolované",
+    "markAsUnreviewed": "Označit jako nezkontrolované"
   },
   "contact": {
     "teamName": "Tým Dancee",

@@ -36,6 +36,7 @@ import 'package:dancee_app/data/repositories/favorites_repository.dart';
 import 'package:dancee_app/i18n/strings.g.dart';
 import 'package:dancee_app/logic/cubits/auth_cubit.dart';
 import 'package:dancee_app/logic/cubits/course_cubit.dart';
+import 'package:dancee_app/logic/cubits/editor_mode_cubit.dart';
 import 'package:dancee_app/logic/cubits/event_cubit.dart';
 import 'package:dancee_app/logic/cubits/favorites_cubit.dart';
 import 'package:dancee_app/logic/cubits/filter_cubit.dart';
@@ -179,6 +180,7 @@ GoRouter _buildRouter({
             BlocProvider<FavoritesCubit>.value(value: favoritesCubit),
             BlocProvider<SettingsCubit>.value(value: settingsCubit),
             BlocProvider<CourseCubit>.value(value: courseCubit),
+            BlocProvider<EditorModeCubit>(create: (_) => EditorModeCubit()),
           ],
           child: const Scaffold(body: EventsListScreen()),
         ),

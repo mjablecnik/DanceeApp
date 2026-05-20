@@ -304,6 +304,7 @@
     "sections": {
       "account": "Cuenta",
       "settings": "Ajustes",
+      "editorMode": "Modo editor",
       "support": "Soporte",
       "appInfo": "Sobre la app",
       "dangerZone": "Zona de peligro"
@@ -437,6 +438,18 @@
     "register": "Crear cuenta",
     "logoutTitle": "Sesión cerrada correctamente",
     "logoutMessage": "Puedes iniciar sesión de nuevo en cualquier momento."
+  },
+  "editor": {
+    "modeToggle": "Modo editor",
+    "modeToggleSubtitle": "Activa para gestionar y publicar contenido",
+    "publish": "Publicar",
+    "unpublish": "Despublicar",
+    "published": "Publicado",
+    "unpublished": "No publicado",
+    "reviewed": "Revisado",
+    "unreviewed": "Sin revisar",
+    "markAsReviewed": "Marcar como revisado",
+    "markAsUnreviewed": "Marcar como sin revisar"
   },
   "contact": {
     "teamName": "Equipo Dancee",

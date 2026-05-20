@@ -7,9 +7,11 @@ import '../../../core/colors.dart';
 import '../../../core/theme.dart';
 import '../../../i18n/strings.g.dart';
 import '../../../logic/cubits/auth_cubit.dart';
+import '../../../logic/cubits/editor_mode_cubit.dart';
 import '../../../logic/cubits/profile_cubit.dart';
 import '../../../logic/cubits/settings_cubit.dart';
 import '../../../logic/states/auth_state.dart';
+import '../../../logic/states/editor_mode_state.dart';
 import '../../../logic/states/profile_state.dart';
 import '../../../logic/states/settings_state.dart';
 import '../../../shared/components/back_button_header.dart';
@@ -309,6 +311,63 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             onChangePassword: () => const ChangePasswordRoute().push(context),
                           ),
                           const SizedBox(height: AppSpacing.xxl),
+                          BlocBuilder<EditorModeCubit, EditorModeState>(
+                            builder: (context, editorState) {
+                              if (!editorState.isEditor) return const SizedBox.shrink();
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SectionLabel(title: t.profile.sections.editorMode),
+                                  const SizedBox(height: AppSpacing.md),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: AppSpacing.lg,
+                                      vertical: AppSpacing.md,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: appSurface,
+                                      border: Border.all(color: appBorder),
+                                      borderRadius: BorderRadius.circular(AppRadius.lg),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                t.editor.modeToggle,
+                                                style: const TextStyle(
+                                                  color: appText,
+                                                  fontSize: AppTypography.fontSizeMd,
+                                                  fontWeight: AppTypography.fontWeightMedium,
+                                                ),
+                                              ),
+                                              const SizedBox(height: AppSpacing.xs),
+                                              Text(
+                                                t.editor.modeToggleSubtitle,
+                                                style: const TextStyle(
+                                                  color: appMuted,
+                                                  fontSize: AppTypography.fontSizeSm,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Switch(
+                                          value: editorState.isEditorMode,
+                                          onChanged: (_) =>
+                                              context.read<EditorModeCubit>().toggleMode(),
+                                          activeColor: appPrimary,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: AppSpacing.xxl),
+                                ],
+                              );
+                            },
+                          ),
                           SectionLabel(title: t.profile.sections.settings),
                           const SizedBox(height: AppSpacing.md),
                           const SettingsSection(),

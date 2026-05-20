@@ -32,6 +32,7 @@ import 'package:dancee_app/data/repositories/favorites_repository.dart';
 import 'package:dancee_app/data/repositories/profile_repository.dart';
 import 'package:dancee_app/i18n/strings.g.dart';
 import 'package:dancee_app/logic/cubits/auth_cubit.dart';
+import 'package:dancee_app/logic/cubits/editor_mode_cubit.dart';
 import 'package:dancee_app/logic/cubits/profile_cubit.dart';
 import 'package:dancee_app/logic/cubits/settings_cubit.dart';
 import 'package:dancee_app/logic/states/profile_state.dart';
@@ -145,6 +146,7 @@ GoRouter _buildRouter(
             BlocProvider<AuthCubit>.value(value: authCubit),
             BlocProvider<SettingsCubit>.value(value: settingsCubit),
             BlocProvider<ProfileCubit>.value(value: profileCubit),
+            BlocProvider<EditorModeCubit>(create: (_) => EditorModeCubit()),
           ],
           child: const ProfileScreen(),
         ),

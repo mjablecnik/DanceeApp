@@ -7,7 +7,9 @@ import '../../../../data/entities/dance_style.dart';
 import '../../../../data/entities/event.dart';
 import '../../../../i18n/strings.g.dart';
 import '../../../../logic/cubits/auth_cubit.dart';
+import '../../../../logic/cubits/editor_mode_cubit.dart';
 import '../../../../logic/cubits/favorites_cubit.dart';
+import '../../../../logic/states/editor_mode_state.dart';
 import '../../../../shared/utils/dance_names.dart';
 import '../../../../shared/utils/date_format.dart';
 import '../../../../shared/utils/location_format.dart';
@@ -100,8 +102,9 @@ class UpcomingEventsSection extends StatelessWidget {
             ),
           )
         else
-        Builder(
-          builder: (context) {
+        BlocBuilder<EditorModeCubit, EditorModeState>(
+          builder: (context, editorModeState) {
+            final isEditorMode = editorModeState.isEditorMode && editorModeState.isEditor;
             final isAuthenticated = context.read<AuthCubit>().state.maybeMap(
               authenticated: (_) => true,
               orElse: () => false,
@@ -127,8 +130,11 @@ class UpcomingEventsSection extends StatelessWidget {
                                 tag.name, tag.isFilterMatch ? appSuccess : appPrimary))
                             .toList(),
                         isFavorited: event.isFavorited,
+                        isEditorMode: isEditorMode,
+                        isReviewed: event.reviewed,
+                        isPublished: event.published,
                         onTap: () => onEventTap?.call(event.id),
-                        onFavoriteTap: isAuthenticated
+                        onFavoriteTap: !isEditorMode && isAuthenticated
                             ? () => context.read<FavoritesCubit>().toggleFavorite(
                                   itemType: 'event',
                                   itemId: event.id,
