@@ -449,7 +449,12 @@
     "reviewed": "Zkontrolováno",
     "unreviewed": "Nezkontrolováno",
     "markAsReviewed": "Označit jako zkontrolované",
-    "markAsUnreviewed": "Označit jako nezkontrolované"
+    "markAsUnreviewed": "Označit jako nezkontrolované",
+    "filter": {
+      "publishedStatus": "Stav publikování",
+      "reviewedStatus": "Stav kontroly",
+      "all": "Vše"
+    }
   },
   "contact": {
     "teamName": "Tým Dancee",

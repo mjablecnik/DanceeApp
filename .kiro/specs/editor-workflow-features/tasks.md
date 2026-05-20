@@ -222,8 +222,8 @@ This plan implements editorial workflow capabilities for the Dancee App: editor/
     - Visually distinguish unpublished items (e.g., reduced opacity, badge, or border)
     - _Requirements: 6.6, 6.7, 6.8_
 
-- [ ] 11. Implement editor filter UI
-  - [ ] 11.1 Add editor-specific filter options to the filter panel
+- [x] 11. Implement editor filter UI
+  - [x] 11.1 Add editor-specific filter options to the filter panel
     - In editor mode: show additional filter chips/options for published status and reviewed status
     - Published filter: "Published" / "Unpublished" / All
     - Reviewed filter: "Reviewed" / "Unreviewed" / All

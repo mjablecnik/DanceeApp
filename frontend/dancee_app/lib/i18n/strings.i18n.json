@@ -449,7 +449,12 @@
     "reviewed": "Reviewed",
     "unreviewed": "Unreviewed",
     "markAsReviewed": "Mark as reviewed",
-    "markAsUnreviewed": "Mark as unreviewed"
+    "markAsUnreviewed": "Mark as unreviewed",
+    "filter": {
+      "publishedStatus": "Published status",
+      "reviewedStatus": "Reviewed status",
+      "all": "All"
+    }
   },
   "contact": {
     "teamName": "Dancee Team",

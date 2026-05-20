@@ -449,7 +449,12 @@
     "reviewed": "Revisado",
     "unreviewed": "Sin revisar",
     "markAsReviewed": "Marcar como revisado",
-    "markAsUnreviewed": "Marcar como sin revisar"
+    "markAsUnreviewed": "Marcar como sin revisar",
+    "filter": {
+      "publishedStatus": "Estado de publicación",
+      "reviewedStatus": "Estado de revisión",
+      "all": "Todo"
+    }
   },
   "contact": {
     "teamName": "Equipo Dancee",

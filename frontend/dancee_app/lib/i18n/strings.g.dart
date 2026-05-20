@@ -400,6 +400,19 @@ class _StringsEditorEn {
 	String get unreviewed => 'Unreviewed';
 	String get markAsReviewed => 'Mark as reviewed';
 	String get markAsUnreviewed => 'Mark as unreviewed';
+	late final _StringsEditorFilterEn filter = _StringsEditorFilterEn._(_root);
+}
+
+// Path: editor.filter
+class _StringsEditorFilterEn {
+	_StringsEditorFilterEn._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get publishedStatus => 'Published status';
+	String get reviewedStatus => 'Reviewed status';
+	String get all => 'All';
 }
 
 // Path: contact
@@ -1330,6 +1343,19 @@ class _StringsEditorCs extends _StringsEditorEn {
 	@override String get unreviewed => 'Nezkontrolováno';
 	@override String get markAsReviewed => 'Označit jako zkontrolované';
 	@override String get markAsUnreviewed => 'Označit jako nezkontrolované';
+	@override late final _StringsEditorFilterCs filter = _StringsEditorFilterCs._(_root);
+}
+
+// Path: editor.filter
+class _StringsEditorFilterCs extends _StringsEditorFilterEn {
+	_StringsEditorFilterCs._(_StringsCs root) : this._root = root, super._(root);
+
+	@override final _StringsCs _root; // ignore: unused_field
+
+	// Translations
+	@override String get publishedStatus => 'Stav publikování';
+	@override String get reviewedStatus => 'Stav kontroly';
+	@override String get all => 'Vše';
 }
 
 // Path: contact
@@ -2260,6 +2286,19 @@ class _StringsEditorEs extends _StringsEditorEn {
 	@override String get unreviewed => 'Sin revisar';
 	@override String get markAsReviewed => 'Marcar como revisado';
 	@override String get markAsUnreviewed => 'Marcar como sin revisar';
+	@override late final _StringsEditorFilterEs filter = _StringsEditorFilterEs._(_root);
+}
+
+// Path: editor.filter
+class _StringsEditorFilterEs extends _StringsEditorFilterEn {
+	_StringsEditorFilterEs._(_StringsEs root) : this._root = root, super._(root);
+
+	@override final _StringsEs _root; // ignore: unused_field
+
+	// Translations
+	@override String get publishedStatus => 'Estado de publicación';
+	@override String get reviewedStatus => 'Estado de revisión';
+	@override String get all => 'Todo';
 }
 
 // Path: contact
@@ -3273,6 +3312,9 @@ extension on Translations {
 			case 'editor.unreviewed': return 'Unreviewed';
 			case 'editor.markAsReviewed': return 'Mark as reviewed';
 			case 'editor.markAsUnreviewed': return 'Mark as unreviewed';
+			case 'editor.filter.publishedStatus': return 'Published status';
+			case 'editor.filter.reviewedStatus': return 'Reviewed status';
+			case 'editor.filter.all': return 'All';
 			case 'contact.teamName': return 'Dancee Team';
 			case 'contact.description': return 'We\'d love to read your feedback...';
 			case 'contact.responseTime': return 'Response time';
@@ -3663,6 +3705,9 @@ extension on _StringsCs {
 			case 'editor.unreviewed': return 'Nezkontrolováno';
 			case 'editor.markAsReviewed': return 'Označit jako zkontrolované';
 			case 'editor.markAsUnreviewed': return 'Označit jako nezkontrolované';
+			case 'editor.filter.publishedStatus': return 'Stav publikování';
+			case 'editor.filter.reviewedStatus': return 'Stav kontroly';
+			case 'editor.filter.all': return 'Vše';
 			case 'contact.teamName': return 'Tým Dancee';
 			case 'contact.description': return 'Rádi si přečteme vaše zpětné vazby...';
 			case 'contact.responseTime': return 'Doba odezvy';
@@ -4053,6 +4098,9 @@ extension on _StringsEs {
 			case 'editor.unreviewed': return 'Sin revisar';
 			case 'editor.markAsReviewed': return 'Marcar como revisado';
 			case 'editor.markAsUnreviewed': return 'Marcar como sin revisar';
+			case 'editor.filter.publishedStatus': return 'Estado de publicación';
+			case 'editor.filter.reviewedStatus': return 'Estado de revisión';
+			case 'editor.filter.all': return 'Todo';
 			case 'contact.teamName': return 'Equipo Dancee';
 			case 'contact.description': return 'Nos encantaría leer tus comentarios...';
 			case 'contact.responseTime': return 'Tiempo de respuesta';

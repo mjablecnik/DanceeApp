@@ -6,9 +6,11 @@ import '../../../core/theme.dart';
 import '../../../data/entities/dance_style.dart';
 import '../../../i18n/strings.g.dart';
 import '../../../logic/cubits/course_cubit.dart';
+import '../../../logic/cubits/editor_mode_cubit.dart';
 import '../../../logic/cubits/event_cubit.dart';
 import '../../../logic/cubits/filter_cubit.dart';
 import 'sections/dance_styles_list_section.dart';
+import 'sections/editor_filter_section.dart';
 import 'sections/filter_bottom_actions_section.dart';
 import 'sections/filter_dance_header_section.dart';
 import 'sections/selected_styles_section.dart';
@@ -27,6 +29,8 @@ class _FilterDanceScreenState extends State<FilterDanceScreen> {
   List<DanceStyle> _styles = [];
   Map<String, bool> _selected = {}; // key = dance style code
   Map<String, int> _counts = {}; // key = dance style code, value = item count
+  String? _publishedFilter;
+  String? _reviewedFilter;
 
   @override
   void initState() {
@@ -38,6 +42,8 @@ class _FilterDanceScreenState extends State<FilterDanceScreen> {
     _selected = {
       for (final s in _styles) s.code: alreadySelected.contains(s.code),
     };
+    _publishedFilter = filterCubit.state.publishedFilter;
+    _reviewedFilter = filterCubit.state.reviewedFilter;
     final allDanceStyles = filterCubit.allDanceStyles;
     if (widget.source == 'courses') {
       final courseCubit = context.read<CourseCubit>();
@@ -65,6 +71,8 @@ class _FilterDanceScreenState extends State<FilterDanceScreen> {
         for (final key in _selected.keys) {
           _selected[key] = false;
         }
+        _publishedFilter = null;
+        _reviewedFilter = null;
       });
 
   List<String> get _selectedStyleNames => _selected.entries
@@ -93,13 +101,17 @@ class _FilterDanceScreenState extends State<FilterDanceScreen> {
         .where((e) => e.value)
         .map((e) => e.key)
         .toSet();
-    context.read<FilterCubit>().setDanceStyles(codes);
+    final filterCubit = context.read<FilterCubit>();
+    filterCubit.setDanceStyles(codes);
+    filterCubit.setPublishedFilter(_publishedFilter);
+    filterCubit.setReviewedFilter(_reviewedFilter);
     context.pop();
   }
 
   @override
   Widget build(BuildContext context) {
     final selectedNames = _selectedStyleNames;
+    final isEditorMode = context.read<EditorModeCubit>().isEditorMode;
 
     return Scaffold(
       backgroundColor: appBg,
@@ -133,6 +145,17 @@ class _FilterDanceScreenState extends State<FilterDanceScreen> {
                     SelectedStylesSection(
                       selectedStyles: selectedNames,
                       onRemove: _removeByName,
+                    ),
+                  ],
+                  if (isEditorMode) ...[
+                    const SizedBox(height: AppSpacing.xxl),
+                    EditorFilterSection(
+                      publishedFilter: _publishedFilter,
+                      reviewedFilter: _reviewedFilter,
+                      onPublishedFilterChanged: (value) =>
+                          setState(() => _publishedFilter = value),
+                      onReviewedFilterChanged: (value) =>
+                          setState(() => _reviewedFilter = value),
                     ),
                   ],
                 ],
