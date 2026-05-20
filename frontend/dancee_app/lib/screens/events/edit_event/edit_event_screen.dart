@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/app_routes.dart';
 import '../../../core/colors.dart';
 import '../../../core/theme.dart';
 import '../../../data/entities/event.dart';
@@ -56,10 +57,6 @@ class _EditEventScreenState extends State<EditEventScreen> {
   Event? _originalEvent;
   int? _translationId;
 
-  static const _allDances = [
-    'Salsa', 'Bachata', 'Kizomba', 'Zouk', 'Semba', 'Tango', 'Swing', 'Jiné',
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -110,14 +107,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
         .map((info) => _EditableInfoEntry(key: info.key, value: info.value))
         .toList();
 
-    final selectedDances = <String>{};
-    for (final eventDance in event.dances) {
-      final match = _allDances.where((d) {
-        if (eventDance.toLowerCase() == 'other') return d == 'Jiné';
-        return d.toLowerCase() == eventDance.toLowerCase();
-      }).firstOrNull;
-      if (match != null) selectedDances.add(match);
-    }
+    final selectedDances = event.dances.map((d) => d.toLowerCase()).toSet();
 
     setState(() {
       _startDate = event.startTime;
@@ -185,14 +175,13 @@ class _EditEventScreenState extends State<EditEventScreen> {
     }
   }
 
-  void _toggleDance(String dance) {
-    setState(() {
-      if (_selectedDances.contains(dance)) {
-        _selectedDances.remove(dance);
-      } else {
-        _selectedDances.add(dance);
-      }
-    });
+  Future<void> _openDanceStyleSelector() async {
+    final result = await DanceStyleSelectorRoute(
+      $extra: _selectedDances.toList(),
+    ).push<List<String>?>(context);
+    if (result != null && mounted) {
+      setState(() => _selectedDances = result.toSet());
+    }
   }
 
   void _removeInfoEntry(int index) {
@@ -266,13 +255,9 @@ class _EditEventScreenState extends State<EditEventScreen> {
       }
     }
 
-    final normalizedSelected = _selectedDances.map((d) {
-      if (d == 'Jiné') return 'other';
-      return d.toLowerCase();
-    }).toSet();
     final normalizedOriginal = original.dances.map((d) => d.toLowerCase()).toSet();
-    if (!_setsEqual(normalizedSelected, normalizedOriginal)) {
-      rootFields['dances'] = normalizedSelected.toList();
+    if (!_setsEqual(_selectedDances, normalizedOriginal)) {
+      rootFields['dances'] = _selectedDances.toList();
     }
 
     final priceVal = _priceController.text.isEmpty ? null : _priceController.text;
@@ -717,34 +702,59 @@ class _EditEventScreenState extends State<EditEventScreen> {
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
-              Wrap(
-                spacing: AppSpacing.sm,
-                runSpacing: AppSpacing.sm,
-                children: _allDances.map((dance) {
-                  final isSelected = _selectedDances.contains(dance);
-                  return GestureDetector(
-                    onTap: () => _toggleDance(dance),
-                    child: AnimatedContainer(
-                      duration: AppDurations.fast,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.lg, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: isSelected ? appPrimary : appSurface,
-                        borderRadius: BorderRadius.circular(AppRadius.full),
-                        border: Border.all(
-                            color: isSelected ? appPrimary : appBorder),
+              GestureDetector(
+                onTap: _openDanceStyleSelector,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: appSurface,
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
+                    border: Border.all(color: appBorder),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                    vertical: AppSpacing.md,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _selectedDances.isEmpty
+                            ? Text(
+                                t.events.edit.danceStyleSelector,
+                                style: const TextStyle(
+                                  color: appMutedDark,
+                                  fontSize: AppTypography.fontSizeMd,
+                                ),
+                              )
+                            : Wrap(
+                                spacing: AppSpacing.xs,
+                                runSpacing: AppSpacing.xs,
+                                children: _selectedDances
+                                    .map((code) => Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: AppSpacing.sm,
+                                            vertical: 4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: appPrimary,
+                                            borderRadius: BorderRadius.circular(
+                                                AppRadius.full),
+                                          ),
+                                          child: Text(
+                                            code,
+                                            style: const TextStyle(
+                                              color: appWhite,
+                                              fontSize: AppTypography.fontSizeSm,
+                                            ),
+                                          ),
+                                        ))
+                                    .toList(),
+                              ),
                       ),
-                      child: Text(
-                        dance,
-                        style: TextStyle(
-                          color: isSelected ? appWhite : appText,
-                          fontSize: AppTypography.fontSizeMd,
-                          fontWeight: AppTypography.fontWeightMedium,
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
+                      const FaIcon(FontAwesomeIcons.chevronRight,
+                          size: 12, color: appMuted),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),

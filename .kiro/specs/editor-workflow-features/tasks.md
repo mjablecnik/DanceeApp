@@ -253,20 +253,20 @@ This plan implements editorial workflow capabilities for the Dancee App: editor/
     - Show all additional info entries (key/value pairs) in the event detail view
     - _Requirements: 3.5_
 
-- [ ] 14. Add i18n translations for all new editor UI strings
-  - [ ] 14.1 Add translation keys for editor workflow features
+- [x] 14. Add i18n translations for all new editor UI strings
+  - [x] 14.1 Add translation keys for editor workflow features
     - Add keys to all 3 language files (en, cs, es) in `frontend/dancee_app/lib/i18n/`
     - Include: mode toggle labels, publish/unpublish button text, reviewed/unreviewed labels, filter option labels, price field label, additional info labels, dance style selector title
     - Run `task slang` to regenerate translations
     - _Requirements: 4.2, 4.3, 5.1, 6.1, 7.1_
 
-- [ ] 15. Wire everything together and ensure integration
-  - [ ] 15.1 Update event and course list pages to react to editor mode changes
+- [x] 15. Wire everything together and ensure integration
+  - [x] 15.1 Update event and course list pages to react to editor mode changes
     - Listen to `EditorModeCubit` state changes and reload data when mode switches
     - Pass editor mode state to cubits for correct fetch strategy
     - _Requirements: 4.2, 4.3, 6.4, 6.5_
 
-  - [ ] 15.2 Integrate dance style selector into edit event and edit course screens
+  - [x] 15.2 Integrate dance style selector into edit event and edit course screens
     - Add a "Dance Styles" edit button that navigates to `DanceStyleSelectorPage`
     - On return, update the selected dance styles in the edit form
     - Persist updated dance styles on save

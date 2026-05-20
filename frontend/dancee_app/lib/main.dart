@@ -13,6 +13,7 @@ import 'core/theme.dart';
 import 'firebase_options.dart';
 import 'i18n/strings.g.dart';
 import 'logic/cubits/auth_cubit.dart';
+import 'logic/cubits/editor_mode_cubit.dart';
 import 'logic/cubits/event_cubit.dart';
 import 'logic/cubits/course_cubit.dart';
 import 'logic/cubits/favorites_cubit.dart';
@@ -20,6 +21,7 @@ import 'logic/cubits/filter_cubit.dart';
 import 'logic/cubits/profile_cubit.dart';
 import 'logic/cubits/settings_cubit.dart';
 import 'logic/states/course_state.dart';
+import 'logic/states/editor_mode_state.dart';
 import 'services/directus_auth_service.dart';
 import 'shared/utils/auth_translations.dart';
 import 'shared/utils/filter_prefill.dart';
@@ -27,7 +29,6 @@ import 'logic/states/auth_state.dart';
 import 'logic/states/event_state.dart';
 import 'logic/states/favorites_state.dart';
 import 'logic/states/filter_state.dart';
-import 'logic/states/profile_state.dart';
 import 'logic/states/settings_state.dart';
 
 void main() async {
@@ -149,6 +150,7 @@ class DanceeApp extends StatelessWidget {
         BlocProvider<CourseCubit>(create: (_) => sl<CourseCubit>()),
         BlocProvider<FavoritesCubit>(create: (_) => sl<FavoritesCubit>()),
         BlocProvider<ProfileCubit>(create: (_) => sl<ProfileCubit>()),
+        BlocProvider<EditorModeCubit>(create: (_) => sl<EditorModeCubit>()),
       ],
       child: _AppListeners(
         child: MaterialApp.router(
@@ -275,6 +277,15 @@ class _AppListenersState extends State<_AppListeners> with WidgetsBindingObserve
     final filterCubit = context.read<FilterCubit>();
 
     await profileCubit.loadProfile();
+
+    // Initialize editor mode with the user's role so editor users see all content.
+    profileCubit.state.maybeMap(
+      loaded: (s) {
+        sl<EditorModeCubit>().init(isEditor: s.profile.role == 'editor');
+      },
+      orElse: () {},
+    );
+
     if (!filterCubit.state.hasActiveFilters) {
       profileCubit.state.maybeMap(
         loaded: (s) {
@@ -305,6 +316,19 @@ class _AppListenersState extends State<_AppListeners> with WidgetsBindingObserve
             context.read<EventCubit>().loadEvents(code);
             context.read<CourseCubit>().loadCourses(code);
             context.read<FilterCubit>().loadDanceStyles(code);
+          },
+        ),
+        // Editor mode change: reload data so the correct set (all vs. published-only) is fetched
+        BlocListener<EditorModeCubit, EditorModeState>(
+          listenWhen: (prev, curr) {
+            final prevEffective = prev.isEditorMode && prev.isEditor;
+            final currEffective = curr.isEditorMode && curr.isEditor;
+            return prevEffective != currEffective;
+          },
+          listener: (context, state) {
+            final code = context.read<SettingsCubit>().currentLanguageCode;
+            context.read<EventCubit>().loadEvents(code);
+            context.read<CourseCubit>().loadCourses(code);
           },
         ),
         // 7.4 — Filter change: apply new filters to events and courses
@@ -433,6 +457,15 @@ class _AppListenersState extends State<_AppListeners> with WidgetsBindingObserve
             }
 
             await profileCubit.loadProfile();
+
+            // Initialize editor mode with the user's role after sign-in.
+            profileCubit.state.maybeMap(
+              loaded: (s) {
+                sl<EditorModeCubit>().init(isEditor: s.profile.role == 'editor');
+              },
+              orElse: () {},
+            );
+
             if (!filterCubit.state.hasActiveFilters) {
               profileCubit.state.maybeMap(
                 loaded: (s) {
@@ -455,13 +488,14 @@ class _AppListenersState extends State<_AppListeners> with WidgetsBindingObserve
             }
           },
         ),
-        // 10.1 — Auth sign-out: clear all filters
+        // 10.1 — Auth sign-out: clear all filters and reset editor mode
         BlocListener<AuthCubit, AuthState>(
           listenWhen: (prev, curr) =>
               prev.maybeMap(authenticated: (_) => true, orElse: () => false) &&
               curr.maybeMap(unauthenticated: (_) => true, orElse: () => false),
           listener: (context, state) {
             context.read<FilterCubit>().clearAll();
+            sl<EditorModeCubit>().init(isEditor: false);
             _scaffoldMessengerKey.currentState?.showSnackBar(
               SnackBar(content: Text(t.common.logoutSuccess)),
             );

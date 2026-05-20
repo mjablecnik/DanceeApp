@@ -100,10 +100,16 @@ void setupServiceLocator() {
     () => FilterCubit(danceStyleRepository: sl<DanceStyleRepository>()),
   );
   sl.registerFactory<EventCubit>(
-    () => EventCubit(eventRepository: sl<EventRepository>()),
+    () => EventCubit(
+      eventRepository: sl<EventRepository>(),
+      editorModeCubit: sl<EditorModeCubit>(),
+    ),
   );
   sl.registerFactory<CourseCubit>(
-    () => CourseCubit(courseRepository: sl<CourseRepository>()),
+    () => CourseCubit(
+      courseRepository: sl<CourseRepository>(),
+      editorModeCubit: sl<EditorModeCubit>(),
+    ),
   );
   sl.registerLazySingleton<FavoritesCubit>(
     () => FavoritesCubit(

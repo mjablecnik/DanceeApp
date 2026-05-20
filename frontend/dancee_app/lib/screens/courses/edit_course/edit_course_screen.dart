@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/app_routes.dart';
 import '../../../core/colors.dart';
 import '../../../core/theme.dart';
 import '../../../data/entities/course.dart';
@@ -38,17 +39,13 @@ class _EditCourseScreenState extends State<EditCourseScreen> {
 
   DateTime? _startDate;
   DateTime? _endDate;
-  String _danceType = '';
+  Set<String> _selectedDances = {};
   String _level = '';
   String _scheduleDay = '';
 
   bool _initialized = false;
   Course? _originalCourse;
   int? _translationId;
-
-  static const _danceTypes = [
-    'salsa', 'bachata', 'kizomba', 'tango', 'swing', 'waltz', 'other',
-  ];
 
   static const _levels = [
     'beginner', 'intermediate', 'advanced', 'expert',
@@ -146,7 +143,7 @@ class _EditCourseScreenState extends State<EditCourseScreen> {
     setState(() {
       _startDate = parsedStart;
       _endDate = parsedEnd;
-      _danceType = course.dances.isNotEmpty ? course.dances.first.toLowerCase() : '';
+      _selectedDances = course.dances.map((d) => d.toLowerCase()).toSet();
       _level = course.level ?? '';
       _scheduleDay = course.scheduleDay ?? '';
     });
@@ -284,13 +281,10 @@ class _EditCourseScreenState extends State<EditCourseScreen> {
       rootFields['level'] = _level;
     }
 
-    if (_danceType.isNotEmpty) {
-      final originalDance = original.dances.isNotEmpty
-          ? original.dances.first.toLowerCase()
-          : '';
-      if (_danceType != originalDance) {
-        rootFields['dances'] = [_danceType];
-      }
+    final originalDancesSet =
+        original.dances.map((d) => d.toLowerCase()).toSet();
+    if (!_setsEqual(_selectedDances, originalDancesSet)) {
+      rootFields['dances'] = _selectedDances.toList();
     }
 
     if (_startDate != null) {
@@ -341,6 +335,20 @@ class _EditCourseScreenState extends State<EditCourseScreen> {
       if (a[i] != b[i]) return false;
     }
     return true;
+  }
+
+  bool _setsEqual(Set<String> a, Set<String> b) {
+    if (a.length != b.length) return false;
+    return a.every(b.contains);
+  }
+
+  Future<void> _openDanceStyleSelector() async {
+    final result = await DanceStyleSelectorRoute(
+      $extra: _selectedDances.toList(),
+    ).push<List<String>?>(context);
+    if (result != null && mounted) {
+      setState(() => _selectedDances = result.toSet());
+    }
   }
 
   void _submit() {
@@ -505,13 +513,65 @@ class _EditCourseScreenState extends State<EditCourseScreen> {
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
-              _buildDropdown(
-                'Typ tance',
-                _danceType,
-                _danceTypes,
-                (v) {
-                  if (v != null) setState(() => _danceType = v);
-                },
+              AddCourseFormField(
+                label: t.events.edit.danceStylesSection,
+                child: GestureDetector(
+                  onTap: _openDanceStyleSelector,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: appSurface,
+                      borderRadius: BorderRadius.circular(AppRadius.lg),
+                      border: Border.all(color: appBorder),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.md,
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: _selectedDances.isEmpty
+                              ? Text(
+                                  t.events.edit.danceStyleSelector,
+                                  style: const TextStyle(
+                                    color: appMutedDark,
+                                    fontSize: AppTypography.fontSizeMd,
+                                  ),
+                                )
+                              : Wrap(
+                                  spacing: AppSpacing.xs,
+                                  runSpacing: AppSpacing.xs,
+                                  children: _selectedDances
+                                      .map((code) => Container(
+                                            padding:
+                                                const EdgeInsets.symmetric(
+                                              horizontal: AppSpacing.sm,
+                                              vertical: 4,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: appPrimary,
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      AppRadius.full),
+                                            ),
+                                            child: Text(
+                                              code,
+                                              style: const TextStyle(
+                                                color: appWhite,
+                                                fontSize:
+                                                    AppTypography.fontSizeSm,
+                                              ),
+                                            ),
+                                          ))
+                                      .toList(),
+                                ),
+                        ),
+                        const FaIcon(FontAwesomeIcons.chevronRight,
+                            size: 12, color: appMuted),
+                      ],
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: AppSpacing.lg),
               _buildDropdown(
