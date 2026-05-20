@@ -278,7 +278,7 @@ This plan implements editorial workflow capabilities for the Dancee App: editor/
     - Test: mode switch → list reloads with correct filtering
     - _Requirements: 6.2, 6.3, 5.4_
 
-- [ ] 16. Final checkpoint - Ensure all tests pass
+- [x] 16. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes
