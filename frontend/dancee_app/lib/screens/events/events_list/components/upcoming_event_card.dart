@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../../core/colors.dart';
 import '../../../../core/theme.dart';
+import '../../../../i18n/strings.g.dart';
 import '../../../../shared/components/app_cached_image.dart';
 import 'featured_event_card.dart' show EventTagData;
 
@@ -97,6 +98,23 @@ class UpcomingEventCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // Editor status badges
+                          if (isEditorMode) ...[
+                            Row(
+                              children: [
+                                _StatusBadge(
+                                  label: isPublished ? t.editor.published : t.editor.unpublished,
+                                  color: isPublished ? appSuccess : appError,
+                                ),
+                                const SizedBox(width: AppSpacing.xs),
+                                _StatusBadge(
+                                  label: isReviewed ? t.editor.reviewed : t.editor.unreviewed,
+                                  color: isReviewed ? appSuccess : appWarning,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                          ],
                           // Title
                           Text(
                             title,
@@ -130,23 +148,6 @@ class UpcomingEventCard extends StatelessWidget {
                           ),
                           const SizedBox(height: AppSpacing.md),
                           const Spacer(),
-                          // Editor status badges
-                          if (isEditorMode) ...[
-                            Row(
-                              children: [
-                                _StatusBadge(
-                                  label: isPublished ? t.editor.published : t.editor.unpublished,
-                                  color: isPublished ? appSuccess : appError,
-                                ),
-                                const SizedBox(width: AppSpacing.xs),
-                                _StatusBadge(
-                                  label: isReviewed ? t.editor.reviewed : t.editor.unreviewed,
-                                  color: isReviewed ? appSuccess : appWarning,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: AppSpacing.xs),
-                          ],
                           // Dance style tags — clipped to 2 lines
                           if (tags.isNotEmpty)
                             ConstrainedBox(
