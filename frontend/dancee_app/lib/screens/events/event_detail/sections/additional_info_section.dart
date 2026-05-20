@@ -7,6 +7,7 @@ import '../../../../i18n/strings.g.dart';
 class AdditionalInfoSection extends StatelessWidget {
   final String priceRange;
   final String dresscode;
+  final List<MapEntry<String, String>> extraEntries;
   final VoidCallback? onBuyTickets;
   final VoidCallback? onSource;
 
@@ -14,6 +15,7 @@ class AdditionalInfoSection extends StatelessWidget {
     super.key,
     required this.priceRange,
     required this.dresscode,
+    this.extraEntries = const [],
     this.onBuyTickets,
     this.onSource,
   });
@@ -22,6 +24,8 @@ class AdditionalInfoSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasPrice = priceRange.isNotEmpty;
     final hasDresscode = dresscode.isNotEmpty;
+    final hasExtras = extraEntries.isNotEmpty;
+    final hasAnyInfo = hasPrice || hasDresscode || hasExtras;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,7 +54,15 @@ class AdditionalInfoSection extends StatelessWidget {
                 const SizedBox(height: AppSpacing.md),
               if (hasDresscode)
                 InfoRow(label: t.events.detail.dresscode, value: dresscode),
-              if ((hasPrice || hasDresscode) && (onBuyTickets != null || onSource != null))
+              for (var i = 0; i < extraEntries.length; i++) ...[
+                if (hasPrice || hasDresscode || i > 0)
+                  const SizedBox(height: AppSpacing.md),
+                InfoRow(
+                  label: extraEntries[i].key,
+                  value: extraEntries[i].value,
+                ),
+              ],
+              if (hasAnyInfo && (onBuyTickets != null || onSource != null))
                 const SizedBox(height: AppSpacing.lg),
               if (onBuyTickets != null) ...[
                 BuyTicketsButton(onTap: onBuyTickets),

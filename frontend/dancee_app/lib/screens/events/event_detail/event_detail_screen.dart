@@ -167,15 +167,29 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
   }
 
   Widget _buildEventContent(Event event) {
-    final priceInfo = event.info
+    // Prefer the direct price field; fall back to EventInfoType.price entry in info list.
+    final directPrice = event.price?.isNotEmpty == true ? event.price : null;
+    final priceInfoEntry = event.info
         .where((i) => i.type == EventInfoType.price)
         .firstOrNull;
+    final priceRange = directPrice ?? priceInfoEntry?.value ?? '';
+
     final dresscodeInfo = event.info
         .where((i) => i.type == EventInfoType.dresscode)
         .firstOrNull;
-
-    final priceRange = priceInfo?.value ?? '';
     final dresscode = dresscodeInfo?.value ?? '';
+
+    // Collect info entries not already shown elsewhere:
+    // - price/dresscode types are shown in AdditionalInfoSection above
+    // - url type entries with non-empty keys are shown in KeyInfoSection
+    final extraInfoEntries = event.info
+        .where((i) =>
+            i.type != EventInfoType.price &&
+            i.type != EventInfoType.dresscode &&
+            !(i.type == EventInfoType.url && i.key.isNotEmpty))
+        .where((i) => i.key.isNotEmpty || i.value.isNotEmpty)
+        .map((i) => MapEntry(i.key, i.value))
+        .toList();
 
     return BlocBuilder<FavoritesCubit, dynamic>(
       builder: (context, _) {
@@ -257,6 +271,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                       ),
                     if (priceRange.isNotEmpty ||
                         dresscode.isNotEmpty ||
+                        extraInfoEntries.isNotEmpty ||
                         event.registrationUrl != null ||
                         event.originalUrl != null) ...[
                       if (event.description.isNotEmpty)
@@ -264,6 +279,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                       AdditionalInfoSection(
                         priceRange: priceRange,
                         dresscode: dresscode,
+                        extraEntries: extraInfoEntries,
                         onBuyTickets: event.registrationUrl != null
                             ? () => openUrl(event.registrationUrl!)
                             : null,

@@ -231,8 +231,8 @@ This plan implements editorial workflow capabilities for the Dancee App: editor/
     - Wire to `FilterCubit.setPublishedFilter` and `FilterCubit.setReviewedFilter`
     - _Requirements: 7.1, 7.7_
 
-- [ ] 12. Implement user-submitted event default statuses
-  - [ ] 12.1 Update the add event flow to set `published: false` and `reviewed: false`
+- [x] 12. Implement user-submitted event default statuses
+  - [x] 12.1 Update the add event flow to set `published: false` and `reviewed: false`
     - When a user submits a new event through the app, include `published: false` and `reviewed: false` in the payload
     - _Requirements: 8.2_
 
@@ -243,13 +243,13 @@ This plan implements editorial workflow capabilities for the Dancee App: editor/
     - Use glados (Dart PBT)
     - **Validates: Requirements 8.2**
 
-- [ ] 13. Add price display to event detail view and course visibility filtering
-  - [ ] 13.1 Display price in event detail view
+- [x] 13. Add price display to event detail view and course visibility filtering
+  - [x] 13.1 Display price in event detail view
     - When an event has a non-null price string, display it in the event detail view
     - Show for both editors and regular users
     - _Requirements: 2.4_
 
-  - [ ] 13.2 Display additional info entries in event detail view
+  - [x] 13.2 Display additional info entries in event detail view
     - Show all additional info entries (key/value pairs) in the event detail view
     - _Requirements: 3.5_
 

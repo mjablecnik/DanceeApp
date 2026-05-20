@@ -317,7 +317,7 @@ RouteBase get $danceStyleSelectorRoute => GoRouteData.$route(
 extension $DanceStyleSelectorRouteExtension on DanceStyleSelectorRoute {
   static DanceStyleSelectorRoute _fromState(GoRouterState state) =>
       DanceStyleSelectorRoute(
-        $extra: state.extra as List<String>? ?? const [],
+        $extra: state.extra as List<String>,
       );
 
   String get location => GoRouteData.$location(
@@ -332,7 +332,8 @@ extension $DanceStyleSelectorRouteExtension on DanceStyleSelectorRoute {
   void pushReplacement(BuildContext context) =>
       context.pushReplacement(location, extra: $extra);
 
-  void replace(BuildContext context) => context.replace(location, extra: $extra);
+  void replace(BuildContext context) =>
+      context.replace(location, extra: $extra);
 }
 
 RouteBase get $filterDanceRoute => GoRouteData.$route(
