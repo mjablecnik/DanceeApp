@@ -4,7 +4,14 @@ import '../../../../core/colors.dart';
 import '../../../../core/theme.dart';
 
 class AddEventSubmitSection extends StatelessWidget {
-  const AddEventSubmitSection({super.key});
+  final VoidCallback? onSubmit;
+  final bool isSubmitting;
+
+  const AddEventSubmitSection({
+    super.key,
+    this.onSubmit,
+    this.isSubmitting = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -13,25 +20,35 @@ class AddEventSubmitSection extends StatelessWidget {
         Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            color: appPrimary,
+            color: isSubmitting ? appMuted : appPrimary,
             borderRadius: BorderRadius.circular(AppRadius.lg),
-            boxShadow: [AppShadows.primary],
+            boxShadow: isSubmitting ? [] : [AppShadows.primary],
           ),
           child: Material(
             color: Colors.transparent,
             child: InkWell(
               borderRadius: BorderRadius.circular(AppRadius.lg),
-              onTap: () {},
-              child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
+              onTap: isSubmitting ? null : onSubmit,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    FaIcon(FontAwesomeIcons.paperPlane, size: AppIconSizes.xs, color: appWhite),
-                    SizedBox(width: AppSpacing.sm),
+                    if (isSubmitting)
+                      const SizedBox(
+                        width: AppIconSizes.xs,
+                        height: AppIconSizes.xs,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: appWhite,
+                        ),
+                      )
+                    else
+                      const FaIcon(FontAwesomeIcons.paperPlane, size: AppIconSizes.xs, color: appWhite),
+                    const SizedBox(width: AppSpacing.sm),
                     Text(
-                      'Odeslat ke schválení',
-                      style: TextStyle(
+                      isSubmitting ? 'Odesílám...' : 'Odeslat ke schválení',
+                      style: const TextStyle(
                         color: appWhite,
                         fontSize: AppTypography.fontSizeXl,
                         fontWeight: AppTypography.fontWeightBold,

@@ -4,7 +4,14 @@ import '../../../../core/theme.dart';
 import '../components/add_event_form_components.dart';
 
 class AddEventBasicInfoSection extends StatelessWidget {
-  const AddEventBasicInfoSection({super.key});
+  final TextEditingController? titleController;
+  final TextEditingController? descriptionController;
+
+  const AddEventBasicInfoSection({
+    super.key,
+    this.titleController,
+    this.descriptionController,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -16,16 +23,20 @@ class AddEventBasicInfoSection extends StatelessWidget {
           label: 'Základní informace',
         ),
         const SizedBox(height: AppSpacing.lg),
-        const AddEventFormField(
+        AddEventFormField(
           label: 'Název akce *',
-          child: AddEventTextInput(hintText: 'např. Prague Latin Festival 2025'),
+          child: AddEventTextInput(
+            hintText: 'např. Prague Latin Festival 2025',
+            controller: titleController,
+          ),
         ),
         const SizedBox(height: AppSpacing.lg),
-        const AddEventFormField(
+        AddEventFormField(
           label: 'Popis akce *',
           child: AddEventTextAreaInput(
             hintText: 'Popište vaši akci, co účastníky čeká...',
             minLines: 4,
+            controller: descriptionController,
           ),
         ),
         const SizedBox(height: AppSpacing.lg),

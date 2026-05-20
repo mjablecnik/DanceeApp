@@ -61,6 +61,18 @@ class EventRepository {
         .toList();
   }
 
+  /// Creates a new user-submitted event.
+  ///
+  /// User-submitted events always start with published=false and reviewed=false
+  /// so that an editor can review them before they appear to regular users.
+  Future<void> createEvent(Map<String, dynamic> fields) async {
+    await _client.post('/items/events', data: {
+      ...fields,
+      'published': false,
+      'reviewed': false,
+    });
+  }
+
   /// Updates the published status of event [id].
   Future<void> updatePublishedStatus(int id, bool published) async {
     await _client.patch('/items/events/$id', data: {'published': published});
