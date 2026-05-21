@@ -1691,6 +1691,322 @@ void _unit82Serialization() {
 }
 
 // ---------------------------------------------------------------------------
+// Task 8.3: Unit tests — diff detection
+// Covers: unchanged program returns false, various change types return true
+// ---------------------------------------------------------------------------
+
+void _unit83DiffDetection() {
+  // --- Unchanged program returns false ---
+  test('U10a: null originalParts always returns false (no diff)', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(name: 'Workshop')],
+    );
+    addTearDown(day.dispose);
+
+    final serialized = serializePartsToJson([day], []);
+    expect(programHasChanged(serialized, null), isFalse);
+  });
+
+  test('U10b: empty current and empty original returns false', () {
+    final serialized = serializePartsToJson([], []);
+    expect(programHasChanged(serialized, []), isFalse);
+  });
+
+  test('U10c: single unchanged entry returns false', () {
+    final original = [
+      _makePart(
+        name: 'Workshop',
+        type: 'workshop',
+        startTime: DateTime(2025, 3, 15, 10, 0),
+        endTime: DateTime(2025, 3, 15, 11, 30),
+        lectors: ['Alice'],
+        djs: ['DJ Mike'],
+      ),
+    ];
+
+    final result = deserializeProgramFromParts(original);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+    });
+
+    final serialized = serializePartsToJson(result.days, result.ungroupedEntries);
+    expect(programHasChanged(serialized, original), isFalse);
+  });
+
+  test('U10d: unchanged program with multiple entries returns false', () {
+    final original = [
+      _makePart(name: 'Entry A', type: 'workshop', startTime: DateTime(2025, 3, 15, 9, 0)),
+      _makePart(name: 'Entry B', type: 'party', startTime: DateTime(2025, 3, 15, 20, 0)),
+      _makePart(name: 'Entry C', type: 'openLesson', startTime: DateTime(2025, 3, 16, 11, 0)),
+    ];
+
+    final result = deserializeProgramFromParts(original);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+    });
+
+    final serialized = serializePartsToJson(result.days, result.ungroupedEntries);
+    expect(programHasChanged(serialized, original), isFalse);
+  });
+
+  test('U10e: unchanged program with lectors and djs returns false', () {
+    final original = [
+      _makePart(
+        name: 'Workshop',
+        startTime: DateTime(2025, 3, 15, 10, 0),
+        lectors: ['John Doe', 'Jane Smith'],
+        djs: ['DJ Alpha', 'DJ Beta'],
+      ),
+    ];
+
+    final result = deserializeProgramFromParts(original);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+    });
+
+    final serialized = serializePartsToJson(result.days, result.ungroupedEntries);
+    expect(programHasChanged(serialized, original), isFalse);
+  });
+
+  // --- Change types that return true ---
+  test('U11a: changing entry description returns true', () {
+    final original = [
+      _makePart(
+        name: 'Workshop',
+        description: 'Original description',
+        startTime: DateTime(2025, 3, 15, 10, 0),
+      ),
+    ];
+
+    final result = deserializeProgramFromParts(original);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+    });
+
+    result.days.first.entries.first.descriptionController.text = 'Changed description';
+
+    final serialized = serializePartsToJson(result.days, result.ungroupedEntries);
+    expect(programHasChanged(serialized, original), isTrue);
+  });
+
+  test('U11b: changing entry type returns true', () {
+    final original = [
+      _makePart(name: 'Entry', type: 'workshop', startTime: DateTime(2025, 3, 15, 10, 0)),
+    ];
+
+    final result = deserializeProgramFromParts(original);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+    });
+
+    result.days.first.entries.first.type = 'party';
+
+    final serialized = serializePartsToJson(result.days, result.ungroupedEntries);
+    expect(programHasChanged(serialized, original), isTrue);
+  });
+
+  test('U11c: changing start time returns true', () {
+    final original = [
+      _makePart(
+        name: 'Workshop',
+        startTime: DateTime(2025, 3, 15, 10, 0),
+        endTime: DateTime(2025, 3, 15, 11, 30),
+      ),
+    ];
+
+    final result = deserializeProgramFromParts(original);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+    });
+
+    result.days.first.entries.first.startTime = const TimeOfDay(hour: 11, minute: 0);
+
+    final serialized = serializePartsToJson(result.days, result.ungroupedEntries);
+    expect(programHasChanged(serialized, original), isTrue);
+  });
+
+  test('U11d: changing end time returns true', () {
+    final original = [
+      _makePart(
+        name: 'Workshop',
+        startTime: DateTime(2025, 3, 15, 10, 0),
+        endTime: DateTime(2025, 3, 15, 11, 30),
+      ),
+    ];
+
+    final result = deserializeProgramFromParts(original);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+    });
+
+    result.days.first.entries.first.endTime = const TimeOfDay(hour: 12, minute: 0);
+
+    final serialized = serializePartsToJson(result.days, result.ungroupedEntries);
+    expect(programHasChanged(serialized, original), isTrue);
+  });
+
+  test('U11e: clearing end time (non-null → null) returns true', () {
+    final original = [
+      _makePart(
+        name: 'Workshop',
+        startTime: DateTime(2025, 3, 15, 10, 0),
+        endTime: DateTime(2025, 3, 15, 11, 30),
+      ),
+    ];
+
+    final result = deserializeProgramFromParts(original);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+    });
+
+    result.days.first.entries.first.endTime = null;
+
+    final serialized = serializePartsToJson(result.days, result.ungroupedEntries);
+    expect(programHasChanged(serialized, original), isTrue);
+  });
+
+  test('U11f: changing lectors returns true', () {
+    final original = [
+      _makePart(
+        name: 'Workshop',
+        startTime: DateTime(2025, 3, 15, 10, 0),
+        lectors: ['Alice'],
+      ),
+    ];
+
+    final result = deserializeProgramFromParts(original);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+    });
+
+    result.days.first.entries.first.lectorsController.text = 'Bob';
+
+    final serialized = serializePartsToJson(result.days, result.ungroupedEntries);
+    expect(programHasChanged(serialized, original), isTrue);
+  });
+
+  test('U11g: changing djs returns true', () {
+    final original = [
+      _makePart(
+        name: 'Workshop',
+        startTime: DateTime(2025, 3, 15, 10, 0),
+        djs: ['DJ Mike'],
+      ),
+    ];
+
+    final result = deserializeProgramFromParts(original);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+    });
+
+    result.days.first.entries.first.djsController.text = 'DJ Other';
+
+    final serialized = serializePartsToJson(result.days, result.ungroupedEntries);
+    expect(programHasChanged(serialized, original), isTrue);
+  });
+
+  test('U11h: removing an entry returns true', () {
+    final original = [
+      _makePart(name: 'Entry A', startTime: DateTime(2025, 3, 15, 9, 0)),
+      _makePart(name: 'Entry B', startTime: DateTime(2025, 3, 15, 11, 0)),
+    ];
+
+    final result = deserializeProgramFromParts(original);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+    });
+
+    final removed = result.days.first.entries.removeLast();
+    removed.dispose();
+
+    final serialized = serializePartsToJson(result.days, result.ungroupedEntries);
+    expect(programHasChanged(serialized, original), isTrue);
+  });
+
+  test('U11i: changing day date (moving entry to different date) returns true', () {
+    final original = [
+      _makePart(name: 'Workshop', startTime: DateTime(2025, 3, 15, 10, 0)),
+    ];
+
+    final result = deserializeProgramFromParts(original);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+    });
+
+    // Change the day's date — the serialized date_time_range.start will differ
+    result.days.first.date = DateTime(2025, 3, 16);
+
+    final serialized = serializePartsToJson(result.days, result.ungroupedEntries);
+    expect(programHasChanged(serialized, original), isTrue);
+  });
+
+  test('U11j: lectors order change returns true', () {
+    final original = [
+      _makePart(
+        name: 'Workshop',
+        startTime: DateTime(2025, 3, 15, 10, 0),
+        lectors: ['Alice', 'Bob'],
+      ),
+    ];
+
+    final result = deserializeProgramFromParts(original);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+    });
+
+    result.days.first.entries.first.lectorsController.text = 'Bob, Alice';
+
+    final serialized = serializePartsToJson(result.days, result.ungroupedEntries);
+    expect(programHasChanged(serialized, original), isTrue);
+  });
+
+  test('U11k: adding a lector to previously-empty list returns true', () {
+    final original = [
+      _makePart(name: 'Workshop', startTime: DateTime(2025, 3, 15, 10, 0)),
+    ];
+
+    final result = deserializeProgramFromParts(original);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+    });
+
+    result.days.first.entries.first.lectorsController.text = 'Alice';
+
+    final serialized = serializePartsToJson(result.days, result.ungroupedEntries);
+    expect(programHasChanged(serialized, original), isTrue);
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Test entry point
 // ---------------------------------------------------------------------------
 
@@ -1698,6 +2014,7 @@ void main() {
   group('event-program-editing — unit tests (example-based)', () {
     group('Task 8.1: Deserialization', _unit81Deserialization);
     group('Task 8.2: Serialization', _unit82Serialization);
+    group('Task 8.3: Diff detection', _unit83DiffDetection);
   });
 
   group('event-program-editing — property-based tests', () {
