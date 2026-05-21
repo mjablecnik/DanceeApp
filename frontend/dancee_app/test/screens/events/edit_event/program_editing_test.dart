@@ -1384,12 +1384,320 @@ void _unit81Deserialization() {
 }
 
 // ---------------------------------------------------------------------------
+// Task 8.2: Unit tests — serialization
+// Covers: ISO 8601 format, null handling, day date propagation, lectors/djs
+//         comma splitting edge cases, parts_translations alignment
+// ---------------------------------------------------------------------------
+
+void _unit82Serialization() {
+  // --- ISO 8601 format ---
+  test('U5a: start time ISO 8601 string has correct date and time components', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(startTime: const TimeOfDay(hour: 14, minute: 30))],
+    );
+    addTearDown(day.dispose);
+
+    final serialized = serializePartsToJson([day], []);
+    final range = serialized.first['date_time_range'] as Map<String, dynamic>;
+    final startStr = range['start'] as String;
+    final parsed = DateTime.parse(startStr);
+
+    expect(parsed.year, equals(2025));
+    expect(parsed.month, equals(3));
+    expect(parsed.day, equals(15));
+    expect(parsed.hour, equals(14));
+    expect(parsed.minute, equals(30));
+  });
+
+  test('U5b: end time ISO 8601 string has correct date and time components', () {
+    final day = _makeDay(
+      date: DateTime(2025, 6, 20),
+      entries: [
+        _makeEntry(
+          startTime: const TimeOfDay(hour: 10, minute: 0),
+          endTime: const TimeOfDay(hour: 11, minute: 45),
+        ),
+      ],
+    );
+    addTearDown(day.dispose);
+
+    final serialized = serializePartsToJson([day], []);
+    final range = serialized.first['date_time_range'] as Map<String, dynamic>;
+    final endStr = range['end'] as String;
+    final parsed = DateTime.parse(endStr);
+
+    expect(parsed.year, equals(2025));
+    expect(parsed.month, equals(6));
+    expect(parsed.day, equals(20));
+    expect(parsed.hour, equals(11));
+    expect(parsed.minute, equals(45));
+  });
+
+  test('U5c: start ISO 8601 string is parseable by DateTime.parse', () {
+    final day = _makeDay(
+      date: DateTime(2025, 12, 31),
+      entries: [_makeEntry(startTime: const TimeOfDay(hour: 23, minute: 59))],
+    );
+    addTearDown(day.dispose);
+
+    final serialized = serializePartsToJson([day], []);
+    final range = serialized.first['date_time_range'] as Map<String, dynamic>;
+    final startStr = range['start'] as String;
+
+    expect(() => DateTime.parse(startStr), returnsNormally);
+  });
+
+  // --- Null handling ---
+  test('U6a: null end time serializes to null in date_time_range.end', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(startTime: const TimeOfDay(hour: 10, minute: 0))],
+    );
+    addTearDown(day.dispose);
+
+    final serialized = serializePartsToJson([day], []);
+    final range = serialized.first['date_time_range'] as Map<String, dynamic>;
+
+    expect(range['end'], isNull);
+    expect(range['start'], isNotNull);
+  });
+
+  test('U6b: entry with no start time uses midnight for date_time_range.start', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry()],
+    );
+    addTearDown(day.dispose);
+
+    final serialized = serializePartsToJson([day], []);
+    final range = serialized.first['date_time_range'] as Map<String, dynamic>;
+    final start = DateTime.parse(range['start'] as String);
+
+    expect(start.hour, equals(0));
+    expect(start.minute, equals(0));
+    expect(start.day, equals(15));
+  });
+
+  test('U6c: ungrouped entry has null start and null end in date_time_range', () {
+    final entry = _makeEntry(
+      startTime: const TimeOfDay(hour: 10, minute: 0),
+      endTime: const TimeOfDay(hour: 11, minute: 0),
+    );
+    addTearDown(entry.dispose);
+
+    final serialized = serializePartsToJson([], [entry]);
+    final range = serialized.first['date_time_range'] as Map<String, dynamic>;
+
+    expect(range['start'], isNull);
+    expect(range['end'], isNull);
+  });
+
+  test('U6d: ungrouped entry with no times also has null date_time_range', () {
+    final entry = _makeEntry();
+    addTearDown(entry.dispose);
+
+    final serialized = serializePartsToJson([], [entry]);
+    final range = serialized.first['date_time_range'] as Map<String, dynamic>;
+
+    expect(range['start'], isNull);
+    expect(range['end'], isNull);
+  });
+
+  // --- dances field ---
+  test('U7a: dances field is always an empty array', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(name: 'Workshop')],
+    );
+    addTearDown(day.dispose);
+
+    final serialized = serializePartsToJson([day], []);
+    expect(serialized.first['dances'], equals(<dynamic>[]));
+  });
+
+  test('U7b: dances is empty even for ungrouped entries', () {
+    final entry = _makeEntry(name: 'Party');
+    addTearDown(entry.dispose);
+
+    final serialized = serializePartsToJson([], [entry]);
+    expect(serialized.first['dances'], equals(<dynamic>[]));
+  });
+
+  // --- Lectors/DJs comma splitting edge cases ---
+  test('U8a: lectors with trailing comma produces clean array', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(lectors: 'Alice, Bob,')],
+    );
+    addTearDown(day.dispose);
+
+    final serialized = serializePartsToJson([day], []);
+    expect(serialized.first['lectors'], equals(['Alice', 'Bob']));
+  });
+
+  test('U8b: lectors with multiple spaces around commas are trimmed', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(lectors: '  Alice  ,   Bob   ,  Charlie  ')],
+    );
+    addTearDown(day.dispose);
+
+    final serialized = serializePartsToJson([day], []);
+    expect(serialized.first['lectors'], equals(['Alice', 'Bob', 'Charlie']));
+  });
+
+  test('U8c: single lector produces a single-element array', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(lectors: 'Solo Dancer')],
+    );
+    addTearDown(day.dispose);
+
+    final serialized = serializePartsToJson([day], []);
+    expect(serialized.first['lectors'], equals(['Solo Dancer']));
+  });
+
+  test('U8d: empty lectors string produces empty array', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(lectors: '')],
+    );
+    addTearDown(day.dispose);
+
+    final serialized = serializePartsToJson([day], []);
+    expect(serialized.first['lectors'], equals(<String>[]));
+  });
+
+  test('U8e: djs with trailing comma produces clean array', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(djs: 'DJ A, DJ B,')],
+    );
+    addTearDown(day.dispose);
+
+    final serialized = serializePartsToJson([day], []);
+    expect(serialized.first['djs'], equals(['DJ A', 'DJ B']));
+  });
+
+  test('U8f: djs with multiple spaces are trimmed', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(djs: 'DJ One,   DJ Two  ,DJ Three')],
+    );
+    addTearDown(day.dispose);
+
+    final serialized = serializePartsToJson([day], []);
+    expect(serialized.first['djs'], equals(['DJ One', 'DJ Two', 'DJ Three']));
+  });
+
+  test('U8g: lectors and djs are serialized independently per entry', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [
+        _makeEntry(id: 0, lectors: 'Alice', djs: 'DJ Mike'),
+        _makeEntry(id: 1, lectors: 'Bob, Carol', djs: ''),
+      ],
+    );
+    addTearDown(day.dispose);
+
+    final serialized = serializePartsToJson([day], []);
+    expect(serialized[0]['lectors'], equals(['Alice']));
+    expect(serialized[0]['djs'], equals(['DJ Mike']));
+    expect(serialized[1]['lectors'], equals(['Bob', 'Carol']));
+    expect(serialized[1]['djs'], equals(<String>[]));
+  });
+
+  test('U8h: lectors with double commas (empty segment) are filtered', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(lectors: 'Alice,,Bob')],
+    );
+    addTearDown(day.dispose);
+
+    final serialized = serializePartsToJson([day], []);
+    expect(serialized.first['lectors'], equals(['Alice', 'Bob']));
+  });
+
+  // --- parts_translations serialization ---
+  test('U9a: serializePartsTranslations returns name and description per entry', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [
+        _makeEntry(id: 0, name: 'Workshop', description: 'Intermediate level'),
+      ],
+    );
+    addTearDown(day.dispose);
+
+    final translations = serializePartsTranslations([day], []);
+
+    expect(translations.length, equals(1));
+    expect(translations.first['name'], equals('Workshop'));
+    expect(translations.first['description'], equals('Intermediate level'));
+  });
+
+  test('U9b: parts_translations is positionally aligned with parts', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [
+        _makeEntry(id: 0, name: 'Entry A', description: 'Desc A'),
+        _makeEntry(id: 1, name: 'Entry B', description: 'Desc B'),
+      ],
+    );
+    addTearDown(day.dispose);
+
+    final parts = serializePartsToJson([day], []);
+    final translations = serializePartsTranslations([day], []);
+
+    expect(parts.length, equals(translations.length));
+    expect(parts[0]['name'], equals(translations[0]['name']));
+    expect(parts[1]['name'], equals(translations[1]['name']));
+  });
+
+  test('U9c: parts_translations for multi-day program orders days then ungrouped', () {
+    final day1 = _makeDay(
+      id: 0,
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(id: 0, name: 'Day1 Entry')],
+    );
+    final day2 = _makeDay(
+      id: 1,
+      date: DateTime(2025, 3, 16),
+      entries: [_makeEntry(id: 1, name: 'Day2 Entry')],
+    );
+    final ungrouped = _makeEntry(id: 2, name: 'Ungrouped Entry');
+    addTearDown(day1.dispose);
+    addTearDown(day2.dispose);
+    addTearDown(ungrouped.dispose);
+
+    final translations = serializePartsTranslations([day1, day2], [ungrouped]);
+
+    expect(translations.length, equals(3));
+    expect(translations[0]['name'], equals('Day1 Entry'));
+    expect(translations[1]['name'], equals('Day2 Entry'));
+    expect(translations[2]['name'], equals('Ungrouped Entry'));
+  });
+
+  test('U9d: parts_translations with empty description uses empty string', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(name: 'No Desc')],
+    );
+    addTearDown(day.dispose);
+
+    final translations = serializePartsTranslations([day], []);
+    expect(translations.first['description'], equals(''));
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Test entry point
 // ---------------------------------------------------------------------------
 
 void main() {
   group('event-program-editing — unit tests (example-based)', () {
     group('Task 8.1: Deserialization', _unit81Deserialization);
+    group('Task 8.2: Serialization', _unit82Serialization);
   });
 
   group('event-program-editing — property-based tests', () {
