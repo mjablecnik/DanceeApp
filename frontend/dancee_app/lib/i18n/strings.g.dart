@@ -4,9 +4,9 @@
 /// To regenerate, run: `dart run slang`
 ///
 /// Locales: 3
-/// Strings: 1248 (416 per locale)
+/// Strings: 1308 (436 per locale)
 ///
-/// Built on 2026-05-20 at 10:03 UTC
+/// Built on 2026-05-21 at 20:56 UTC
 
 // coverage:ignore-file
 // ignore_for_file: type=lint
@@ -739,6 +739,26 @@ class _StringsEventsEditEn {
 	String get infoValueHint => 'Value';
 	String get addInfoEntry => 'Add entry';
 	String get danceStyleSelector => 'Select dance styles';
+	String get programSection => 'Program';
+	String get programHint => 'Add program days and entries to the event schedule';
+	String get addDay => 'Add day';
+	String get addEntry => 'Add entry';
+	String get dayLabel => 'Day';
+	String get entryName => 'Entry name *';
+	String get entryNameHint => 'e.g. Workshop: Bachata Sensual';
+	String get entryDescription => 'Description';
+	String get entryDescriptionHint => 'e.g. Intermediate level workshop';
+	String get entryType => 'Type';
+	String get lectors => 'Lectors';
+	String get lectorsHint => 'e.g. John Doe, Jane Smith';
+	String get djs => 'DJs';
+	String get djsHint => 'e.g. DJ Mike, DJ Anna';
+	String get typeWorkshop => 'Workshop';
+	String get typeParty => 'Party';
+	String get typeOpenLesson => 'Open lesson';
+	String get validationNameRequired => 'Entry name is required';
+	String get validationInvalidTimeRange => 'End time must be after start time';
+	String get validationDateRequired => 'Day date is required';
 }
 
 // Path: courses.courseTypes
@@ -1713,6 +1733,26 @@ class _StringsEventsEditCs extends _StringsEventsEditEn {
 	@override String get infoValueHint => 'Hodnota';
 	@override String get addInfoEntry => 'Přidat položku';
 	@override String get danceStyleSelector => 'Vybrat taneční styly';
+	@override String get programSection => 'Program';
+	@override String get programHint => 'Přidejte programové dny a položky do rozvrhu akce';
+	@override String get addDay => 'Přidat den';
+	@override String get addEntry => 'Přidat položku';
+	@override String get dayLabel => 'Den';
+	@override String get entryName => 'Název položky *';
+	@override String get entryNameHint => 'např. Workshop: Bachata Sensual';
+	@override String get entryDescription => 'Popis';
+	@override String get entryDescriptionHint => 'např. Workshop pro středně pokročilé';
+	@override String get entryType => 'Typ';
+	@override String get lectors => 'Lektoři';
+	@override String get lectorsHint => 'např. Jan Novák, Jana Nováková';
+	@override String get djs => 'DJs';
+	@override String get djsHint => 'např. DJ Mike, DJ Anna';
+	@override String get typeWorkshop => 'Workshop';
+	@override String get typeParty => 'Party';
+	@override String get typeOpenLesson => 'Otevřená lekce';
+	@override String get validationNameRequired => 'Název položky je povinný';
+	@override String get validationInvalidTimeRange => 'Čas konce musí být po čase začátku';
+	@override String get validationDateRequired => 'Datum dne je povinné';
 }
 
 // Path: courses.courseTypes
@@ -2687,6 +2727,26 @@ class _StringsEventsEditEs extends _StringsEventsEditEn {
 	@override String get infoValueHint => 'Valor';
 	@override String get addInfoEntry => 'Añadir entrada';
 	@override String get danceStyleSelector => 'Seleccionar estilos de baile';
+	@override String get programSection => 'Programa';
+	@override String get programHint => 'Añade días de programa y entradas al horario del evento';
+	@override String get addDay => 'Añadir día';
+	@override String get addEntry => 'Añadir entrada';
+	@override String get dayLabel => 'Día';
+	@override String get entryName => 'Nombre de entrada *';
+	@override String get entryNameHint => 'p.ej. Taller: Bachata Sensual';
+	@override String get entryDescription => 'Descripción';
+	@override String get entryDescriptionHint => 'p.ej. Taller de nivel intermedio';
+	@override String get entryType => 'Tipo';
+	@override String get lectors => 'Lectores';
+	@override String get lectorsHint => 'p.ej. Juan García, Ana López';
+	@override String get djs => 'DJs';
+	@override String get djsHint => 'p.ej. DJ Mike, DJ Anna';
+	@override String get typeWorkshop => 'Taller';
+	@override String get typeParty => 'Fiesta';
+	@override String get typeOpenLesson => 'Lección abierta';
+	@override String get validationNameRequired => 'El nombre de la entrada es obligatorio';
+	@override String get validationInvalidTimeRange => 'La hora de fin debe ser posterior a la hora de inicio';
+	@override String get validationDateRequired => 'La fecha del día es obligatoria';
 }
 
 // Path: courses.courseTypes
@@ -3269,6 +3329,26 @@ extension on Translations {
 			case 'events.edit.infoValueHint': return 'Value';
 			case 'events.edit.addInfoEntry': return 'Add entry';
 			case 'events.edit.danceStyleSelector': return 'Select dance styles';
+			case 'events.edit.programSection': return 'Program';
+			case 'events.edit.programHint': return 'Add program days and entries to the event schedule';
+			case 'events.edit.addDay': return 'Add day';
+			case 'events.edit.addEntry': return 'Add entry';
+			case 'events.edit.dayLabel': return 'Day';
+			case 'events.edit.entryName': return 'Entry name *';
+			case 'events.edit.entryNameHint': return 'e.g. Workshop: Bachata Sensual';
+			case 'events.edit.entryDescription': return 'Description';
+			case 'events.edit.entryDescriptionHint': return 'e.g. Intermediate level workshop';
+			case 'events.edit.entryType': return 'Type';
+			case 'events.edit.lectors': return 'Lectors';
+			case 'events.edit.lectorsHint': return 'e.g. John Doe, Jane Smith';
+			case 'events.edit.djs': return 'DJs';
+			case 'events.edit.djsHint': return 'e.g. DJ Mike, DJ Anna';
+			case 'events.edit.typeWorkshop': return 'Workshop';
+			case 'events.edit.typeParty': return 'Party';
+			case 'events.edit.typeOpenLesson': return 'Open lesson';
+			case 'events.edit.validationNameRequired': return 'Entry name is required';
+			case 'events.edit.validationInvalidTimeRange': return 'End time must be after start time';
+			case 'events.edit.validationDateRequired': return 'Day date is required';
 			case 'courses.title': return 'Dance courses';
 			case 'courses.subtitle': return 'Find your course';
 			case 'courses.featuredCourses': return 'Featured courses';
@@ -3693,6 +3773,26 @@ extension on _StringsCs {
 			case 'events.edit.infoValueHint': return 'Hodnota';
 			case 'events.edit.addInfoEntry': return 'Přidat položku';
 			case 'events.edit.danceStyleSelector': return 'Vybrat taneční styly';
+			case 'events.edit.programSection': return 'Program';
+			case 'events.edit.programHint': return 'Přidejte programové dny a položky do rozvrhu akce';
+			case 'events.edit.addDay': return 'Přidat den';
+			case 'events.edit.addEntry': return 'Přidat položku';
+			case 'events.edit.dayLabel': return 'Den';
+			case 'events.edit.entryName': return 'Název položky *';
+			case 'events.edit.entryNameHint': return 'např. Workshop: Bachata Sensual';
+			case 'events.edit.entryDescription': return 'Popis';
+			case 'events.edit.entryDescriptionHint': return 'např. Workshop pro středně pokročilé';
+			case 'events.edit.entryType': return 'Typ';
+			case 'events.edit.lectors': return 'Lektoři';
+			case 'events.edit.lectorsHint': return 'např. Jan Novák, Jana Nováková';
+			case 'events.edit.djs': return 'DJs';
+			case 'events.edit.djsHint': return 'např. DJ Mike, DJ Anna';
+			case 'events.edit.typeWorkshop': return 'Workshop';
+			case 'events.edit.typeParty': return 'Party';
+			case 'events.edit.typeOpenLesson': return 'Otevřená lekce';
+			case 'events.edit.validationNameRequired': return 'Název položky je povinný';
+			case 'events.edit.validationInvalidTimeRange': return 'Čas konce musí být po čase začátku';
+			case 'events.edit.validationDateRequired': return 'Datum dne je povinné';
 			case 'courses.title': return 'Taneční kurzy';
 			case 'courses.subtitle': return 'Najdi svůj kurz';
 			case 'courses.featuredCourses': return 'Doporučené kurzy';
@@ -4117,6 +4217,26 @@ extension on _StringsEs {
 			case 'events.edit.infoValueHint': return 'Valor';
 			case 'events.edit.addInfoEntry': return 'Añadir entrada';
 			case 'events.edit.danceStyleSelector': return 'Seleccionar estilos de baile';
+			case 'events.edit.programSection': return 'Programa';
+			case 'events.edit.programHint': return 'Añade días de programa y entradas al horario del evento';
+			case 'events.edit.addDay': return 'Añadir día';
+			case 'events.edit.addEntry': return 'Añadir entrada';
+			case 'events.edit.dayLabel': return 'Día';
+			case 'events.edit.entryName': return 'Nombre de entrada *';
+			case 'events.edit.entryNameHint': return 'p.ej. Taller: Bachata Sensual';
+			case 'events.edit.entryDescription': return 'Descripción';
+			case 'events.edit.entryDescriptionHint': return 'p.ej. Taller de nivel intermedio';
+			case 'events.edit.entryType': return 'Tipo';
+			case 'events.edit.lectors': return 'Lectores';
+			case 'events.edit.lectorsHint': return 'p.ej. Juan García, Ana López';
+			case 'events.edit.djs': return 'DJs';
+			case 'events.edit.djsHint': return 'p.ej. DJ Mike, DJ Anna';
+			case 'events.edit.typeWorkshop': return 'Taller';
+			case 'events.edit.typeParty': return 'Fiesta';
+			case 'events.edit.typeOpenLesson': return 'Lección abierta';
+			case 'events.edit.validationNameRequired': return 'El nombre de la entrada es obligatorio';
+			case 'events.edit.validationInvalidTimeRange': return 'La hora de fin debe ser posterior a la hora de inicio';
+			case 'events.edit.validationDateRequired': return 'La fecha del día es obligatoria';
 			case 'courses.title': return 'Cursos de baile';
 			case 'courses.subtitle': return 'Encuentra tu curso';
 			case 'courses.featuredCourses': return 'Cursos destacados';

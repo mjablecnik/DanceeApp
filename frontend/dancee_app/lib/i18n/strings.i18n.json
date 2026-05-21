@@ -262,7 +262,27 @@
       "infoKeyHint": "Name",
       "infoValueHint": "Value",
       "addInfoEntry": "Add entry",
-      "danceStyleSelector": "Select dance styles"
+      "danceStyleSelector": "Select dance styles",
+      "programSection": "Program",
+      "programHint": "Add program days and entries to the event schedule",
+      "addDay": "Add day",
+      "addEntry": "Add entry",
+      "dayLabel": "Day",
+      "entryName": "Entry name *",
+      "entryNameHint": "e.g. Workshop: Bachata Sensual",
+      "entryDescription": "Description",
+      "entryDescriptionHint": "e.g. Intermediate level workshop",
+      "entryType": "Type",
+      "lectors": "Lectors",
+      "lectorsHint": "e.g. John Doe, Jane Smith",
+      "djs": "DJs",
+      "djsHint": "e.g. DJ Mike, DJ Anna",
+      "typeWorkshop": "Workshop",
+      "typeParty": "Party",
+      "typeOpenLesson": "Open lesson",
+      "validationNameRequired": "Entry name is required",
+      "validationInvalidTimeRange": "End time must be after start time",
+      "validationDateRequired": "Day date is required"
     }
   },
   "courses": {

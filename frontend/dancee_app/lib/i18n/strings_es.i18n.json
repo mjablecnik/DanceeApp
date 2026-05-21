@@ -262,7 +262,27 @@
       "infoKeyHint": "Nombre",
       "infoValueHint": "Valor",
       "addInfoEntry": "Añadir entrada",
-      "danceStyleSelector": "Seleccionar estilos de baile"
+      "danceStyleSelector": "Seleccionar estilos de baile",
+      "programSection": "Programa",
+      "programHint": "Añade días de programa y entradas al horario del evento",
+      "addDay": "Añadir día",
+      "addEntry": "Añadir entrada",
+      "dayLabel": "Día",
+      "entryName": "Nombre de entrada *",
+      "entryNameHint": "p.ej. Taller: Bachata Sensual",
+      "entryDescription": "Descripción",
+      "entryDescriptionHint": "p.ej. Taller de nivel intermedio",
+      "entryType": "Tipo",
+      "lectors": "Lectores",
+      "lectorsHint": "p.ej. Juan García, Ana López",
+      "djs": "DJs",
+      "djsHint": "p.ej. DJ Mike, DJ Anna",
+      "typeWorkshop": "Taller",
+      "typeParty": "Fiesta",
+      "typeOpenLesson": "Lección abierta",
+      "validationNameRequired": "El nombre de la entrada es obligatorio",
+      "validationInvalidTimeRange": "La hora de fin debe ser posterior a la hora de inicio",
+      "validationDateRequired": "La fecha del día es obligatoria"
     }
   },
   "courses": {

@@ -262,7 +262,27 @@
       "infoKeyHint": "Název",
       "infoValueHint": "Hodnota",
       "addInfoEntry": "Přidat položku",
-      "danceStyleSelector": "Vybrat taneční styly"
+      "danceStyleSelector": "Vybrat taneční styly",
+      "programSection": "Program",
+      "programHint": "Přidejte programové dny a položky do rozvrhu akce",
+      "addDay": "Přidat den",
+      "addEntry": "Přidat položku",
+      "dayLabel": "Den",
+      "entryName": "Název položky *",
+      "entryNameHint": "např. Workshop: Bachata Sensual",
+      "entryDescription": "Popis",
+      "entryDescriptionHint": "např. Workshop pro středně pokročilé",
+      "entryType": "Typ",
+      "lectors": "Lektoři",
+      "lectorsHint": "např. Jan Novák, Jana Nováková",
+      "djs": "DJs",
+      "djsHint": "např. DJ Mike, DJ Anna",
+      "typeWorkshop": "Workshop",
+      "typeParty": "Party",
+      "typeOpenLesson": "Otevřená lekce",
+      "validationNameRequired": "Název položky je povinný",
+      "validationInvalidTimeRange": "Čas konce musí být po čase začátku",
+      "validationDateRequired": "Datum dne je povinné"
     }
   },
   "courses": {
