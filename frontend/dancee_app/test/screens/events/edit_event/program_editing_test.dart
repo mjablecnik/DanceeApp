@@ -1020,10 +1020,378 @@ void _property10AddEntryIncreasesCount() {
 }
 
 // ---------------------------------------------------------------------------
+// Task 8.1: Unit tests — deserialization
+// Covers: grouping logic (1-day, 2-day, mixed), EventPart.fromDirectus shapes
+// ---------------------------------------------------------------------------
+
+void _unit81Deserialization() {
+  // --- Grouping: 1-day program ---
+  test('U1a: single-day — two parts on same date create one day', () {
+    final parts = [
+      _makePart(name: 'Morning', startTime: DateTime(2025, 3, 15, 9, 0)),
+      _makePart(name: 'Afternoon', startTime: DateTime(2025, 3, 15, 14, 0)),
+    ];
+    final result = deserializeProgramFromParts(parts);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+    });
+
+    expect(result.days.length, equals(1));
+    expect(result.days.first.entries.length, equals(2));
+    expect(result.ungroupedEntries, isEmpty);
+  });
+
+  test('U1b: single-day — entries sorted by startTime ascending', () {
+    final parts = [
+      _makePart(name: 'Late', startTime: DateTime(2025, 3, 15, 18, 0)),
+      _makePart(name: 'Early', startTime: DateTime(2025, 3, 15, 8, 0)),
+      _makePart(name: 'Mid', startTime: DateTime(2025, 3, 15, 12, 0)),
+    ];
+    final result = deserializeProgramFromParts(parts);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+    });
+
+    final names = result.days.first.entries
+        .map((e) => e.nameController.text)
+        .toList();
+    expect(names, equals(['Early', 'Mid', 'Late']));
+  });
+
+  test('U1c: single-day — day date matches startTime date component', () {
+    final parts = [
+      _makePart(startTime: DateTime(2025, 6, 20, 10, 0)),
+    ];
+    final result = deserializeProgramFromParts(parts);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+    });
+
+    expect(result.days.first.date?.year, equals(2025));
+    expect(result.days.first.date?.month, equals(6));
+    expect(result.days.first.date?.day, equals(20));
+  });
+
+  // --- Grouping: 2-day program ---
+  test('U2a: two-day — parts on different dates create two days', () {
+    final parts = [
+      _makePart(name: 'Day1', startTime: DateTime(2025, 3, 15, 10, 0)),
+      _makePart(name: 'Day2', startTime: DateTime(2025, 3, 16, 10, 0)),
+    ];
+    final result = deserializeProgramFromParts(parts);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+    });
+
+    expect(result.days.length, equals(2));
+  });
+
+  test('U2b: two-day — days sorted chronologically', () {
+    final parts = [
+      _makePart(name: 'Second Day', startTime: DateTime(2025, 3, 16, 10, 0)),
+      _makePart(name: 'First Day', startTime: DateTime(2025, 3, 15, 10, 0)),
+    ];
+    final result = deserializeProgramFromParts(parts);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+    });
+
+    expect(result.days[0].date?.day, equals(15));
+    expect(result.days[1].date?.day, equals(16));
+  });
+
+  test('U2c: two-day — entries belong to their correct day', () {
+    final parts = [
+      _makePart(name: 'On Day1', startTime: DateTime(2025, 3, 15, 10, 0)),
+      _makePart(name: 'Also Day1', startTime: DateTime(2025, 3, 15, 14, 0)),
+      _makePart(name: 'On Day2', startTime: DateTime(2025, 3, 16, 10, 0)),
+    ];
+    final result = deserializeProgramFromParts(parts);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+    });
+
+    expect(result.days[0].entries.length, equals(2));
+    expect(result.days[1].entries.length, equals(1));
+    expect(result.days[1].entries.first.nameController.text, equals('On Day2'));
+  });
+
+  // --- Grouping: mixed (some null dates) ---
+  test('U3a: mixed — parts with null startTime go to ungrouped', () {
+    final parts = [
+      _makePart(name: 'Grouped', startTime: DateTime(2025, 3, 15, 10, 0)),
+      _makePart(name: 'Ungrouped A'),
+      _makePart(name: 'Ungrouped B'),
+    ];
+    final result = deserializeProgramFromParts(parts);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+      for (final e in result.ungroupedEntries) {
+        e.dispose();
+      }
+    });
+
+    expect(result.days.length, equals(1));
+    expect(result.ungroupedEntries.length, equals(2));
+  });
+
+  test('U3b: mixed — all null startTime parts produce no days', () {
+    final parts = [
+      _makePart(name: 'A'),
+      _makePart(name: 'B'),
+    ];
+    final result = deserializeProgramFromParts(parts);
+    addTearDown(() {
+      for (final e in result.ungroupedEntries) {
+        e.dispose();
+      }
+    });
+
+    expect(result.days, isEmpty);
+    expect(result.ungroupedEntries.length, equals(2));
+  });
+
+  test('U3c: mixed — ungrouped entries preserve name and type', () {
+    final parts = [
+      _makePart(name: 'Unnamed Party', type: 'party'),
+    ];
+    final result = deserializeProgramFromParts(parts);
+    addTearDown(() {
+      for (final e in result.ungroupedEntries) {
+        e.dispose();
+      }
+    });
+
+    expect(result.ungroupedEntries.first.nameController.text, equals('Unnamed Party'));
+    expect(result.ungroupedEntries.first.type, equals('party'));
+  });
+
+  test('U3d: empty type defaults to "workshop" during deserialization', () {
+    final parts = [
+      EventPart(name: 'No Type', type: '', lectors: const [], djs: const []),
+    ];
+    final result = deserializeProgramFromParts(parts);
+    addTearDown(() {
+      for (final e in result.ungroupedEntries) {
+        e.dispose();
+      }
+    });
+
+    expect(result.ungroupedEntries.first.type, equals('workshop'));
+  });
+
+  test('U3e: lectors/djs arrays serialized as comma-separated strings', () {
+    final parts = [
+      _makePart(
+        startTime: DateTime(2025, 3, 15, 10, 0),
+        lectors: ['Alice', 'Bob'],
+        djs: ['DJ Mike'],
+      ),
+    ];
+    final result = deserializeProgramFromParts(parts);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+    });
+
+    final entry = result.days.first.entries.first;
+    expect(entry.lectorsController.text, equals('Alice, Bob'));
+    expect(entry.djsController.text, equals('DJ Mike'));
+  });
+
+  test('U3f: nextDayId and nextEntryId counters are correct after deserialization', () {
+    final parts = [
+      _makePart(startTime: DateTime(2025, 3, 15, 10, 0)),
+      _makePart(startTime: DateTime(2025, 3, 16, 10, 0)),
+      _makePart(),
+    ];
+    final result = deserializeProgramFromParts(parts);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+      for (final e in result.ungroupedEntries) {
+        e.dispose();
+      }
+    });
+
+    // 2 days → nextDayId = 2; 3 entries total → nextEntryId = 3
+    expect(result.nextDayId, equals(2));
+    expect(result.nextEntryId, equals(3));
+  });
+
+  // --- EventPart.fromDirectus: various JSON shapes ---
+  test('U4a: full JSON with date_time_range parses all fields', () {
+    final json = {
+      'name': 'Workshop A',
+      'description': 'Intro level',
+      'type': 'workshop',
+      'date_time_range': {
+        'start': '2025-03-15T10:00:00.000',
+        'end': '2025-03-15T11:30:00.000',
+      },
+      'lectors': ['John Doe'],
+      'djs': ['DJ Mike'],
+    };
+
+    final part = EventPart.fromDirectus(json);
+
+    expect(part.name, equals('Workshop A'));
+    expect(part.description, equals('Intro level'));
+    expect(part.type, equals('workshop'));
+    expect(part.startTime?.hour, equals(10));
+    expect(part.startTime?.minute, equals(0));
+    expect(part.endTime?.hour, equals(11));
+    expect(part.endTime?.minute, equals(30));
+    expect(part.lectors, equals(['John Doe']));
+    expect(part.djs, equals(['DJ Mike']));
+  });
+
+  test('U4b: missing date_time_range → null start and end times', () {
+    final json = {
+      'name': 'No Time',
+      'type': 'workshop',
+      'lectors': <dynamic>[],
+      'djs': <dynamic>[],
+    };
+
+    final part = EventPart.fromDirectus(json);
+
+    expect(part.startTime, isNull);
+    expect(part.endTime, isNull);
+  });
+
+  test('U4c: null start in date_time_range → null startTime', () {
+    final json = {
+      'name': 'Null Start',
+      'type': 'workshop',
+      'date_time_range': {'start': null, 'end': null},
+      'lectors': <dynamic>[],
+      'djs': <dynamic>[],
+    };
+
+    final part = EventPart.fromDirectus(json);
+
+    expect(part.startTime, isNull);
+    expect(part.endTime, isNull);
+  });
+
+  test('U4d: empty lectors and djs arrays → empty lists', () {
+    final json = {
+      'name': 'Solo',
+      'type': 'workshop',
+      'lectors': <dynamic>[],
+      'djs': <dynamic>[],
+    };
+
+    final part = EventPart.fromDirectus(json);
+
+    expect(part.lectors, isEmpty);
+    expect(part.djs, isEmpty);
+  });
+
+  test('U4e: missing lectors and djs fields → empty lists', () {
+    final json = <String, dynamic>{
+      'name': 'No Arrays',
+      'type': 'party',
+    };
+
+    final part = EventPart.fromDirectus(json);
+
+    expect(part.lectors, isEmpty);
+    expect(part.djs, isEmpty);
+  });
+
+  test('U4f: translation overrides name and description', () {
+    final json = {
+      'name': 'Original Name',
+      'description': 'Original desc',
+      'type': 'workshop',
+      'lectors': <dynamic>[],
+      'djs': <dynamic>[],
+    };
+    final translation = {
+      'name': 'Translated Name',
+      'description': 'Translated desc',
+    };
+
+    final part = EventPart.fromDirectus(json, translation: translation);
+
+    expect(part.name, equals('Translated Name'));
+    expect(part.description, equals('Translated desc'));
+  });
+
+  test('U4g: missing type field defaults to empty string', () {
+    final json = <String, dynamic>{
+      'name': 'No Type',
+      'lectors': <dynamic>[],
+      'djs': <dynamic>[],
+    };
+
+    final part = EventPart.fromDirectus(json);
+
+    expect(part.type, equals(''));
+  });
+
+  test('U4h: legacy start_time / end_time fields are parsed', () {
+    final json = {
+      'name': 'Legacy',
+      'type': 'workshop',
+      'start_time': '2025-03-15T09:00:00.000',
+      'end_time': '2025-03-15T10:00:00.000',
+      'lectors': <dynamic>[],
+      'djs': <dynamic>[],
+    };
+
+    final part = EventPart.fromDirectus(json);
+
+    expect(part.startTime?.hour, equals(9));
+    expect(part.endTime?.hour, equals(10));
+  });
+
+  test('U4i: only-end time in date_time_range (start null) → null startTime', () {
+    final json = {
+      'name': 'End Only',
+      'type': 'workshop',
+      'date_time_range': {
+        'start': null,
+        'end': '2025-03-15T11:00:00.000',
+      },
+      'lectors': <dynamic>[],
+      'djs': <dynamic>[],
+    };
+
+    final part = EventPart.fromDirectus(json);
+
+    expect(part.startTime, isNull);
+    expect(part.endTime?.hour, equals(11));
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Test entry point
 // ---------------------------------------------------------------------------
 
 void main() {
+  group('event-program-editing — unit tests (example-based)', () {
+    group('Task 8.1: Deserialization', _unit81Deserialization);
+  });
+
   group('event-program-editing — property-based tests', () {
     group(
       'Property 1: Grouping round-trip preserves entries',
