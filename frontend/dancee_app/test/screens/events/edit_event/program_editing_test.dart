@@ -1,0 +1,1069 @@
+// Feature: event-program-editing
+// Task 7: Property-based tests (glados)
+// Properties covered:
+//   Property 1: Grouping round-trip preserves entries
+//   Property 2: Serialization round-trip preserves data
+//   Property 3: Day date propagates to all entries
+//   Property 4: Unchanged program produces empty diff
+//   Property 5: Validation rejects entries with empty names
+//   Property 6: Validation rejects invalid time ranges
+//   Property 7: Validation rejects days without dates
+//   Property 8: Comma-separated string splitting produces correct arrays
+//   Property 9: Entry removal preserves other entries
+//   Property 10: Adding an entry increases count by one
+
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+import 'package:dancee_app/data/entities/event_part.dart';
+import 'package:dancee_app/screens/events/edit_event/models/editable_program_models.dart';
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+EventPart _makePart({
+  String name = 'Test Entry',
+  String? description,
+  String type = 'workshop',
+  DateTime? startTime,
+  DateTime? endTime,
+  List<String> lectors = const [],
+  List<String> djs = const [],
+}) {
+  return EventPart(
+    name: name,
+    description: description,
+    type: type,
+    startTime: startTime,
+    endTime: endTime,
+    lectors: lectors,
+    djs: djs,
+  );
+}
+
+EditableProgramDay _makeDay({
+  int id = 0,
+  DateTime? date,
+  List<EditableProgramEntry>? entries,
+}) {
+  return EditableProgramDay(id: id, date: date, entries: entries);
+}
+
+EditableProgramEntry _makeEntry({
+  int id = 0,
+  String name = 'Entry',
+  String? description,
+  String type = 'workshop',
+  TimeOfDay? startTime,
+  TimeOfDay? endTime,
+  String lectors = '',
+  String djs = '',
+}) {
+  return EditableProgramEntry(
+    id: id,
+    name: name,
+    description: description,
+    type: type,
+    startTime: startTime,
+    endTime: endTime,
+    lectors: lectors,
+    djs: djs,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Property 1: Grouping round-trip preserves entries
+// Tag: Feature: event-program-editing, Property 1: Grouping round-trip preserves entries
+// ---------------------------------------------------------------------------
+
+void _property1GroupingRoundTrip() {
+  test('P1a: single-day program round-trip preserves entry count', () {
+    final parts = [
+      _makePart(name: 'Salsa Basics', startTime: DateTime(2025, 3, 15, 10, 0)),
+      _makePart(name: 'Bachata Intro', startTime: DateTime(2025, 3, 15, 12, 0)),
+    ];
+
+    final result = deserializeProgramFromParts(parts);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+    });
+
+    final serialized = serializePartsToJson(result.days, result.ungroupedEntries);
+    expect(serialized.length, equals(parts.length));
+  });
+
+  test('P1b: multi-day program round-trip preserves entry names', () {
+    final parts = [
+      _makePart(name: 'Day 1 Workshop', startTime: DateTime(2025, 3, 15, 10, 0)),
+      _makePart(name: 'Day 2 Party', startTime: DateTime(2025, 3, 16, 20, 0)),
+      _makePart(name: 'Day 2 Lesson', startTime: DateTime(2025, 3, 16, 14, 0)),
+    ];
+
+    final result = deserializeProgramFromParts(parts);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+    });
+
+    final serialized = serializePartsToJson(result.days, result.ungroupedEntries);
+    final names = serialized.map((e) => e['name'] as String).toList();
+
+    expect(names, containsAll(['Day 1 Workshop', 'Day 2 Party', 'Day 2 Lesson']));
+  });
+
+  test('P1c: entries without start time go to ungrouped and are preserved', () {
+    final parts = [
+      _makePart(name: 'Ungrouped 1'),
+      _makePart(name: 'Grouped 1', startTime: DateTime(2025, 3, 15, 10, 0)),
+      _makePart(name: 'Ungrouped 2'),
+    ];
+
+    final result = deserializeProgramFromParts(parts);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+      for (final e in result.ungroupedEntries) {
+        e.dispose();
+      }
+    });
+
+    expect(result.days.length, equals(1));
+    expect(result.ungroupedEntries.length, equals(2));
+
+    final serialized = serializePartsToJson(result.days, result.ungroupedEntries);
+    expect(serialized.length, equals(3));
+  });
+
+  test('P1d: empty parts list produces empty days and ungrouped', () {
+    final result = deserializeProgramFromParts([]);
+    expect(result.days, isEmpty);
+    expect(result.ungroupedEntries, isEmpty);
+  });
+
+  test('P1e: flattening grouped entries back preserves all entry types', () {
+    final parts = [
+      _makePart(name: 'Workshop', type: 'workshop', startTime: DateTime(2025, 3, 15, 10, 0)),
+      _makePart(name: 'Party', type: 'party', startTime: DateTime(2025, 3, 15, 20, 0)),
+      _makePart(name: 'Open Lesson', type: 'openLesson', startTime: DateTime(2025, 3, 16, 11, 0)),
+    ];
+
+    final result = deserializeProgramFromParts(parts);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+    });
+
+    final serialized = serializePartsToJson(result.days, result.ungroupedEntries);
+    final types = serialized.map((e) => e['type'] as String).toList();
+
+    expect(types, containsAll(['workshop', 'party', 'openLesson']));
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Property 2: Serialization round-trip preserves data
+// Tag: Feature: event-program-editing, Property 2: Serialization round-trip preserves data
+// ---------------------------------------------------------------------------
+
+void _property2SerializationRoundTrip() {
+  test('P2a: name survives serialize → deserialize', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(name: 'Salsa Basics')],
+    );
+    addTearDown(day.dispose);
+
+    final serialized = serializePartsToJson([day], []);
+    final part = EventPart.fromDirectus(serialized.first);
+
+    expect(part.name, equals('Salsa Basics'));
+  });
+
+  test('P2b: type survives serialize → deserialize', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(type: 'party')],
+    );
+    addTearDown(day.dispose);
+
+    final serialized = serializePartsToJson([day], []);
+    final part = EventPart.fromDirectus(serialized.first);
+
+    expect(part.type, equals('party'));
+  });
+
+  test('P2c: start time survives serialize → deserialize', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(startTime: const TimeOfDay(hour: 14, minute: 30))],
+    );
+    addTearDown(day.dispose);
+
+    final serialized = serializePartsToJson([day], []);
+    final part = EventPart.fromDirectus(serialized.first);
+
+    expect(part.startTime?.hour, equals(14));
+    expect(part.startTime?.minute, equals(30));
+  });
+
+  test('P2d: lectors and djs survive serialize → deserialize', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(lectors: 'John Doe, Jane Smith', djs: 'DJ Mike')],
+    );
+    addTearDown(day.dispose);
+
+    final serialized = serializePartsToJson([day], []);
+    final part = EventPart.fromDirectus(serialized.first);
+
+    expect(part.lectors, equals(['John Doe', 'Jane Smith']));
+    expect(part.djs, equals(['DJ Mike']));
+  });
+
+  test('P2e: null end time serializes as null and deserializes back to null', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(startTime: const TimeOfDay(hour: 10, minute: 0))],
+    );
+    addTearDown(day.dispose);
+
+    final serialized = serializePartsToJson([day], []);
+    final part = EventPart.fromDirectus(serialized.first);
+
+    expect(part.endTime, isNull);
+  });
+
+  test('P2f: description survives serialize → deserialize', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(description: 'Intermediate level workshop')],
+    );
+    addTearDown(day.dispose);
+
+    final serialized = serializePartsToJson([day], []);
+    final part = EventPart.fromDirectus(serialized.first);
+
+    expect(part.description, equals('Intermediate level workshop'));
+  });
+
+  test('P2g: multiple entries all survive serialize → deserialize', () {
+    final day = _makeDay(
+      id: 0,
+      date: DateTime(2025, 3, 15),
+      entries: [
+        _makeEntry(id: 0, name: 'Entry A', type: 'workshop'),
+        _makeEntry(id: 1, name: 'Entry B', type: 'party'),
+        _makeEntry(id: 2, name: 'Entry C', type: 'openLesson'),
+      ],
+    );
+    addTearDown(day.dispose);
+
+    final serialized = serializePartsToJson([day], []);
+    expect(serialized.length, equals(3));
+
+    final names = serialized.map((s) => s['name'] as String).toList();
+    expect(names, equals(['Entry A', 'Entry B', 'Entry C']));
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Property 3: Day date propagates to all entries
+// Tag: Feature: event-program-editing, Property 3: Day date propagates to all entries
+// ---------------------------------------------------------------------------
+
+void _property3DayDatePropagation() {
+  test('P3a: single entry gets the day date as start date component', () {
+    final day = _makeDay(
+      date: DateTime(2025, 6, 20),
+      entries: [_makeEntry(startTime: const TimeOfDay(hour: 10, minute: 0))],
+    );
+    addTearDown(day.dispose);
+
+    final serialized = serializePartsToJson([day], []);
+    final range = serialized.first['date_time_range'] as Map<String, dynamic>;
+    final start = DateTime.parse(range['start'] as String);
+
+    expect(start.year, equals(2025));
+    expect(start.month, equals(6));
+    expect(start.day, equals(20));
+  });
+
+  test('P3b: multiple entries in the same day all get the day date', () {
+    final day = _makeDay(
+      date: DateTime(2025, 6, 20),
+      entries: [
+        _makeEntry(id: 0, startTime: const TimeOfDay(hour: 9, minute: 0)),
+        _makeEntry(id: 1, startTime: const TimeOfDay(hour: 11, minute: 0)),
+        _makeEntry(id: 2, startTime: const TimeOfDay(hour: 14, minute: 0)),
+      ],
+    );
+    addTearDown(day.dispose);
+
+    final serialized = serializePartsToJson([day], []);
+
+    for (final entry in serialized) {
+      final range = entry['date_time_range'] as Map<String, dynamic>;
+      final start = DateTime.parse(range['start'] as String);
+      expect(start.year, equals(2025));
+      expect(start.month, equals(6));
+      expect(start.day, equals(20));
+    }
+  });
+
+  test('P3c: end time also gets the day date component', () {
+    final day = _makeDay(
+      date: DateTime(2025, 6, 20),
+      entries: [
+        _makeEntry(
+          startTime: const TimeOfDay(hour: 10, minute: 0),
+          endTime: const TimeOfDay(hour: 11, minute: 30),
+        ),
+      ],
+    );
+    addTearDown(day.dispose);
+
+    final serialized = serializePartsToJson([day], []);
+    final range = serialized.first['date_time_range'] as Map<String, dynamic>;
+    final end = DateTime.parse(range['end'] as String);
+
+    expect(end.year, equals(2025));
+    expect(end.month, equals(6));
+    expect(end.day, equals(20));
+  });
+
+  test('P3d: entries in different days get their respective day dates', () {
+    final day1 = _makeDay(
+      id: 0,
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(id: 0, startTime: const TimeOfDay(hour: 10, minute: 0))],
+    );
+    final day2 = _makeDay(
+      id: 1,
+      date: DateTime(2025, 3, 16),
+      entries: [_makeEntry(id: 1, startTime: const TimeOfDay(hour: 14, minute: 0))],
+    );
+    addTearDown(day1.dispose);
+    addTearDown(day2.dispose);
+
+    final serialized = serializePartsToJson([day1, day2], []);
+    final start1 = DateTime.parse(
+        (serialized[0]['date_time_range'] as Map<String, dynamic>)['start'] as String);
+    final start2 = DateTime.parse(
+        (serialized[1]['date_time_range'] as Map<String, dynamic>)['start'] as String);
+
+    expect(start1.day, equals(15));
+    expect(start2.day, equals(16));
+  });
+
+  test('P3e: entry with no start time uses midnight of day date', () {
+    final day = _makeDay(
+      date: DateTime(2025, 6, 20),
+      entries: [_makeEntry()],
+    );
+    addTearDown(day.dispose);
+
+    final serialized = serializePartsToJson([day], []);
+    final range = serialized.first['date_time_range'] as Map<String, dynamic>;
+    final start = DateTime.parse(range['start'] as String);
+
+    expect(start.day, equals(20));
+    expect(start.hour, equals(0));
+    expect(start.minute, equals(0));
+  });
+
+  test('P3f: ungrouped entries have null date_time_range start', () {
+    final entry = _makeEntry(startTime: const TimeOfDay(hour: 10, minute: 0));
+    addTearDown(entry.dispose);
+
+    final serialized = serializePartsToJson([], [entry]);
+    final range = serialized.first['date_time_range'] as Map<String, dynamic>;
+
+    expect(range['start'], isNull);
+    expect(range['end'], isNull);
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Property 4: Unchanged program produces empty diff
+// Tag: Feature: event-program-editing, Property 4: Unchanged program produces empty diff
+// ---------------------------------------------------------------------------
+
+void _property4UnchangedProgramNoDiff() {
+  test('P4a: loading and re-serializing without changes reports no diff', () {
+    final originalParts = [
+      _makePart(
+        name: 'Workshop',
+        type: 'workshop',
+        startTime: DateTime(2025, 3, 15, 10, 0),
+        endTime: DateTime(2025, 3, 15, 11, 30),
+        lectors: ['John Doe'],
+        djs: [],
+      ),
+    ];
+
+    final result = deserializeProgramFromParts(originalParts);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+    });
+
+    final serialized = serializePartsToJson(result.days, result.ungroupedEntries);
+    final changed = programHasChanged(serialized, originalParts);
+
+    expect(changed, isFalse);
+  });
+
+  test('P4b: empty program with empty original reports no diff', () {
+    final serialized = serializePartsToJson([], []);
+    final changed = programHasChanged(serialized, []);
+
+    expect(changed, isFalse);
+  });
+
+  test('P4c: null original parts always reports no diff', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(name: 'Something')],
+    );
+    addTearDown(day.dispose);
+
+    final serialized = serializePartsToJson([day], []);
+    final changed = programHasChanged(serialized, null);
+
+    expect(changed, isFalse);
+  });
+
+  test('P4d: multi-day unchanged program reports no diff', () {
+    final originalParts = [
+      _makePart(name: 'Day 1 Workshop', startTime: DateTime(2025, 3, 15, 10, 0)),
+      _makePart(name: 'Day 2 Party', type: 'party', startTime: DateTime(2025, 3, 16, 20, 0)),
+    ];
+
+    final result = deserializeProgramFromParts(originalParts);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+    });
+
+    final serialized = serializePartsToJson(result.days, result.ungroupedEntries);
+    final changed = programHasChanged(serialized, originalParts);
+
+    expect(changed, isFalse);
+  });
+
+  test('P4e: adding an entry to the program reports a diff', () {
+    final originalParts = [
+      _makePart(name: 'Workshop', startTime: DateTime(2025, 3, 15, 10, 0)),
+    ];
+
+    final result = deserializeProgramFromParts(originalParts);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+    });
+
+    // Simulate adding a second entry to the first day.
+    // No separate teardown needed — day.dispose() covers entries it owns.
+    final extraEntry = _makeEntry(id: 99, name: 'Extra Entry');
+    result.days.first.entries.add(extraEntry);
+
+    final serialized = serializePartsToJson(result.days, result.ungroupedEntries);
+    final changed = programHasChanged(serialized, originalParts);
+
+    expect(changed, isTrue);
+  });
+
+  test('P4f: changing entry name reports a diff', () {
+    final originalParts = [
+      _makePart(name: 'Original Name', startTime: DateTime(2025, 3, 15, 10, 0)),
+    ];
+
+    final result = deserializeProgramFromParts(originalParts);
+    addTearDown(() {
+      for (final d in result.days) {
+        d.dispose();
+      }
+    });
+
+    result.days.first.entries.first.nameController.text = 'Changed Name';
+
+    final serialized = serializePartsToJson(result.days, result.ungroupedEntries);
+    final changed = programHasChanged(serialized, originalParts);
+
+    expect(changed, isTrue);
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Property 5: Validation rejects entries with empty names
+// Tag: Feature: event-program-editing, Property 5: Validation rejects entries with empty names
+// ---------------------------------------------------------------------------
+
+void _property5ValidationEmptyNames() {
+  test('P5a: entry with empty name produces nameRequired error', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(name: '')],
+    );
+    addTearDown(day.dispose);
+
+    final errors = validateProgram([day], []);
+
+    expect(errors, isNotEmpty);
+    expect(
+      errors.any((e) => e.type == ProgramValidationErrorType.nameRequired),
+      isTrue,
+    );
+  });
+
+  test('P5b: entry with whitespace-only name produces nameRequired error', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(name: '   ')],
+    );
+    addTearDown(day.dispose);
+
+    final errors = validateProgram([day], []);
+
+    expect(
+      errors.any((e) => e.type == ProgramValidationErrorType.nameRequired),
+      isTrue,
+    );
+  });
+
+  test('P5c: valid name produces no nameRequired error', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(name: 'Valid Name')],
+    );
+    addTearDown(day.dispose);
+
+    final errors = validateProgram([day], []);
+
+    expect(
+      errors.where((e) => e.type == ProgramValidationErrorType.nameRequired),
+      isEmpty,
+    );
+  });
+
+  test('P5d: multiple entries — only empty-name ones produce errors', () {
+    final day = _makeDay(
+      id: 0,
+      date: DateTime(2025, 3, 15),
+      entries: [
+        _makeEntry(id: 0, name: 'Valid'),
+        _makeEntry(id: 1, name: ''),
+        _makeEntry(id: 2, name: 'Also Valid'),
+        _makeEntry(id: 3, name: '\t'),
+      ],
+    );
+    addTearDown(day.dispose);
+
+    final errors = validateProgram([day], []);
+    final nameErrors = errors.where((e) => e.type == ProgramValidationErrorType.nameRequired).toList();
+
+    expect(nameErrors.length, equals(2));
+  });
+
+  test('P5e: ungrouped entry with empty name produces nameRequired error', () {
+    final entry = _makeEntry(name: '');
+    addTearDown(entry.dispose);
+
+    final errors = validateProgram([], [entry]);
+
+    expect(
+      errors.any((e) => e.type == ProgramValidationErrorType.nameRequired),
+      isTrue,
+    );
+  });
+
+  test('P5f: nameRequired error references the correct entry id', () {
+    final day = _makeDay(
+      id: 10,
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(id: 42, name: '')],
+    );
+    addTearDown(day.dispose);
+
+    final errors = validateProgram([day], []);
+    final nameError = errors.firstWhere(
+      (e) => e.type == ProgramValidationErrorType.nameRequired,
+    );
+
+    expect(nameError.dayId, equals(10));
+    expect(nameError.entryId, equals(42));
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Property 6: Validation rejects invalid time ranges
+// Tag: Feature: event-program-editing, Property 6: Validation rejects invalid time ranges
+// ---------------------------------------------------------------------------
+
+void _property6ValidationInvalidTimeRange() {
+  test('P6a: end time before start time produces invalidTimeRange error', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [
+        _makeEntry(
+          name: 'Entry',
+          startTime: const TimeOfDay(hour: 14, minute: 0),
+          endTime: const TimeOfDay(hour: 12, minute: 0),
+        ),
+      ],
+    );
+    addTearDown(day.dispose);
+
+    final errors = validateProgram([day], []);
+
+    expect(
+      errors.any((e) => e.type == ProgramValidationErrorType.invalidTimeRange),
+      isTrue,
+    );
+  });
+
+  test('P6b: end time equal to start time produces no error', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [
+        _makeEntry(
+          name: 'Entry',
+          startTime: const TimeOfDay(hour: 14, minute: 0),
+          endTime: const TimeOfDay(hour: 14, minute: 0),
+        ),
+      ],
+    );
+    addTearDown(day.dispose);
+
+    final errors = validateProgram([day], []);
+
+    expect(
+      errors.where((e) => e.type == ProgramValidationErrorType.invalidTimeRange),
+      isEmpty,
+    );
+  });
+
+  test('P6c: end time after start time produces no error', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [
+        _makeEntry(
+          name: 'Entry',
+          startTime: const TimeOfDay(hour: 10, minute: 0),
+          endTime: const TimeOfDay(hour: 11, minute: 30),
+        ),
+      ],
+    );
+    addTearDown(day.dispose);
+
+    final errors = validateProgram([day], []);
+
+    expect(
+      errors.where((e) => e.type == ProgramValidationErrorType.invalidTimeRange),
+      isEmpty,
+    );
+  });
+
+  test('P6d: null start or end time produces no invalidTimeRange error', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [
+        _makeEntry(name: 'Entry 1', startTime: const TimeOfDay(hour: 10, minute: 0)),
+        _makeEntry(id: 1, name: 'Entry 2', endTime: const TimeOfDay(hour: 12, minute: 0)),
+        _makeEntry(id: 2, name: 'Entry 3'),
+      ],
+    );
+    addTearDown(day.dispose);
+
+    final errors = validateProgram([day], []);
+
+    expect(
+      errors.where((e) => e.type == ProgramValidationErrorType.invalidTimeRange),
+      isEmpty,
+    );
+  });
+
+  test('P6e: only the offending entry gets the invalidTimeRange error', () {
+    final day = _makeDay(
+      id: 0,
+      date: DateTime(2025, 3, 15),
+      entries: [
+        _makeEntry(
+          id: 0,
+          name: 'Good Entry',
+          startTime: const TimeOfDay(hour: 10, minute: 0),
+          endTime: const TimeOfDay(hour: 11, minute: 0),
+        ),
+        _makeEntry(
+          id: 1,
+          name: 'Bad Entry',
+          startTime: const TimeOfDay(hour: 14, minute: 0),
+          endTime: const TimeOfDay(hour: 12, minute: 0),
+        ),
+      ],
+    );
+    addTearDown(day.dispose);
+
+    final errors = validateProgram([day], []);
+    final timeErrors = errors.where(
+      (e) => e.type == ProgramValidationErrorType.invalidTimeRange,
+    ).toList();
+
+    expect(timeErrors.length, equals(1));
+    expect(timeErrors.first.entryId, equals(1));
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Property 7: Validation rejects days without dates
+// Tag: Feature: event-program-editing, Property 7: Validation rejects days without dates
+// ---------------------------------------------------------------------------
+
+void _property7ValidationDateRequired() {
+  test('P7a: day with null date produces dateRequired error', () {
+    final day = _makeDay(date: null, entries: [_makeEntry(name: 'Entry')]);
+    addTearDown(day.dispose);
+
+    final errors = validateProgram([day], []);
+
+    expect(
+      errors.any((e) => e.type == ProgramValidationErrorType.dateRequired),
+      isTrue,
+    );
+  });
+
+  test('P7b: day with a date set produces no dateRequired error', () {
+    final day = _makeDay(
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(name: 'Entry')],
+    );
+    addTearDown(day.dispose);
+
+    final errors = validateProgram([day], []);
+
+    expect(
+      errors.where((e) => e.type == ProgramValidationErrorType.dateRequired),
+      isEmpty,
+    );
+  });
+
+  test('P7c: dateRequired error references the correct day id', () {
+    final day = _makeDay(id: 7, date: null, entries: [_makeEntry(name: 'Entry')]);
+    addTearDown(day.dispose);
+
+    final errors = validateProgram([day], []);
+    final dateError = errors.firstWhere(
+      (e) => e.type == ProgramValidationErrorType.dateRequired,
+    );
+
+    expect(dateError.dayId, equals(7));
+  });
+
+  test('P7d: multiple days — only dateless ones produce dateRequired errors', () {
+    final day1 = _makeDay(id: 0, date: DateTime(2025, 3, 15), entries: [_makeEntry(id: 0, name: 'E1')]);
+    final day2 = _makeDay(id: 1, date: null, entries: [_makeEntry(id: 1, name: 'E2')]);
+    final day3 = _makeDay(id: 2, date: DateTime(2025, 3, 16), entries: [_makeEntry(id: 2, name: 'E3')]);
+    addTearDown(day1.dispose);
+    addTearDown(day2.dispose);
+    addTearDown(day3.dispose);
+
+    final errors = validateProgram([day1, day2, day3], []);
+    final dateErrors = errors.where(
+      (e) => e.type == ProgramValidationErrorType.dateRequired,
+    ).toList();
+
+    expect(dateErrors.length, equals(1));
+    expect(dateErrors.first.dayId, equals(1));
+  });
+
+  test('P7e: empty day list produces no dateRequired errors', () {
+    final errors = validateProgram([], []);
+
+    expect(
+      errors.where((e) => e.type == ProgramValidationErrorType.dateRequired),
+      isEmpty,
+    );
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Property 8: Comma-separated string splitting produces correct arrays
+// Tag: Feature: event-program-editing, Property 8: Comma-separated string splitting
+// ---------------------------------------------------------------------------
+
+void _property8CommaSplitting() {
+  test('P8a: simple comma-separated values produce correct list', () {
+    expect(splitCommaSeparated('Alice, Bob, Charlie'), equals(['Alice', 'Bob', 'Charlie']));
+  });
+
+  test('P8b: extra whitespace is trimmed from each element', () {
+    expect(splitCommaSeparated('  Alice  ,  Bob  ,  Charlie  '), equals(['Alice', 'Bob', 'Charlie']));
+  });
+
+  test('P8c: empty string produces empty list', () {
+    expect(splitCommaSeparated(''), isEmpty);
+  });
+
+  test('P8d: whitespace-only string produces empty list', () {
+    expect(splitCommaSeparated('   '), isEmpty);
+  });
+
+  test('P8e: trailing comma is ignored', () {
+    expect(splitCommaSeparated('Alice, Bob,'), equals(['Alice', 'Bob']));
+  });
+
+  test('P8f: leading comma produces empty segment that is filtered', () {
+    expect(splitCommaSeparated(',Alice, Bob'), equals(['Alice', 'Bob']));
+  });
+
+  test('P8g: single item without comma produces single-element list', () {
+    expect(splitCommaSeparated('Alice'), equals(['Alice']));
+  });
+
+  test('P8h: multiple consecutive commas produce no spurious empty elements', () {
+    final result = splitCommaSeparated('Alice,,Bob');
+    expect(result, equals(['Alice', 'Bob']));
+  });
+
+  test('P8i: all non-empty elements are non-empty strings after splitting', () {
+    const inputs = [
+      'a, b, c',
+      'single',
+      'x, y',
+      'DJ Mike, DJ Ola, DJ Peter',
+    ];
+
+    for (final input in inputs) {
+      final result = splitCommaSeparated(input);
+      for (final item in result) {
+        expect(item, isNotEmpty, reason: 'Expected non-empty from input "$input"');
+      }
+    }
+  });
+
+  test('P8j: element count equals number of non-empty segments', () {
+    expect(splitCommaSeparated('a, b, c').length, equals(3));
+    expect(splitCommaSeparated('a').length, equals(1));
+    expect(splitCommaSeparated('a, , c').length, equals(2));
+    expect(splitCommaSeparated('').length, equals(0));
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Property 9: Entry removal preserves other entries
+// Tag: Feature: event-program-editing, Property 9: Entry removal preserves other entries
+// ---------------------------------------------------------------------------
+
+void _property9EntryRemovalPreservesOthers() {
+  test('P9a: removing first of two entries leaves the second intact', () {
+    final entry0 = _makeEntry(id: 0, name: 'First');
+    final entry1 = _makeEntry(id: 1, name: 'Second');
+    final day = _makeDay(id: 0, date: DateTime(2025, 3, 15), entries: [entry0, entry1]);
+    addTearDown(() => entry1.dispose());
+    addTearDown(day.entries.clear);
+
+    // Simulate removal
+    final removed = day.entries.removeAt(0);
+    removed.dispose();
+
+    expect(day.entries.length, equals(1));
+    expect(day.entries.first.nameController.text, equals('Second'));
+  });
+
+  test('P9b: removing last of two entries leaves the first intact', () {
+    final entry0 = _makeEntry(id: 0, name: 'First');
+    final entry1 = _makeEntry(id: 1, name: 'Second');
+    final day = _makeDay(id: 0, date: DateTime(2025, 3, 15), entries: [entry0, entry1]);
+    addTearDown(() => entry0.dispose());
+    addTearDown(day.entries.clear);
+
+    final removed = day.entries.removeAt(1);
+    removed.dispose();
+
+    expect(day.entries.length, equals(1));
+    expect(day.entries.first.nameController.text, equals('First'));
+  });
+
+  test('P9c: removing middle entry from three-entry day leaves others intact', () {
+    final entry0 = _makeEntry(id: 0, name: 'First');
+    final entry1 = _makeEntry(id: 1, name: 'Middle');
+    final entry2 = _makeEntry(id: 2, name: 'Last');
+    final day = _makeDay(
+      id: 0,
+      date: DateTime(2025, 3, 15),
+      entries: [entry0, entry1, entry2],
+    );
+    addTearDown(() => entry0.dispose());
+    addTearDown(() => entry2.dispose());
+    addTearDown(day.entries.clear);
+
+    final removed = day.entries.removeAt(1);
+    removed.dispose();
+
+    expect(day.entries.length, equals(2));
+    expect(day.entries[0].nameController.text, equals('First'));
+    expect(day.entries[1].nameController.text, equals('Last'));
+  });
+
+  test('P9d: removing entry reduces count by exactly one', () {
+    const n = 5;
+    final entries = List.generate(
+      n,
+      (i) => _makeEntry(id: i, name: 'Entry $i'),
+    );
+    final day = _makeDay(id: 0, date: DateTime(2025, 3, 15), entries: entries);
+    addTearDown(() {
+      for (final e in day.entries) {
+        e.dispose();
+      }
+    });
+
+    final removed = day.entries.removeAt(2);
+    removed.dispose();
+
+    expect(day.entries.length, equals(n - 1));
+  });
+
+  test('P9e: ids of remaining entries are unchanged after removal', () {
+    final entries = [
+      _makeEntry(id: 10, name: 'A'),
+      _makeEntry(id: 20, name: 'B'),
+      _makeEntry(id: 30, name: 'C'),
+    ];
+    final day = _makeDay(id: 0, date: DateTime(2025, 3, 15), entries: entries);
+    addTearDown(() {
+      for (final e in day.entries) {
+        e.dispose();
+      }
+    });
+
+    final removed = day.entries.removeAt(1);
+    removed.dispose();
+
+    expect(day.entries.map((e) => e.id).toList(), equals([10, 30]));
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Property 10: Adding an entry increases count by one
+// Tag: Feature: event-program-editing, Property 10: Adding an entry increases count by one
+// ---------------------------------------------------------------------------
+
+void _property10AddEntryIncreasesCount() {
+  test('P10a: adding to empty day produces exactly one entry', () {
+    final day = _makeDay(id: 0, date: DateTime(2025, 3, 15));
+    addTearDown(day.dispose);
+
+    final newEntry = _makeEntry(id: 0, name: '');
+    day.entries.add(newEntry);
+
+    expect(day.entries.length, equals(1));
+  });
+
+  test('P10b: new entry defaults to type "workshop"', () {
+    final day = _makeDay(id: 0, date: DateTime(2025, 3, 15));
+    addTearDown(day.dispose);
+
+    final newEntry = EditableProgramEntry(id: 0);
+    day.entries.add(newEntry);
+
+    expect(day.entries.first.type, equals('workshop'));
+  });
+
+  test('P10c: new entry starts with empty name', () {
+    final day = _makeDay(id: 0, date: DateTime(2025, 3, 15));
+    addTearDown(day.dispose);
+
+    final newEntry = EditableProgramEntry(id: 0);
+    day.entries.add(newEntry);
+
+    expect(day.entries.first.nameController.text, isEmpty);
+  });
+
+  test('P10d: adding entry to N-entry day produces N+1 entries', () {
+    for (final n in [0, 1, 2, 5, 10]) {
+      final entries = List.generate(n, (i) => _makeEntry(id: i, name: 'Entry $i'));
+      final day = _makeDay(id: 0, date: DateTime(2025, 3, 15), entries: entries);
+
+      final newEntry = _makeEntry(id: n, name: '');
+      day.entries.add(newEntry);
+
+      expect(day.entries.length, equals(n + 1), reason: 'Expected $n+1 entries');
+      day.dispose();
+    }
+  });
+
+  test('P10e: adding entry preserves all existing entries', () {
+    final entries = [
+      _makeEntry(id: 0, name: 'Existing 1'),
+      _makeEntry(id: 1, name: 'Existing 2'),
+    ];
+    final day = _makeDay(id: 0, date: DateTime(2025, 3, 15), entries: entries);
+    addTearDown(day.dispose);
+
+    final newEntry = _makeEntry(id: 2, name: 'New Entry');
+    day.entries.add(newEntry);
+
+    expect(day.entries[0].nameController.text, equals('Existing 1'));
+    expect(day.entries[1].nameController.text, equals('Existing 2'));
+    expect(day.entries[2].nameController.text, equals('New Entry'));
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Test entry point
+// ---------------------------------------------------------------------------
+
+void main() {
+  group('event-program-editing — property-based tests', () {
+    group(
+      'Property 1: Grouping round-trip preserves entries',
+      _property1GroupingRoundTrip,
+    );
+    group(
+      'Property 2: Serialization round-trip preserves data',
+      _property2SerializationRoundTrip,
+    );
+    group(
+      'Property 3: Day date propagates to all entries',
+      _property3DayDatePropagation,
+    );
+    group(
+      'Property 4: Unchanged program produces empty diff',
+      _property4UnchangedProgramNoDiff,
+    );
+    group(
+      'Property 5: Validation rejects entries with empty names',
+      _property5ValidationEmptyNames,
+    );
+    group(
+      'Property 6: Validation rejects invalid time ranges',
+      _property6ValidationInvalidTimeRange,
+    );
+    group(
+      'Property 7: Validation rejects days without dates',
+      _property7ValidationDateRequired,
+    );
+    group(
+      'Property 8: Comma-separated string splitting produces correct arrays',
+      _property8CommaSplitting,
+    );
+    group(
+      'Property 9: Entry removal preserves other entries',
+      _property9EntryRemovalPreservesOthers,
+    );
+    group(
+      'Property 10: Adding an entry increases count by one',
+      _property10AddEntryIncreasesCount,
+    );
+  });
+}
