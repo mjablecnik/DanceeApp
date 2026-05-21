@@ -7,11 +7,14 @@ import '../../../core/app_routes.dart';
 import '../../../core/colors.dart';
 import '../../../core/theme.dart';
 import '../../../data/entities/event.dart';
+import '../../../data/entities/event_part.dart';
 import '../../../i18n/strings.g.dart';
 import '../../../logic/cubits/event_cubit.dart';
 import '../../../logic/cubits/event_detail_cubit.dart';
 import '../../../logic/states/event_detail_state.dart';
 import '../add_event/components/add_event_form_components.dart';
+import 'models/editable_program_models.dart';
+import 'sections/edit_event_program_section.dart';
 
 class _EditableInfoEntry {
   final TextEditingController keyController;
@@ -53,6 +56,14 @@ class _EditEventScreenState extends State<EditEventScreen> {
   Set<String> _selectedDances = {};
   String _eventType = '';
 
+  // Program state (task 5.1)
+  List<EditableProgramDay> _programDays = [];
+  List<EditableProgramEntry> _ungroupedEntries = [];
+  int _dayIdCounter = 0;
+  int _entryIdCounter = 0;
+  List<EventPart>? _originalParts;
+  List<ProgramValidationError> _programValidationErrors = [];
+
   bool _initialized = false;
   Event? _originalEvent;
   int? _translationId;
@@ -88,6 +99,12 @@ class _EditEventScreenState extends State<EditEventScreen> {
     for (final entry in _infoEntries) {
       entry.dispose();
     }
+    for (final day in _programDays) {
+      day.dispose();
+    }
+    for (final entry in _ungroupedEntries) {
+      entry.dispose();
+    }
     super.dispose();
   }
 
@@ -107,6 +124,8 @@ class _EditEventScreenState extends State<EditEventScreen> {
         .map((info) => _EditableInfoEntry(key: info.key, value: info.value))
         .toList();
 
+    _initProgramFromEvent(event);
+
     final selectedDances = event.dances.map((d) => d.toLowerCase()).toSet();
 
     setState(() {
@@ -117,6 +136,59 @@ class _EditEventScreenState extends State<EditEventScreen> {
       _selectedDances = selectedDances;
       _eventType = event.eventType;
     });
+  }
+
+  // Task 5.2: Deserialize event.parts into form state
+  void _initProgramFromEvent(Event event) {
+    _originalParts = event.parts;
+    final result = deserializeProgramFromParts(event.parts);
+    _programDays = result.days;
+    _ungroupedEntries = result.ungroupedEntries;
+    _dayIdCounter = result.nextDayId;
+    _entryIdCounter = result.nextEntryId;
+  }
+
+  // Task 5.3: Day/entry manipulation methods
+  void _addProgramDay() {
+    setState(() {
+      _programDays.add(EditableProgramDay(id: _dayIdCounter++));
+    });
+  }
+
+  void _removeProgramDay(int dayId) {
+    setState(() {
+      final day = _programDays.firstWhere((d) => d.id == dayId);
+      day.dispose();
+      _programDays.removeWhere((d) => d.id == dayId);
+    });
+  }
+
+  void _addProgramEntry(int dayId) {
+    setState(() {
+      final day = _programDays.firstWhere((d) => d.id == dayId);
+      day.entries.add(EditableProgramEntry(id: _entryIdCounter++));
+    });
+  }
+
+  void _removeProgramEntry(int dayId, int entryId) {
+    setState(() {
+      final day = _programDays.firstWhere((d) => d.id == dayId);
+      final entry = day.entries.firstWhere((e) => e.id == entryId);
+      entry.dispose();
+      day.entries.removeWhere((e) => e.id == entryId);
+    });
+  }
+
+  void _onDayDateChanged(int dayId, DateTime? date) {
+    setState(() {
+      final day = _programDays.firstWhere((d) => d.id == dayId);
+      day.date = date;
+    });
+  }
+
+  // Task 5.6: Validate program before submit
+  List<ProgramValidationError> _validateProgram() {
+    return validateProgram(_programDays, _ungroupedEntries);
   }
 
   String _formatDate(DateTime dt) =>
@@ -276,6 +348,14 @@ class _EditEventScreenState extends State<EditEventScreen> {
       rootFields['info'] = newInfoList;
     }
 
+    // Task 5.5: Include program data when changed
+    final currentParts = serializePartsToJson(_programDays, _ungroupedEntries);
+    if (programHasChanged(currentParts, _originalParts)) {
+      rootFields['parts'] = currentParts;
+      translationFields['parts_translations'] =
+          serializePartsTranslations(_programDays, _ungroupedEntries);
+    }
+
     final payload = Map<String, dynamic>.from(rootFields);
     if (translationFields.isNotEmpty) {
       payload['translations'] = [
@@ -310,6 +390,21 @@ class _EditEventScreenState extends State<EditEventScreen> {
   }
 
   void _submit() {
+    // Task 5.6: Validate program before submitting
+    final errors = _validateProgram();
+    if (errors.isNotEmpty) {
+      setState(() => _programValidationErrors = errors);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '${errors.length} validation error${errors.length == 1 ? '' : 's'} in program',
+          ),
+        ),
+      );
+      return;
+    }
+    setState(() => _programValidationErrors = []);
+
     final locale = Localizations.localeOf(context).languageCode;
     final payload = _buildPayload(locale);
     if (payload.isEmpty) {
@@ -809,6 +904,19 @@ class _EditEventScreenState extends State<EditEventScreen> {
           const SizedBox(height: AppSpacing.xxl),
           // Additional info entries
           _buildAdditionalInfoSection(),
+          const SizedBox(height: AppSpacing.xxl),
+          // Program section (task 5.4)
+          EditEventProgramSection(
+            programDays: _programDays,
+            ungroupedEntries: _ungroupedEntries,
+            onAddDay: _addProgramDay,
+            onRemoveDay: _removeProgramDay,
+            onAddEntry: _addProgramEntry,
+            onRemoveEntry: _removeProgramEntry,
+            onDayDateChanged: _onDayDateChanged,
+            onStateChanged: () => setState(() {}),
+            validationErrors: _programValidationErrors,
+          ),
           const SizedBox(height: AppSpacing.xxl),
           // Submit
           Container(
