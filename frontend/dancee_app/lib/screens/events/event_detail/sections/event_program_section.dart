@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../../core/colors.dart';
 import '../../../../core/theme.dart';
 import '../../../../i18n/strings.g.dart';
@@ -17,40 +16,23 @@ class EventProgramSection extends StatefulWidget {
 }
 
 class _EventProgramSectionState extends State<EventProgramSection> {
-  bool _expanded = true;
-
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        GestureDetector(
-          onTap: () => setState(() => _expanded = !_expanded),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                t.events.detail.program,
-                style: const TextStyle(
-                  color: appText,
-                  fontSize: AppTypography.fontSize2xl,
-                  fontWeight: AppTypography.fontWeightBold,
-                ),
-              ),
-              AnimatedRotation(
-                turns: _expanded ? 0 : -0.25,
-                duration: AppDurations.normal,
-                child: const FaIcon(FontAwesomeIcons.chevronDown, size: AppIconSizes.xs, color: appText),
-              ),
-            ],
+        Text(
+          t.events.detail.program,
+          style: const TextStyle(
+            color: appText,
+            fontSize: AppTypography.fontSize2xl,
+            fontWeight: AppTypography.fontWeightBold,
           ),
         ),
-        if (_expanded) ...[
-          const SizedBox(height: AppSpacing.lg),
-          for (int i = 0; i < widget.days.length; i++) ...[
-            if (i > 0) const SizedBox(height: AppSpacing.md),
-            ProgramDayCard(day: widget.days[i]),
-          ],
+        const SizedBox(height: AppSpacing.lg),
+        for (int i = 0; i < widget.days.length; i++) ...[
+          if (i > 0) const SizedBox(height: AppSpacing.md),
+          ProgramDayCard(day: widget.days[i]),
         ],
       ],
     );
