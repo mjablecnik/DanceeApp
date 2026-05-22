@@ -550,7 +550,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
     );
   }
 
-  static const _eventTypes = ['social', 'festival', 'holiday', 'workshop'];
+  static const _eventTypes = ['party', 'festival', 'holiday', 'workshop'];
 
   Widget _buildEventTypeSection() {
     return Column(
