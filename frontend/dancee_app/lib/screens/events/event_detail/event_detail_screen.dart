@@ -153,28 +153,36 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
   }
 
   Widget _buildEventContent(Event event) {
-    // Prefer the direct price field; fall back to EventInfoType.price entry in info list.
+    // Direct price field (from the dedicated price field on the event)
     final directPrice = event.price?.isNotEmpty == true ? event.price : null;
-    final priceInfoEntry = event.info
-        .where((i) => i.type == EventInfoType.price)
-        .firstOrNull;
-    final priceRange = directPrice ?? priceInfoEntry?.value ?? '';
 
     final dresscodeInfo = event.info
         .where((i) => i.type == EventInfoType.dresscode)
         .firstOrNull;
     final dresscode = dresscodeInfo?.value ?? '';
 
-    // Collect info entries not already shown elsewhere:
-    // - price/dresscode types are shown in AdditionalInfoSection
-    // - All other entries (including url type with non-empty keys like workshops) go here
-    final extraInfoEntries = event.info
-        .where((i) =>
-            i.type != EventInfoType.price &&
-            i.type != EventInfoType.dresscode)
+    // All price entries displayed with their own key as label
+    final priceEntries = event.info
+        .where((i) => i.type == EventInfoType.price)
         .where((i) => i.key.isNotEmpty || i.value.isNotEmpty)
         .map((i) => MapEntry(i.key, i.value))
         .toList();
+
+    // Use direct price as the main priceRange for the hero badge
+    final priceRange = directPrice ?? (priceEntries.isNotEmpty ? priceEntries.first.value : '');
+
+    // Collect non-price, non-dresscode entries
+    final extraInfoEntries = <MapEntry<String, String>>[];
+    // Add all price entries with their custom keys (e.g. "Price in advance", "Price on the day")
+    extraInfoEntries.addAll(priceEntries);
+    // Add remaining entries
+    for (final i in event.info) {
+      if (i.type == EventInfoType.price) continue;
+      if (i.type == EventInfoType.dresscode) continue;
+      if (i.key.isNotEmpty || i.value.isNotEmpty) {
+        extraInfoEntries.add(MapEntry(i.key, i.value));
+      }
+    }
 
     return BlocBuilder<FavoritesCubit, dynamic>(
       builder: (context, _) {
