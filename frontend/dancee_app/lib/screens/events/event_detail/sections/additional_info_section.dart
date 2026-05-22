@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/colors.dart';
 import '../../../../core/theme.dart';
 import '../../../../i18n/strings.g.dart';
@@ -19,6 +20,20 @@ class AdditionalInfoSection extends StatelessWidget {
     this.onBuyTickets,
     this.onSource,
   });
+
+  static bool _isUrlValue(String value) =>
+      value.startsWith('http://') ||
+      value.startsWith('https://') ||
+      value.startsWith('www.');
+
+  static Future<void> _launchUrl(String url) async {
+    var uri = url;
+    if (uri.startsWith('www.')) uri = 'https://$uri';
+    final parsed = Uri.tryParse(uri);
+    if (parsed != null) {
+      await launchUrl(parsed, mode: LaunchMode.externalApplication);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,6 +75,9 @@ class AdditionalInfoSection extends StatelessWidget {
                 InfoRow(
                   label: extraEntries[i].key,
                   value: extraEntries[i].value,
+                  onValueTap: _isUrlValue(extraEntries[i].value)
+                      ? () => _launchUrl(extraEntries[i].value)
+                      : null,
                 ),
               ],
               if (hasAnyInfo && (onBuyTickets != null || onSource != null))
@@ -81,36 +99,52 @@ class AdditionalInfoSection extends StatelessWidget {
 class InfoRow extends StatelessWidget {
   final String label;
   final String value;
+  final VoidCallback? onValueTap;
 
   const InfoRow({
     super.key,
     required this.label,
     required this.value,
+    this.onValueTap,
   });
+
+  bool get _isUrl =>
+      value.startsWith('http://') ||
+      value.startsWith('https://') ||
+      value.startsWith('www.');
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    final content = Row(
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: appMuted,
-            fontSize: AppTypography.fontSizeMd,
-            fontWeight: AppTypography.fontWeightMedium,
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              color: _isUrl ? appPrimary : appMuted,
+              fontSize: AppTypography.fontSizeMd,
+              fontWeight: AppTypography.fontWeightMedium,
+            ),
           ),
         ),
-        Text(
-          value,
-          style: const TextStyle(
-            color: appText,
-            fontSize: AppTypography.fontSizeMd,
-            fontWeight: AppTypography.fontWeightSemiBold,
+        if (_isUrl)
+          const FaIcon(FontAwesomeIcons.arrowUpRightFromSquare, size: 12, color: appPrimary)
+        else
+          Text(
+            value,
+            style: const TextStyle(
+              color: appText,
+              fontSize: AppTypography.fontSizeMd,
+              fontWeight: AppTypography.fontWeightSemiBold,
+            ),
           ),
-        ),
       ],
     );
+
+    if (_isUrl && onValueTap != null) {
+      return GestureDetector(onTap: onValueTap, child: content);
+    }
+    return content;
   }
 }
 
