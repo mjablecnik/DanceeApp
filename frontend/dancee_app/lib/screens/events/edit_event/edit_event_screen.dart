@@ -19,8 +19,9 @@ import 'sections/edit_event_program_section.dart';
 class _EditableInfoEntry {
   final TextEditingController keyController;
   final TextEditingController valueController;
+  String type; // 'url', 'price', 'dresscode'
 
-  _EditableInfoEntry({String key = '', String value = ''})
+  _EditableInfoEntry({String key = '', String value = '', this.type = 'url'})
       : keyController = TextEditingController(text: key),
         valueController = TextEditingController(text: value);
 
@@ -121,7 +122,11 @@ class _EditEventScreenState extends State<EditEventScreen> {
     _originalUrlController.text = event.originalUrl ?? '';
     _priceController.text = event.price ?? '';
     _infoEntries = event.info
-        .map((info) => _EditableInfoEntry(key: info.key, value: info.value))
+        .map((info) => _EditableInfoEntry(
+              key: info.key,
+              value: info.value,
+              type: info.type.name,
+            ))
         .toList();
 
     _initProgramFromEvent(event);
@@ -339,10 +344,10 @@ class _EditEventScreenState extends State<EditEventScreen> {
 
     final newInfoList = _infoEntries
         .where((e) => e.keyController.text.isNotEmpty || e.valueController.text.isNotEmpty)
-        .map((e) => <String, String>{'key': e.keyController.text, 'value': e.valueController.text})
+        .map((e) => <String, String>{'type': e.type, 'key': e.keyController.text, 'value': e.valueController.text})
         .toList();
     final originalInfoList = original.info
-        .map((i) => <String, String>{'key': i.key, 'value': i.value})
+        .map((i) => <String, String>{'type': i.type.name, 'key': i.key, 'value': i.value})
         .toList();
     if (!_infoListsEqual(newInfoList, originalInfoList)) {
       rootFields['info'] = newInfoList;
@@ -610,41 +615,74 @@ class _EditEventScreenState extends State<EditEventScreen> {
           final infoEntry = entry.value;
           return Padding(
             padding: const EdgeInsets.only(bottom: AppSpacing.md),
-            child: Row(
-              children: [
-                Expanded(
-                  child: AddEventTextInput(
+            child: Container(
+              decoration: BoxDecoration(
+                color: appCard,
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                border: Border.all(color: appBorder),
+              ),
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: appSurface,
+                            borderRadius: BorderRadius.circular(AppRadius.lg),
+                            border: Border.all(color: appBorder),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.lg,
+                            vertical: AppSpacing.xs,
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: infoEntry.type,
+                              dropdownColor: appSurface,
+                              style: const TextStyle(
+                                color: appText,
+                                fontSize: AppTypography.fontSizeSm,
+                              ),
+                              isExpanded: true,
+                              items: const [
+                                DropdownMenuItem(value: 'url', child: Text('URL')),
+                                DropdownMenuItem(value: 'price', child: Text('Price')),
+                                DropdownMenuItem(value: 'dresscode', child: Text('Dresscode')),
+                              ],
+                              onChanged: (value) {
+                                if (value != null) setState(() => infoEntry.type = value);
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      GestureDetector(
+                        onTap: () => setState(() => _removeInfoEntry(index)),
+                        child: const Padding(
+                          padding: EdgeInsets.all(AppSpacing.sm),
+                          child: FaIcon(FontAwesomeIcons.trash, size: 12, color: appError),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  AddEventTextInput(
                     controller: infoEntry.keyController,
                     hintText: t.events.edit.infoKeyHint,
                     isSmall: true,
                   ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  flex: 2,
-                  child: AddEventTextInput(
+                  const SizedBox(height: AppSpacing.sm),
+                  AddEventTextInput(
                     controller: infoEntry.valueController,
                     hintText: t.events.edit.infoValueHint,
                     isSmall: true,
                   ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                GestureDetector(
-                  onTap: () => setState(() => _removeInfoEntry(index)),
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: appSurface,
-                      borderRadius: BorderRadius.circular(AppRadius.md),
-                      border: Border.all(color: appBorder),
-                    ),
-                    child: const Center(
-                      child: FaIcon(FontAwesomeIcons.trash, size: 12, color: appMuted),
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         }),
