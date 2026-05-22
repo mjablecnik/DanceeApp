@@ -461,7 +461,20 @@ class _EditEventScreenState extends State<EditEventScreen> {
               fontWeight: AppTypography.fontWeightSemiBold,
             ),
           ),
-          const SizedBox(width: AppSizes.iconButtonMd),
+          GestureDetector(
+            onTap: _submit,
+            child: Container(
+              width: AppSizes.iconButtonMd,
+              height: AppSizes.iconButtonMd,
+              decoration: BoxDecoration(
+                color: appPrimary,
+                borderRadius: BorderRadius.circular(AppRadius.round),
+              ),
+              child: const Center(
+                child: FaIcon(FontAwesomeIcons.check, size: AppIconSizes.xs, color: appWhite),
+              ),
+            ),
+          ),
         ],
       ),
     );
