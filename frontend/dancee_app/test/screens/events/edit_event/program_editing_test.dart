@@ -2007,6 +2007,149 @@ void _unit83DiffDetection() {
 }
 
 // ---------------------------------------------------------------------------
+// Task 8.4: Unit tests — validation
+// Covers: empty name, end < start, no date, valid program passes
+// ---------------------------------------------------------------------------
+
+void _unit84Validation() {
+  // --- Empty name ---
+  test('V1: empty name produces nameRequired error', () {
+    final day = _makeDay(
+      id: 1,
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(id: 0, name: '')],
+    );
+    addTearDown(day.dispose);
+
+    final errors = validateProgram([day], []);
+    expect(errors.any((e) => e.type == ProgramValidationErrorType.nameRequired), isTrue);
+  });
+
+  test('V2: whitespace-only name produces nameRequired error', () {
+    final day = _makeDay(
+      id: 1,
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(id: 0, name: '   ')],
+    );
+    addTearDown(day.dispose);
+
+    final errors = validateProgram([day], []);
+    expect(errors.any((e) => e.type == ProgramValidationErrorType.nameRequired), isTrue);
+  });
+
+  // --- End time before start time ---
+  test('V3: end time before start time produces invalidTimeRange error', () {
+    final day = _makeDay(
+      id: 1,
+      date: DateTime(2025, 3, 15),
+      entries: [
+        _makeEntry(
+          id: 0,
+          name: 'Entry',
+          startTime: const TimeOfDay(hour: 15, minute: 0),
+          endTime: const TimeOfDay(hour: 13, minute: 0),
+        ),
+      ],
+    );
+    addTearDown(day.dispose);
+
+    final errors = validateProgram([day], []);
+    expect(errors.any((e) => e.type == ProgramValidationErrorType.invalidTimeRange), isTrue);
+  });
+
+  // --- Day with no date ---
+  test('V4: day with null date produces dateRequired error', () {
+    final day = _makeDay(id: 1, date: null, entries: [_makeEntry(id: 0, name: 'Entry')]);
+    addTearDown(day.dispose);
+
+    final errors = validateProgram([day], []);
+    expect(errors.any((e) => e.type == ProgramValidationErrorType.dateRequired), isTrue);
+  });
+
+  // --- Valid program produces no errors ---
+  test('V5: valid program with proper name, time range, and date produces no errors', () {
+    final day = _makeDay(
+      id: 1,
+      date: DateTime(2025, 3, 15),
+      entries: [
+        _makeEntry(
+          id: 0,
+          name: 'Valid Workshop',
+          startTime: const TimeOfDay(hour: 10, minute: 0),
+          endTime: const TimeOfDay(hour: 11, minute: 30),
+        ),
+      ],
+    );
+    addTearDown(day.dispose);
+
+    final errors = validateProgram([day], []);
+    expect(errors, isEmpty);
+  });
+
+  test('V6: valid program with null times and non-null date produces no errors', () {
+    final day = _makeDay(
+      id: 1,
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(id: 0, name: 'Workshop with no times')],
+    );
+    addTearDown(day.dispose);
+
+    final errors = validateProgram([day], []);
+    expect(errors, isEmpty);
+  });
+
+  test('V7: multiple valid entries produce no errors', () {
+    final day = _makeDay(
+      id: 1,
+      date: DateTime(2025, 3, 15),
+      entries: [
+        _makeEntry(id: 0, name: 'Morning Session', startTime: const TimeOfDay(hour: 9, minute: 0), endTime: const TimeOfDay(hour: 10, minute: 0)),
+        _makeEntry(id: 1, name: 'Afternoon Session', startTime: const TimeOfDay(hour: 14, minute: 0), endTime: const TimeOfDay(hour: 15, minute: 30)),
+      ],
+    );
+    addTearDown(day.dispose);
+
+    final errors = validateProgram([day], []);
+    expect(errors, isEmpty);
+  });
+
+  test('V8: error references correct day and entry ids', () {
+    final day = _makeDay(
+      id: 5,
+      date: DateTime(2025, 3, 15),
+      entries: [_makeEntry(id: 99, name: '')],
+    );
+    addTearDown(day.dispose);
+
+    final errors = validateProgram([day], []);
+    final nameError = errors.firstWhere((e) => e.type == ProgramValidationErrorType.nameRequired);
+    expect(nameError.dayId, equals(5));
+    expect(nameError.entryId, equals(99));
+  });
+
+  test('V9: mixed valid and invalid entries — only invalid ones produce errors', () {
+    final day = _makeDay(
+      id: 1,
+      date: DateTime(2025, 3, 15),
+      entries: [
+        _makeEntry(id: 0, name: 'Valid Entry'),
+        _makeEntry(id: 1, name: ''),
+      ],
+    );
+    addTearDown(day.dispose);
+
+    final errors = validateProgram([day], []);
+    expect(errors.length, equals(1));
+    expect(errors.first.entryId, equals(1));
+  });
+
+  test('V10: empty days and ungrouped lists produce no errors', () {
+    final errors = validateProgram([], []);
+    expect(errors, isEmpty);
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Test entry point
 // ---------------------------------------------------------------------------
 
@@ -2015,6 +2158,7 @@ void main() {
     group('Task 8.1: Deserialization', _unit81Deserialization);
     group('Task 8.2: Serialization', _unit82Serialization);
     group('Task 8.3: Diff detection', _unit83DiffDetection);
+    group('Task 8.4: Validation', _unit84Validation);
   });
 
   group('event-program-editing — property-based tests', () {
