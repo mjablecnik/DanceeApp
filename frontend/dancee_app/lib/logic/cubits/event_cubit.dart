@@ -145,7 +145,7 @@ class EventCubit extends Cubit<EventState> {
   void _recompute() {
     final filtered = _filterEvents(_allEvents, _currentFilters, _currentDanceStyles);
     final deduped = _deduplicateEvents(filtered);
-    final featured = deduped.where((e) => e.eventType == 'festival').toList();
+    final featured = deduped.where((e) => e.eventType == 'festival' || e.eventType == 'holiday').toList();
     emit(EventState.loaded(
       allEvents: _allEvents,
       filteredEvents: deduped,
