@@ -273,7 +273,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                         priceRange: priceRange,
                         dresscode: dresscode,
                         extraEntries: extraInfoEntries,
-                        onBuyTickets: event.registrationUrl != null
+                        onBuyTickets: event.registrationUrl != null && event.registrationUrl!.isNotEmpty
                             ? () => openUrl(event.registrationUrl!)
                             : null,
                         onSource: event.originalUrl != null ? () => openUrl(event.originalUrl!) : null,

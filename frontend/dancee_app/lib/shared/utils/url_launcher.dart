@@ -3,7 +3,11 @@ import 'package:url_launcher/url_launcher.dart';
 /// Opens [url] in the platform's default external browser.
 /// Does nothing if the URL is null, malformed, or cannot be launched.
 Future<void> openUrl(String url) async {
-  final uri = Uri.tryParse(url);
+  var normalized = url;
+  if (!normalized.startsWith('http://') && !normalized.startsWith('https://')) {
+    normalized = 'https://$normalized';
+  }
+  final uri = Uri.tryParse(normalized);
   if (uri != null && await canLaunchUrl(uri)) {
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
