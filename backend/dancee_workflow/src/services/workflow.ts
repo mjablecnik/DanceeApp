@@ -91,6 +91,172 @@ export function computeTranslationStatus(
   return "missing";
 }
 
+/**
+ * Result of the core event processing pipeline.
+ * Contains all computed fields ready to be used for create or update.
+ */
+export interface ProcessedEventData {
+  title: string;
+  original_description: string;
+  organizer: string;
+  venue: string | number | null;
+  start_time: string;
+  end_time: string | null;
+  timezone: string;
+  parts: import("../core/schemas").EventPart[];
+  info: import("../core/schemas").EventInfo[];
+  dances: string[];
+  image: string | number | null;
+  image_source: string | null;
+  event_type: string;
+  registration_url: string | null;
+  translations: DirectusEventTranslation[];
+  translation_status: "complete" | "partial" | "missing";
+  isIncomplete: boolean;
+}
+
+/**
+ * Core event processing pipeline shared between the initial workflow and force-reprocess.
+ * Extracts parts, info, resolves venue, translates, processes image.
+ *
+ * @param ctx - Restate context (WorkflowContext or Context)
+ * @param facebookEvent - Scraped Facebook event data
+ * @param eventUrl - URL for logging purposes
+ * @param preClassifiedType - If already classified (e.g. by runWorkflow), skip re-classification
+ */
+export async function processEventPipeline(
+  ctx: restate.Context,
+  facebookEvent: FacebookEvent,
+  eventUrl: string,
+  preClassifiedType?: string,
+): Promise<ProcessedEventData> {
+  // Compute times
+  const startTimeUtc = toIsoOrNull(facebookEvent.startTimestamp) as string;
+  const endTimeUtc = toIsoOrNull(facebookEvent.endTimestamp ?? undefined);
+  const eventTimezone = facebookEvent.timezone ?? "UTC";
+  const startTime = convertToLocalTime(startTimeUtc, eventTimezone);
+  const endTime = endTimeUtc ? convertToLocalTime(endTimeUtc, eventTimezone) : null;
+
+  // Classify event type (skip if already provided)
+  const description = facebookEvent.description ?? facebookEvent.name;
+  const eventType = preClassifiedType ?? await ctx.run("classify", () => classifyEventType(description));
+
+  // Fetch dance style codes
+  const danceStyleCodes = await ctx.run("getDanceStyleCodes", () => getDanceStyleCodes());
+
+  // Extract parts
+  let extracted: { title: string; description: string; parts: import("../core/schemas").EventPart[] };
+  let partsIncomplete = false;
+  try {
+    extracted = await ctx.run("extractParts", () =>
+      extractEventParts(description, startTime, endTime, danceStyleCodes)
+    );
+  } catch (err) {
+    log({ level: "warn", message: "extractParts failed, continuing with empty parts", url: eventUrl, error: String(err) });
+    extracted = { title: facebookEvent.name, description, parts: [] };
+    partsIncomplete = true;
+  }
+
+  // Extract info
+  let info: import("../core/schemas").EventInfo[];
+  let infoIncomplete = false;
+  try {
+    info = await ctx.run("extractInfo", () => extractEventInfo(description));
+  } catch (err) {
+    log({ level: "warn", message: "extractInfo failed, continuing with empty info", url: eventUrl, error: String(err) });
+    info = [];
+    infoIncomplete = true;
+  }
+
+  // Resolve venue
+  let venueId: string | number | null = null;
+  if (facebookEvent.location) {
+    const venue = await ctx.run("resolveVenue", () => resolveVenue(facebookEvent.location!));
+    if (venue !== null && venue.id === undefined) {
+      log({
+        level: "warn",
+        message: "resolveVenue returned a venue without an id — venue association will be stored as null. This may indicate a Directus API issue.",
+        url: eventUrl,
+      });
+    }
+    venueId = venue?.id ?? null;
+  }
+
+  // Derive organizer
+  const organizer = facebookEvent.hosts?.[0]?.name ?? facebookEvent.name;
+
+  // Translate
+  const contentInput = {
+    title: extracted.title,
+    description: extracted.description,
+    parts: extracted.parts,
+    info,
+  };
+
+  const translations: DirectusEventTranslation[] = [
+    {
+      languages_code: "cs",
+      title: extracted.title,
+      description: extracted.description,
+      parts_translations: extracted.parts.map((p) => ({ name: p.name, description: p.description })),
+      info_translations: info.map((i) => ({ key: i.key })),
+    },
+  ];
+
+  const translationLanguages = [
+    { code: "en", name: "English" },
+    { code: "es", name: "Spanish" },
+  ];
+
+  for (const lang of translationLanguages) {
+    try {
+      const translated = await ctx.run(`translate_${lang.code}`, () =>
+        translateEventContent(contentInput, lang.name)
+      );
+      translations.push({
+        languages_code: lang.code,
+        title: translated.title,
+        description: translated.description,
+        parts_translations: translated.parts_translations,
+        info_translations: translated.info_translations,
+      });
+    } catch (err) {
+      log({ level: "error", message: `Translation to ${lang.code} failed`, url: eventUrl, error: String(err) });
+    }
+  }
+
+  // Compute dances
+  const rawDances = computeDances(extracted.parts);
+  const dances = validateDanceCodes(rawDances, danceStyleCodes);
+  const translationStatus = computeTranslationStatus(translations);
+
+  // Process image
+  const primaryDance = dances[0] ?? "";
+  const imageResult = await ctx.run("processImage", () =>
+    processEventImage(facebookEvent.imageUrl, primaryDance, eventType, extracted.title)
+  );
+
+  return {
+    title: extracted.title,
+    original_description: facebookEvent.description ?? "",
+    organizer,
+    venue: venueId,
+    start_time: startTime,
+    end_time: endTime,
+    timezone: eventTimezone,
+    parts: extracted.parts,
+    info,
+    dances,
+    image: imageResult.fileId,
+    image_source: imageResult.source,
+    event_type: eventType,
+    registration_url: facebookEvent.ticketUrl || info.find((i) => i.type === "url")?.value || null,
+    translations,
+    translation_status: translationStatus,
+    isIncomplete: partsIncomplete || infoIncomplete,
+  };
+}
+
 export const eventWorkflow = restate.workflow({
   name: "EventWorkflow",
   handlers: {
@@ -171,142 +337,17 @@ async function runWorkflow(ctx: restate.WorkflowContext, eventUrl: string) {
         return runCourseWorkflow(ctx, eventUrl, facebookEvent, originalUrl, eventType);
       }
 
-      // Compute event times early — needed by parts extraction for date context
-      const startTimeUtc = toIsoOrNull(facebookEvent.startTimestamp) as string;
-      const endTimeUtc = toIsoOrNull(facebookEvent.endTimestamp ?? undefined);
-      const eventTimezone = facebookEvent.timezone ?? "UTC";
-      const startTime = convertToLocalTime(startTimeUtc, eventTimezone);
-      const endTime = endTimeUtc ? convertToLocalTime(endTimeUtc, eventTimezone) : null;
+      // Run the shared event processing pipeline
+      const processed = await processEventPipeline(ctx, facebookEvent, eventUrl, eventType);
 
-      // Fetch dance style codes (cached per batch run) for prompt injection and validation
-      const danceStyleCodes = await ctx.run("getDanceStyleCodes", () => getDanceStyleCodes());
-
-      // Step 4: Extract event parts (Czech output)
-      // If extraction fails after retries, continue with empty parts and mark as incomplete.
-      let extracted: { title: string; description: string; parts: import("../core/schemas").EventPart[] };
-      let partsIncomplete = false;
-      try {
-        extracted = await runStep(ctx, "extractParts", eventUrl, () =>
-          extractEventParts(description, startTime, endTime, danceStyleCodes)
-        );
-      } catch (err) {
-        log({ level: "warn", message: "extractParts failed, continuing with empty parts", url: eventUrl, error: String(err) });
-        extracted = { title: facebookEvent.name, description: description, parts: [] };
-        partsIncomplete = true;
-      }
-
-      // Step 5: Extract event info
-      // If extraction fails after retries, continue with empty info and mark as incomplete.
-      let info: import("../core/schemas").EventInfo[];
-      let infoIncomplete = false;
-      try {
-        info = await runStep(ctx, "extractInfo", eventUrl, () => extractEventInfo(description));
-      } catch (err) {
-        log({ level: "warn", message: "extractInfo failed, continuing with empty info", url: eventUrl, error: String(err) });
-        info = [];
-        infoIncomplete = true;
-      }
-
-      const isIncomplete = partsIncomplete || infoIncomplete;
-
-      // Step 6: Resolve venue
-      let venue = null;
-      if (facebookEvent.location) {
-        venue = await runStep(ctx, "resolveVenue", eventUrl, () => resolveVenue(facebookEvent.location!));
-        if (venue !== null && venue.id === undefined) {
-          log({
-            level: "warn",
-            message: "resolveVenue returned a venue without an id for event — venue association will be stored as null. This may indicate a Directus API issue.",
-            url: eventUrl,
-          });
-        }
-      }
-
-      // Step 7: Derive organizer
-      const organizer = facebookEvent.hosts?.[0]?.name ?? facebookEvent.name;
-
-      // Step 8: Translate to EN and ES
-      const contentInput = {
-        title: extracted.title,
-        description: extracted.description,
-        parts: extracted.parts,
-        info,
-      };
-
-      const translations: DirectusEventTranslation[] = [
-        {
-          languages_code: "cs",
-          title: extracted.title,
-          description: extracted.description,
-          parts_translations: extracted.parts.map((p) => ({
-            name: p.name,
-            description: p.description,
-          })),
-          info_translations: info.map((i) => ({ key: i.key })),
-        },
-      ];
-
-      const translationLanguages = [
-        { code: "en", name: "English" },
-        { code: "es", name: "Spanish" },
-      ];
-
-      for (const lang of translationLanguages) {
-        try {
-          const translated = await ctx.run(`translate_${lang.code}`, () =>
-            translateEventContent(contentInput, lang.name)
-          );
-          translations.push({
-            languages_code: lang.code,
-            title: translated.title,
-            description: translated.description,
-            parts_translations: translated.parts_translations,
-            info_translations: translated.info_translations,
-          });
-        } catch (err) {
-          log({ level: "error", message: `Translation to ${lang.code} failed`, url: originalUrl, error: String(err) });
-          captureError(err instanceof Error ? err : new Error(String(err)), {
-            workflowRunId: ctx.key,
-            eventUrl: originalUrl,
-            step: `translate_${lang.code}`,
-          });
-          // Continue with remaining languages
-        }
-      }
-
-      // Step 9: Compute dances, validate against dance style codes, compute translation_status
-      const rawDances = computeDances(extracted.parts);
-      const dances = validateDanceCodes(rawDances, danceStyleCodes);
-      const translationStatus = computeTranslationStatus(translations);
-
-      // Step 10: Process image with fallback chain
-      const primaryDance = dances[0] ?? "";
-      const imageResult = await ctx.run("processImage", () =>
-        processEventImage(facebookEvent.imageUrl, primaryDance, eventType, extracted.title)
-      );
-
-      // Step 11: Build and store event
+      // Build and store event
+      const { isIncomplete, ...eventData } = processed;
       const newEvent: DirectusEvent = {
-        title: extracted.title,
-        original_description: facebookEvent.description ?? "",
-        organizer,
-        venue: venue?.id ?? null,
-        start_time: startTime,
-        end_time: endTime,
-        timezone: eventTimezone,
+        ...eventData,
         original_url: originalUrl,
-        parts: extracted.parts,
-        info,
-        dances,
-        image: imageResult.fileId,
-        image_source: imageResult.source,
-        event_type: eventType,
-        registration_url: facebookEvent.ticketUrl || info.find((i) => i.type === "url")?.value || null,
         status: isIncomplete ? "incomplete" : "published",
         published: true,
         reviewed: false,
-        translation_status: translationStatus,
-        translations,
       };
 
       const createdEvent = await runStep(ctx, "createEvent", originalUrl, () => createEvent(newEvent));
