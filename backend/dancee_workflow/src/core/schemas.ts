@@ -78,6 +78,9 @@ const FacebookEventObjectSchema = z.object({
     )
     .optional(),
   url: z.string(),
+  // Facebook provides a direct ticket/registration URL when the organizer sets one.
+  // This takes priority over any URL extracted from the description by the LLM.
+  ticketUrl: z.string().nullable().optional(),
   // The scraper returns the cover image in `photo.imageUri`, not as a top-level `imageUrl`.
   // Accept both formats: direct `imageUrl` string or nested `photo.imageUri`.
   imageUrl: z.string().nullable().optional(),
