@@ -60,6 +60,7 @@ const allowedOrigins = config.corsOrigins === "*"
 const apiRoutes: Record<string, string> = {
   "/api/event": "/ApiService/processEvent",
   "/api/event/reprocess": "/ApiService/reprocessEvent",
+  "/api/event/force-reprocess": "/ApiService/forceReprocessEvent",
   "/api/events/process": "/ApiService/processBatch",
   "/api/events/process-group": "/ApiService/processGroup",
   "/api/events/list": "/ApiService/listEvents",

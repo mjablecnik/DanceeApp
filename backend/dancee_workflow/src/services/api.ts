@@ -1,12 +1,16 @@
 import * as restate from "@restatedev/restate-sdk";
 import { z } from "zod";
 import { listPublishedEvents, findEventByOriginalUrl, getEventById, updateEvent, deleteEventTranslations, createError, getDanceStyleCodes, listPublishedCourses, createFavorite, deleteFavorite, listFavorites, listDanceStyles, getCourseById, updateCourse } from "../clients/directus-client";
+import { scrapeEvent } from "../clients/scraper-client";
 import { config, captureError } from "../core/config";
 import { log } from "../core/logger";
 import { normalizeEventUrl } from "../core/utils";
-import { extractEventParts, extractEventInfo, validateDanceCodes } from "./event-parser";
+import { classifyEventType, extractEventParts, extractEventInfo, extractCourseData, validateDanceCodes } from "./event-parser";
 import { translateEventContent, translateCourseContent } from "./event-translator";
-import { computeDances } from "../core/schemas";
+import { processEventImage } from "./image-processor";
+import { resolveVenue } from "./venue-resolver";
+import { computeDances, toIsoOrNull } from "../core/schemas";
+import { convertToLocalTime } from "../core/timezone";
 import { computeTranslationStatus } from "./workflow";
 import type { DirectusEventTranslation, DirectusCourseTranslation, DirectusFavorite } from "../core/schemas";
 import type { EventWorkflow } from "./workflow";
@@ -296,6 +300,173 @@ export const apiService = restate.service({
       }
 
       const updated = await ctx.run("updateEvent", () => updateEvent(eventId!, patch));
+      return updated;
+    },
+
+    forceReprocessEvent: async (
+      ctx: restate.Context,
+      request: { id?: string | number },
+    ) => {
+      if (!request?.id) {
+        throw new restate.TerminalError("Missing required field: 'id'", { errorCode: 400 });
+      }
+
+      // Step 1: Load existing event from Directus
+      const event = await ctx.run("getEvent", () => getEventById(request.id!));
+      if (!event) {
+        throw new restate.TerminalError(`Event ${request.id} not found`, { errorCode: 404 });
+      }
+
+      const eventUrl = event.original_url;
+      if (!eventUrl) {
+        throw new restate.TerminalError(`Event ${request.id} has no original_url`, { errorCode: 400 });
+      }
+
+      // Step 2: Re-scrape from Facebook
+      const facebookEvent = await ctx.run("scrape", () => scrapeEvent(eventUrl));
+
+      if (facebookEvent.startTimestamp <= 0) {
+        throw new restate.TerminalError(
+          `Invalid startTimestamp from Facebook for event ${request.id}`,
+          { errorCode: 422 },
+        );
+      }
+
+      // Step 3: Compute times
+      const startTimeUtc = toIsoOrNull(facebookEvent.startTimestamp) as string;
+      const endTimeUtc = toIsoOrNull(facebookEvent.endTimestamp ?? undefined);
+      const eventTimezone = facebookEvent.timezone ?? "UTC";
+      const startTime = convertToLocalTime(startTimeUtc, eventTimezone);
+      const endTime = endTimeUtc ? convertToLocalTime(endTimeUtc, eventTimezone) : null;
+
+      // Step 4: Classify event type
+      const description = facebookEvent.description ?? facebookEvent.name;
+      const eventType = await ctx.run("classify", () => classifyEventType(description));
+
+      // Step 5: Fetch dance style codes
+      const danceStyleCodes = await ctx.run("getDanceStyleCodes", () => getDanceStyleCodes());
+
+      // Step 6: Extract parts
+      let extracted: { title: string; description: string; parts: import("../core/schemas").EventPart[] };
+      try {
+        extracted = await ctx.run("extractParts", () =>
+          extractEventParts(description, startTime, endTime, danceStyleCodes)
+        );
+      } catch (err) {
+        log({ level: "warn", message: "forceReprocess: extractParts failed, using fallback", url: eventUrl, error: String(err) });
+        extracted = { title: facebookEvent.name, description, parts: [] };
+      }
+
+      // Step 7: Extract info
+      let info: import("../core/schemas").EventInfo[];
+      try {
+        info = await ctx.run("extractInfo", () => extractEventInfo(description));
+      } catch (err) {
+        log({ level: "warn", message: "forceReprocess: extractInfo failed, using empty", url: eventUrl, error: String(err) });
+        info = [];
+      }
+
+      // Step 8: Resolve venue
+      let venueId: string | number | null = null;
+      if (facebookEvent.location) {
+        const venue = await ctx.run("resolveVenue", () => resolveVenue(facebookEvent.location!));
+        venueId = venue?.id ?? null;
+      }
+
+      // Step 9: Derive organizer
+      const organizer = facebookEvent.hosts?.[0]?.name ?? facebookEvent.name;
+
+      // Step 10: Translate
+      const contentInput = {
+        title: extracted.title,
+        description: extracted.description,
+        parts: extracted.parts,
+        info,
+      };
+
+      const translations: DirectusEventTranslation[] = [
+        {
+          languages_code: "cs",
+          title: extracted.title,
+          description: extracted.description,
+          parts_translations: extracted.parts.map((p) => ({ name: p.name, description: p.description })),
+          info_translations: info.map((i) => ({ key: i.key })),
+        },
+      ];
+
+      const translationLanguages = [
+        { code: "en", name: "English" },
+        { code: "es", name: "Spanish" },
+      ];
+
+      for (const lang of translationLanguages) {
+        try {
+          const translated = await ctx.run(`translate_${lang.code}`, () =>
+            translateEventContent(contentInput, lang.name)
+          );
+          translations.push({
+            languages_code: lang.code,
+            title: translated.title,
+            description: translated.description,
+            parts_translations: translated.parts_translations,
+            info_translations: translated.info_translations,
+          });
+        } catch (err) {
+          log({ level: "error", message: `forceReprocess: translation to ${lang.code} failed`, url: eventUrl, error: String(err) });
+        }
+      }
+
+      // Step 11: Compute dances
+      const rawDances = computeDances(extracted.parts);
+      const dances = validateDanceCodes(rawDances, danceStyleCodes);
+      const translationStatus = computeTranslationStatus(translations);
+
+      // Step 12: Process image
+      const primaryDance = dances[0] ?? "";
+      const imageResult = await ctx.run("processImage", () =>
+        processEventImage(facebookEvent.imageUrl, primaryDance, eventType, extracted.title)
+      );
+
+      // Step 13: Map translations onto existing IDs to avoid duplicates
+      const idByLang = new Map<string, number | string>();
+      if (Array.isArray(event.translations)) {
+        for (const t of event.translations) {
+          if (typeof t === "object" && t !== null && "languages_code" in t && "id" in t) {
+            const obj = t as { id: number | string; languages_code: string };
+            idByLang.set(obj.languages_code, obj.id);
+          }
+        }
+      }
+
+      const translationsPatch = translations.map((t) => ({
+        ...t,
+        ...(idByLang.has(t.languages_code) ? { id: idByLang.get(t.languages_code) } : {}),
+      }));
+
+      // Step 14: Build full patch and update
+      const patch: Record<string, unknown> = {
+        title: extracted.title,
+        original_description: facebookEvent.description ?? "",
+        organizer,
+        venue: venueId,
+        start_time: startTime,
+        end_time: endTime,
+        timezone: eventTimezone,
+        parts: extracted.parts,
+        info,
+        dances,
+        image: imageResult.fileId,
+        image_source: imageResult.source,
+        event_type: eventType,
+        registration_url: facebookEvent.ticketUrl || info.find((i) => i.type === "url")?.value || null,
+        status: "published",
+        reviewed: false,
+        translation_status: translationStatus,
+        translations: translationsPatch,
+      };
+
+      const updated = await ctx.run("updateEvent", () => updateEvent(request.id!, patch));
+      log({ level: "info", message: "forceReprocessEvent completed", eventId: String(request.id), url: eventUrl });
       return updated;
     },
 
