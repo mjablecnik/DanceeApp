@@ -501,6 +501,7 @@
     "unreviewed": "Sin revisar",
     "markAsReviewed": "Marcar como revisado",
     "markAsUnreviewed": "Marcar como sin revisar",
+    "reload": "Recargar evento",
     "filter": {
       "publishedStatus": "Estado de publicación",
       "reviewedStatus": "Estado de revisión",

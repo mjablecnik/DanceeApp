@@ -334,6 +334,11 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                         color: appSurface,
                         onSelected: (value) async {
                           switch (value) {
+                            case 'reload':
+                              await detailCubit.refreshEvent(widget.eventId, locale);
+                              if (mounted) {
+                                context.read<EventCubit>().loadEvents(locale);
+                              }
                             case 'review':
                               await detailCubit.toggleReviewed(widget.eventId, locale);
                               if (mounted) {
@@ -353,6 +358,23 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                           }
                         },
                         itemBuilder: (context) => [
+                          PopupMenuItem(
+                            value: 'reload',
+                            child: Row(
+                              children: [
+                                const FaIcon(
+                                  FontAwesomeIcons.arrowsRotate,
+                                  size: AppIconSizes.xs,
+                                  color: appText,
+                                ),
+                                const SizedBox(width: AppSpacing.md),
+                                Text(
+                                  t.editor.reload,
+                                  style: const TextStyle(color: appText),
+                                ),
+                              ],
+                            ),
+                          ),
                           PopupMenuItem(
                             value: 'review',
                             child: Row(

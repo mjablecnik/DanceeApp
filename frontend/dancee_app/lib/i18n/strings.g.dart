@@ -4,9 +4,9 @@
 /// To regenerate, run: `dart run slang`
 ///
 /// Locales: 3
-/// Strings: 1308 (436 per locale)
+/// Strings: 1311 (437 per locale)
 ///
-/// Built on 2026-05-21 at 20:56 UTC
+/// Built on 2026-05-29 at 10:14 UTC
 
 // coverage:ignore-file
 // ignore_for_file: type=lint
@@ -401,6 +401,7 @@ class _StringsEditorEn {
 	String get unreviewed => 'Unreviewed';
 	String get markAsReviewed => 'Mark as reviewed';
 	String get markAsUnreviewed => 'Mark as unreviewed';
+	String get reload => 'Reload event';
 	late final _StringsEditorFilterEn filter = _StringsEditorFilterEn._(_root);
 }
 
@@ -1395,6 +1396,7 @@ class _StringsEditorCs extends _StringsEditorEn {
 	@override String get unreviewed => 'Nezkontrolováno';
 	@override String get markAsReviewed => 'Označit jako zkontrolované';
 	@override String get markAsUnreviewed => 'Označit jako nezkontrolované';
+	@override String get reload => 'Znovu načíst akci';
 	@override late final _StringsEditorFilterCs filter = _StringsEditorFilterCs._(_root);
 }
 
@@ -2389,6 +2391,7 @@ class _StringsEditorEs extends _StringsEditorEn {
 	@override String get unreviewed => 'Sin revisar';
 	@override String get markAsReviewed => 'Marcar como revisado';
 	@override String get markAsUnreviewed => 'Marcar como sin revisar';
+	@override String get reload => 'Recargar evento';
 	@override late final _StringsEditorFilterEs filter = _StringsEditorFilterEs._(_root);
 }
 
@@ -3516,6 +3519,7 @@ extension on Translations {
 			case 'editor.unreviewed': return 'Unreviewed';
 			case 'editor.markAsReviewed': return 'Mark as reviewed';
 			case 'editor.markAsUnreviewed': return 'Mark as unreviewed';
+			case 'editor.reload': return 'Reload event';
 			case 'editor.filter.publishedStatus': return 'Published status';
 			case 'editor.filter.reviewedStatus': return 'Reviewed status';
 			case 'editor.filter.all': return 'All';
@@ -3960,6 +3964,7 @@ extension on _StringsCs {
 			case 'editor.unreviewed': return 'Nezkontrolováno';
 			case 'editor.markAsReviewed': return 'Označit jako zkontrolované';
 			case 'editor.markAsUnreviewed': return 'Označit jako nezkontrolované';
+			case 'editor.reload': return 'Znovu načíst akci';
 			case 'editor.filter.publishedStatus': return 'Stav publikování';
 			case 'editor.filter.reviewedStatus': return 'Stav kontroly';
 			case 'editor.filter.all': return 'Vše';
@@ -4404,6 +4409,7 @@ extension on _StringsEs {
 			case 'editor.unreviewed': return 'Sin revisar';
 			case 'editor.markAsReviewed': return 'Marcar como revisado';
 			case 'editor.markAsUnreviewed': return 'Marcar como sin revisar';
+			case 'editor.reload': return 'Recargar evento';
 			case 'editor.filter.publishedStatus': return 'Estado de publicación';
 			case 'editor.filter.reviewedStatus': return 'Estado de revisión';
 			case 'editor.filter.all': return 'Todo';

@@ -501,6 +501,7 @@
     "unreviewed": "Unreviewed",
     "markAsReviewed": "Mark as reviewed",
     "markAsUnreviewed": "Mark as unreviewed",
+    "reload": "Reload event",
     "filter": {
       "publishedStatus": "Published status",
       "reviewedStatus": "Reviewed status",
