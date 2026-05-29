@@ -79,6 +79,39 @@ backend/dancee_api/
   - Sentry error monitoring
   - Supervisord for process management in Docker
 
+#### Network Architecture (HTTP Proxy)
+
+The service runs three internal processes managed by supervisord:
+
+1. **HTTP Proxy** (port 9080, exposed to Fly.io) — custom HTTP/1.1 server in `index.ts` that:
+   - Maps `/api/*` routes to Restate ingress handler paths (e.g. `/api/event` → `/ApiService/processEvent`)
+   - Handles CORS headers
+   - Forwards `x-dancee-*` headers to Restate
+   - Proxies unknown paths to Restate admin API (port 9070)
+
+2. **Restate Server** (port 8080, internal) — the Restate ingress that executes service/workflow handlers with durable execution guarantees
+
+3. **Restate Worker** (port 9081, internal) — the actual TypeScript endpoint registered with Restate server
+
+**Important**: All API calls go through the HTTP proxy on port 9080. When adding a new handler to `ApiService`, you MUST also add a route mapping in `index.ts` `apiRoutes` object. Direct calls to Restate ingress (port 8080) or the worker (port 9081) are internal only.
+
+#### API Route Mappings (index.ts)
+
+```
+/api/event                → /ApiService/processEvent
+/api/event/reprocess      → /ApiService/reprocessEvent
+/api/event/force-reprocess → /ApiService/forceReprocessEvent
+/api/events/process       → /ApiService/processBatch
+/api/events/process-group → /ApiService/processGroup
+/api/events/list          → /ApiService/listEvents
+/api/courses/list         → /ApiService/listCourses
+/api/favorites            → /ApiService/createFavorite
+/api/favorites/delete     → /ApiService/deleteFavorite
+/api/favorites/list       → /ApiService/listFavorites
+/api/dance-styles/list    → /ApiService/listDanceStyles
+/api/event/retranslate    → /ApiService/retranslateItem
+```
+
 #### dancee_workflow Structure:
 ```
 backend/dancee_workflow/
