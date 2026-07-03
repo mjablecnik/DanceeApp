@@ -205,14 +205,15 @@ export type DirectusEventTranslation = z.infer<typeof DirectusEventTranslationSc
 export const DirectusVenueSchema = z.object({
   id: z.union([z.number(), z.string()]).optional(),
   name: z.string(),
-  street: z.string(),
-  number: z.string(),
+  address: z.string(),
   town: z.string(),
   country: z.string(),
   postal_code: z.string(),
   region: z.string(),
   latitude: z.number().nullable(),
   longitude: z.number().nullable(),
+  address_source: z.enum(["facebook", "nominatim"]).optional(),
+  verified: z.boolean().default(false),
 });
 
 export type DirectusVenue = z.infer<typeof DirectusVenueSchema>;

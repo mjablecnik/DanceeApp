@@ -76,7 +76,7 @@ describe("Property 9: Venue resolution field mapping", () => {
 
           // Facebook fields take precedence; only region comes from Nominatim
           expect(result.name).toBe(loc.name);
-          expect(result.street).toBe(loc.address);
+          expect(result.address).toBe(loc.address);
           expect(result.town).toBe(loc.city);
           expect(result.country).toBe(loc.countryCode);
         }
@@ -117,7 +117,7 @@ describe("Property 9: Venue resolution field mapping", () => {
     );
   });
 
-  it("defaults venue region to 'Other' when Nominatim address.state is absent", async () => {
+  it("defaults venue region to city when Nominatim address.state is absent but city is present", async () => {
     mockFindVenueByCoordinates.mockResolvedValue(null);
     mockFindVenue.mockResolvedValue(null);
     mockReverseGeocode.mockResolvedValue({
@@ -137,7 +137,7 @@ describe("Property 9: Venue resolution field mapping", () => {
       longitude: 14.0,
     });
 
-    expect(result.region).toBe("Other");
+    expect(result.region).toBe("Some City");
   });
 
   it("returns null when reverseGeocode throws and no location fields are available", async () => {

@@ -204,13 +204,9 @@ async function setupVenuesCollection(): Promise<void> {
     interface: "input",
   }, { is_nullable: true, max_length: 255 });
 
-  await createFieldIfNotExists("venues", "street", "string", {
+  await createFieldIfNotExists("venues", "address", "string", {
     interface: "input",
-  }, { is_nullable: true, max_length: 255 });
-
-  await createFieldIfNotExists("venues", "number", "string", {
-    interface: "input",
-  }, { is_nullable: true, max_length: 50 });
+  }, { is_nullable: true, max_length: 500 });
 
   await createFieldIfNotExists("venues", "town", "string", {
     interface: "input",
@@ -235,6 +231,16 @@ async function setupVenuesCollection(): Promise<void> {
   await createFieldIfNotExists("venues", "longitude", "float", {
     interface: "input",
   }, { is_nullable: true });
+
+  await createFieldIfNotExists("venues", "address_source", "string", {
+    interface: "select-dropdown",
+    options: { choices: [{ text: "Facebook", value: "facebook" }, { text: "Nominatim", value: "nominatim" }] },
+  }, { is_nullable: true, max_length: 20 });
+
+  await createFieldIfNotExists("venues", "verified", "boolean", {
+    interface: "boolean",
+    special: ["cast-boolean"],
+  }, { is_nullable: false, default_value: false });
 }
 
 async function setupGroupsCollection(): Promise<void> {

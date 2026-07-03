@@ -28,14 +28,15 @@ function makeVenue(overrides: Record<string, unknown> = {}) {
   return {
     id: 1,
     name: "Test Venue",
-    street: "Main Street",
-    number: "1",
+    address: "Main Street 1",
     town: "Prague",
     country: "CZ",
     postal_code: "11000",
     region: "Prague",
     latitude: 50.0,
     longitude: 14.0,
+    address_source: "facebook",
+    verified: false,
     ...overrides,
   };
 }
@@ -166,13 +167,13 @@ describe("Property 10: Venue deduplication", () => {
     expect(result).toBeNull();
   });
 
-  it("returns existing venue by name, street, town when found", async () => {
+  it("returns existing venue by name, address, town when found", async () => {
     await fc.assert(
       fc.asyncProperty(
         fc.record({
           id: fc.integer({ min: 1, max: 9999 }),
           name: fc.string({ minLength: 1, maxLength: 50 }),
-          street: fc.string({ minLength: 1, maxLength: 50 }),
+          address: fc.string({ minLength: 1, maxLength: 50 }),
           town: fc.string({ minLength: 1, maxLength: 50 }),
         }),
         async (partial) => {
@@ -185,7 +186,7 @@ describe("Property 10: Venue deduplication", () => {
               json: async () => ({ data: [venue] }),
             })
           );
-          const result = await findVenue(venue.name as string, venue.street as string, venue.town as string);
+          const result = await findVenue(venue.name as string, venue.address as string, venue.town as string);
           expect(result).not.toBeNull();
           expect(result?.id).toBe(venue.id);
         }
@@ -193,7 +194,7 @@ describe("Property 10: Venue deduplication", () => {
     );
   });
 
-  it("returns null when no venue found by name, street, town", async () => {
+  it("returns null when no venue found by name, address, town", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({

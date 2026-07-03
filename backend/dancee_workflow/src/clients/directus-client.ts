@@ -160,13 +160,13 @@ export async function createVenue(venue: DirectusVenue): Promise<DirectusVenue> 
 
 export async function findVenue(
   name: string,
-  street: string,
+  address: string,
   town: string,
 ): Promise<DirectusVenue | null> {
   const filter = {
     _and: [
       { name: { _eq: name } },
-      { street: { _eq: street } },
+      { address: { _eq: address } },
       { town: { _eq: town } },
     ],
   };

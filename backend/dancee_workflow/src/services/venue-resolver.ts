@@ -18,46 +18,47 @@ export async function resolveVenue(location: FacebookLocation): Promise<Directus
   }
 
   // Build venue fields from Facebook location data
-  let name = location.name ?? "";
-  let street = location.address ?? "";
-  let town = location.city ?? "";
-  // Use countryCode if available (ISO alpha-2), fall back to country name
-  let country = location.countryCode ?? location.country ?? "";
-  let region = "Other";
-  let postalCode: string | undefined;
-  let houseNumber: string | undefined;
+  const name = location.name ?? "";
+  const fbAddress = location.address ?? "";
+  const fbTown = location.city ?? "";
+  const fbCountry = location.countryCode ?? location.country ?? "";
 
-  // Check existing venue by (name, street, town) BEFORE calling Nominatim
-  // (Requirement 6.8: avoid unnecessary external geocoding requests)
-  if (name && street && town) {
-    const byFields = await findVenue(name, street, town);
+  // Determine address source: if FB provides address, it's authoritative
+  const hasFbAddress = !!fbAddress;
+  let address = fbAddress;
+  let town = fbTown;
+  let country = fbCountry;
+  let postalCode = "";
+  let region = "Other";
+  let addressSource: "facebook" | "nominatim" = hasFbAddress ? "facebook" : "nominatim";
+
+  // Check existing venue by (name, address, town) BEFORE calling Nominatim
+  if (name && address && town) {
+    const byFields = await findVenue(name, address, town);
     if (byFields) return byFields;
   }
 
-  // Call Nominatim when coordinates are available to supplement region and
-  // fill in any missing fields (requirement 6.2). Per the design error handling
-  // table, a Nominatim failure falls back to region "Other" so the workflow
-  // is not blocked by a non-critical geocoding outage or rate limit.
+  // Use Nominatim to supplement missing fields (city, country, region, postal_code)
+  // or to build the address when FB didn't provide one
   if (lat !== undefined && lng !== undefined) {
     try {
       const geo = await reverseGeocode(lat, lng);
       const addr = geo.address ?? {};
-      // Fill in only missing fields from Nominatim; region always comes from Nominatim
-      name = name || addr.road || "";
-      street = street || addr.road || "";
-      houseNumber = addr.house_number;
+
+      // Only use Nominatim address if FB didn't provide one
+      if (!hasFbAddress) {
+        const road = addr.road ?? "";
+        const houseNumber = addr.house_number ?? "";
+        address = houseNumber ? `${road} ${houseNumber}`.trim() : road;
+      }
+
+      // Fill in missing city/country from Nominatim
       town = town || addr.city || addr.town || addr.village || addr.county || "";
       country = country || addr.country_code?.toUpperCase() || "";
-      postalCode = addr.postcode;
-
-      const countryCode = (addr.country_code ?? country).toUpperCase();
-      region = addr.state
-        ?? addr.city
-        ?? addr.town
-        ?? "Other";
+      postalCode = addr.postcode ?? "";
+      region = addr.state ?? addr.city ?? addr.town ?? "Other";
     } catch (err) {
       log({ level: "warn", message: `reverseGeocode failed for coordinates (${lat}, ${lng}), falling back to region "Other"`, error: String(err) });
-      // region remains "Other" (already initialised above)
     }
   } else if (name || town) {
     // No coordinates — try forward geocoding by venue name or town
@@ -68,13 +69,8 @@ export async function resolveVenue(location: FacebookLocation): Promise<Directus
         const addr = geo.address ?? {};
         town = town || addr.city || addr.town || addr.village || addr.county || "";
         country = country || addr.country_code?.toUpperCase() || "";
-        postalCode = postalCode || addr.postcode;
-
-        const countryCode = (addr.country_code ?? country).toUpperCase();
-        region = addr.state
-          ?? addr.city
-          ?? addr.town
-          ?? "Other";
+        postalCode = postalCode || addr.postcode || "";
+        region = addr.state ?? addr.city ?? addr.town ?? "Other";
       }
     } catch (err) {
       log({ level: "warn", message: `forwardGeocode failed for "${town || name}", falling back to region "Other"`, error: String(err) });
@@ -82,23 +78,22 @@ export async function resolveVenue(location: FacebookLocation): Promise<Directus
   }
 
   // When all identifying fields are empty, there is nothing meaningful to store.
-  // Creating an empty-field venue would pollute the collection with duplicates since
-  // the (name, street, town) deduplication check is skipped for empty fields.
-  if (!name && !street && !town) {
+  if (!name && !address && !town) {
     log({ level: "warn", message: `resolveVenue: all identifying venue fields are empty for location (${lat ?? "?"}, ${lng ?? "?"}), skipping venue creation` });
     return null;
   }
 
   const newVenue: DirectusVenue = {
     name,
-    street,
-    number: houseNumber ?? "",
+    address,
     town,
     country,
-    postal_code: postalCode ?? "",
+    postal_code: postalCode,
     region,
     latitude: lat ?? null,
     longitude: lng ?? null,
+    address_source: addressSource,
+    verified: false,
   };
 
   return createVenue(newVenue);
