@@ -1,0 +1,24 @@
+{
+  "segments": [
+    {
+      "pipeline_path": "/home/martin/.trayline/pipelines/tasks/check-build.yaml",
+      "vars": {
+        "path": "backend/dancee_workflow/"
+      }
+    },
+    {
+      "pipeline_path": "/home/martin/.trayline/pipelines/tasks/check-build.yaml",
+      "vars": {
+        "path": "backend/dancee_cms/"
+      }
+    },
+    {
+      "pipeline_path": "/home/martin/.trayline/pipelines/tasks/check-build.yaml",
+      "vars": {
+        "path": "frontend/dancee_app/"
+      }
+    }
+  ],
+  "completed_segments": 1,
+  "timestamp": "2026-07-03T11:45:36+02:00"
+}
