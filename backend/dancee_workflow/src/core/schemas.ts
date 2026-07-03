@@ -89,7 +89,7 @@ const FacebookEventObjectSchema = z.object({
   }).nullable().optional(),
 }).transform((event) => ({
   ...event,
-  imageUrl: event.imageUrl ?? event.photo?.imageUri ?? null,
+  imageUrl: event.imageUrl !== undefined ? event.imageUrl : event.photo?.imageUri,
 }));
 
 // The scraper API wraps the event in a `{ payload: ... }` envelope.
@@ -361,7 +361,7 @@ export const CourseExtractionSchema = z.object({
   price: z.string().nullable(),
   price_note: z.string().nullable(),
   learning_items: z.array(z.string()),
-  registration_url: z.string().nullable(),
+  registration_url: z.string().nullable().optional(),
   dances: z.array(z.string()),
 });
 

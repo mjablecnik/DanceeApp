@@ -32,9 +32,8 @@ export async function downloadImage(
 }
 
 /**
- * Generates an AI image via OpenRouter using the configured image generation model.
- * OpenRouter returns images in a non-standard `images` field on the message object
- * (not in `content`), with structure: images[].image_url.url = "data:image/png;base64,..."
+ * Generates an AI image via the configured image generation model.
+ * Uses the OpenAI images.generate API with b64_json response format.
  * Returns the image as a Buffer.
  */
 export async function generateAiImage(
@@ -44,48 +43,18 @@ export async function generateAiImage(
 ): Promise<Buffer> {
   const prompt = getImageGenerationPrompt(title, primaryDance, eventType);
   const openai = getOpenAI();
-  const response = await openai.chat.completions.create({
+  const response = await openai.images.generate({
     model: config.imageGenerationModel,
-    messages: [{ role: "user", content: prompt }],
-    // @ts-expect-error — OpenRouter extension: request image output modality
-    modalities: ["image"],
-  }) as any;
+    prompt,
+    response_format: "b64_json",
+    n: 1,
+  });
 
-  const message = response.choices?.[0]?.message;
-
-  // OpenRouter returns images in a separate `images` array on the message object
-  if (Array.isArray(message?.images)) {
-    for (const img of message.images) {
-      if (img?.type === "image_url" && img?.image_url?.url) {
-        const match = img.image_url.url.match(/data:image\/[^;]+;base64,(.+)/s);
-        if (match) {
-          return Buffer.from(match[1], "base64");
-        }
-      }
-    }
+  const b64 = response.data?.[0]?.b64_json;
+  if (!b64) {
+    throw new Error("AI image generation returned no image data");
   }
-
-  // Fallback: check content as string (some models may use this)
-  if (typeof message?.content === "string" && message.content.length > 0) {
-    const match = message.content.match(/data:image\/[^;]+;base64,(.+)/s);
-    if (match) {
-      return Buffer.from(match[1], "base64");
-    }
-  }
-
-  // Fallback: check content as array
-  if (Array.isArray(message?.content)) {
-    for (const part of message.content) {
-      if (part?.type === "image_url" && part?.image_url?.url) {
-        const match = part.image_url.url.match(/data:image\/[^;]+;base64,(.+)/s);
-        if (match) {
-          return Buffer.from(match[1], "base64");
-        }
-      }
-    }
-  }
-
-  throw new Error("AI image generation returned no valid image data");
+  return Buffer.from(b64, "base64");
 }
 
 /**
@@ -125,7 +94,7 @@ export async function processEventImage(
   // Step 3: Generate a new AI image
   try {
     const buffer = await generateAiImage(title, primaryDance, eventType);
-    const fileId = await uploadFile(buffer, "ai-generated-event-image.png", "image/png");
+    const fileId = await uploadFile(buffer, "ai-generated-event-image.jpg", "image/jpeg");
     return { fileId, source: "ai_generated" };
   } catch (err) {
     log({ level: "warn", message: "Failed to generate AI image, storing null", reason: err instanceof Error ? err.message : String(err) });

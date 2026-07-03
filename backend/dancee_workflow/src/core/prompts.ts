@@ -183,6 +183,7 @@ export function getImageGenerationPrompt(title: string, primaryDance: string, ev
   return `Create a vibrant, professional photograph-style image for a dance event.
 
 Event context (for visual style reference only — do NOT include any text):
+- Event title: ${title}
 - Primary dance style: ${primaryDance}
 - Event type: ${eventType}
 

@@ -56,7 +56,7 @@ Restate-based event processing workflow service for Dancee. Automates the pipeli
 bun run dev
 
 # Run tests
-bun test
+bun run test
 
 # Build TypeScript
 bun run build
@@ -115,7 +115,7 @@ See [docs/SCRIPTS.md](docs/SCRIPTS.md) for documentation on all available script
 ## Testing
 
 ```bash
-bun test
+bun run test
 ```
 
 Tests use [Vitest](https://vitest.dev/) with [fast-check](https://fast-check.io/) for property-based testing. Test files are located in `src/__tests__/`.
