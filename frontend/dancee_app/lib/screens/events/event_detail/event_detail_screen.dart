@@ -336,22 +336,22 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                           switch (value) {
                             case 'reload':
                               await detailCubit.refreshEvent(widget.eventId, locale);
-                              if (mounted) {
+                              if (context.mounted) {
                                 context.read<EventCubit>().loadEvents(locale);
                               }
                             case 'review':
                               await detailCubit.toggleReviewed(widget.eventId, locale);
-                              if (mounted) {
+                              if (context.mounted) {
                                 context.read<EventCubit>().loadEvents(locale);
                               }
                             case 'publish':
                               await detailCubit.togglePublished(widget.eventId, locale);
-                              if (mounted) {
+                              if (context.mounted) {
                                 context.read<EventCubit>().loadEvents(locale);
                               }
                             case 'edit':
                               await EditEventRoute(id: widget.eventId).push(context);
-                              if (mounted) {
+                              if (context.mounted) {
                                 detailCubit.refreshEvent(widget.eventId, locale);
                                 context.read<EventCubit>().loadEvents(locale);
                               }

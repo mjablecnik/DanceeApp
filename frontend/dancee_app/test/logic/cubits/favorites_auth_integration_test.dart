@@ -35,17 +35,15 @@ class _FakeUserMetadata extends Fake implements UserMetadata {
 class _FakeUser extends Fake implements User {
   _FakeUser({
     required this.uid,
-    this.email,
-    this.displayName,
     this.emailVerified = false,
   }) : metadata = _FakeUserMetadata(creationTime: DateTime.now());
 
   @override
   final String uid;
   @override
-  final String? email;
+  final String? email = null;
   @override
-  final String? displayName;
+  final String? displayName = null;
   @override
   final bool emailVerified;
   @override

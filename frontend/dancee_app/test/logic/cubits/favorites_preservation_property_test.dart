@@ -183,7 +183,7 @@ void main() {
           authRepo = _ImmediateLinkAuthRepository();
           trackingRepo = _TrackingFavoritesRepository(
             favorites: [
-              Favorite(
+              const Favorite(
                 id: 1,
                 userId: 'test-uid',
                 itemType: 'event',

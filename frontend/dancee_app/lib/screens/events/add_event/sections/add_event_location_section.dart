@@ -8,25 +8,25 @@ class AddEventLocationSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return const Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const AddEventSectionHeading(
+        AddEventSectionHeading(
           icon: FontAwesomeIcons.locationDot,
           label: 'Místo konání',
         ),
-        const SizedBox(height: AppSpacing.lg),
-        const AddEventFormField(
+        SizedBox(height: AppSpacing.lg),
+        AddEventFormField(
           label: 'Název místa *',
           child: AddEventTextInput(hintText: 'např. Kongresové centrum Praha'),
         ),
-        const SizedBox(height: AppSpacing.lg),
-        const AddEventFormField(
+        SizedBox(height: AppSpacing.lg),
+        AddEventFormField(
           label: 'Adresa *',
           child: AddEventTextInput(hintText: 'např. 5. května 65, Praha 4'),
         ),
-        const SizedBox(height: AppSpacing.lg),
-        const Row(
+        SizedBox(height: AppSpacing.lg),
+        Row(
           children: [
             Expanded(
               child: AddEventFormField(

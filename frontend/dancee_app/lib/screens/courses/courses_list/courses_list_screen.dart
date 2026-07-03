@@ -76,12 +76,6 @@ class CoursesListScreen extends StatelessWidget {
                         // const SizedBox(height: AppSpacing.xxl),
                         BlocBuilder<FilterCubit, FilterState>(
                           builder: (context, filterState) {
-                            final filterCubit = context.read<FilterCubit>();
-                            final danceStyles = filterCubit.allDanceStyles;
-                            final selectedCodes = filterState.selectedDanceStyles;
-                            final selectedIndex = danceStyles.indexWhere(
-                              (d) => selectedCodes.contains(d.code),
-                            );
                             return DanceStylesFilterSection(
                               source: 'courses',
                               onShowAll: () => const FilterDanceRoute(source: 'courses').push(context),

@@ -22,37 +22,6 @@ class _FakeFavoritesRepository extends Fake implements FavoritesRepository {
   Future<void> deleteAllFavoritesForUser(String userId) async {}
 }
 
-class _FakeUserMetadata extends Fake implements UserMetadata {
-  _FakeUserMetadata({this.creationTime});
-
-  @override
-  final DateTime? creationTime;
-}
-
-class _FakeUser extends Fake implements User {
-  _FakeUser({
-    required this.uid,
-    this.email,
-    this.displayName,
-    this.emailVerified = false,
-    DateTime? creationTime,
-  }) : metadata = _FakeUserMetadata(creationTime: creationTime);
-
-  @override
-  final String uid;
-
-  @override
-  final String? email;
-
-  @override
-  final String? displayName;
-
-  @override
-  final bool emailVerified;
-
-  @override
-  final UserMetadata metadata;
-}
 
 /// Controllable fake [AuthRepository] that records calls and arguments.
 class _TrackingAuthRepository extends Fake implements AuthRepository {
@@ -385,7 +354,7 @@ void _registerFormValidation() {
       final emailValid = FormValidators.email('user@example.com') == null;
       final passwordValid = FormValidators.password('password123') == null;
       final confirmValid = FormValidators.confirmPassword('password123', 'password123') == null;
-      final agreeTerms = false; // not checked
+      const agreeTerms = false; // not checked
 
       final allValid = emailValid && passwordValid && confirmValid && agreeTerms;
       expect(allValid, isFalse, reason: 'Terms not agreed should prevent submission');
@@ -395,7 +364,7 @@ void _registerFormValidation() {
       final emailValid = FormValidators.email('user@example.com') == null;
       final passwordValid = FormValidators.password('password123') == null;
       final confirmValid = FormValidators.confirmPassword('password123', 'password123') == null;
-      final agreeTerms = true;
+      const agreeTerms = true;
 
       final allValid = emailValid && passwordValid && confirmValid && agreeTerms;
       expect(allValid, isTrue, reason: 'All valid + terms agreed should allow submission');

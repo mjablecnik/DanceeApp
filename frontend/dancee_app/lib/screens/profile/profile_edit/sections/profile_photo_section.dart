@@ -204,6 +204,7 @@ class _ProfilePhotoSectionState extends State<ProfilePhotoSection> {
 
   /// Picks and crops an image from the given [source], then uploads it.
   Future<void> _pickAndCropImage(ImageSource source) async {
+    final webSettings = kIsWeb ? [WebUiSettings(context: context)] : <PlatformUiSettings>[];
     try {
       final pickedFile = await ImagePicker().pickImage(source: source);
       if (pickedFile == null) return;
@@ -227,7 +228,7 @@ class _ProfilePhotoSectionState extends State<ProfilePhotoSection> {
           IOSUiSettings(
             aspectRatioLockEnabled: true,
           ),
-          if (kIsWeb) WebUiSettings(context: context),
+          ...webSettings,
         ],
       );
       if (croppedFile == null) return;

@@ -1182,7 +1182,7 @@ void _unit81Deserialization() {
 
   test('U3d: empty type defaults to "workshop" during deserialization', () {
     final parts = [
-      EventPart(name: 'No Type', type: '', lectors: const [], djs: const []),
+      const EventPart(name: 'No Type', type: '', lectors: [], djs: []),
     ];
     final result = deserializeProgramFromParts(parts);
     addTearDown(() {

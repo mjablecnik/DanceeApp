@@ -8,15 +8,15 @@ class AddEventDateTimeSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return const Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const AddEventSectionHeading(
+        AddEventSectionHeading(
           icon: FontAwesomeIcons.calendar,
           label: 'Datum a čas',
         ),
-        const SizedBox(height: AppSpacing.lg),
-        const Row(
+        SizedBox(height: AppSpacing.lg),
+        Row(
           children: [
             Expanded(
               child: AddEventFormField(
@@ -33,8 +33,8 @@ class AddEventDateTimeSection extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: AppSpacing.lg),
-        const Row(
+        SizedBox(height: AppSpacing.lg),
+        Row(
           children: [
             Expanded(
               child: AddEventFormField(

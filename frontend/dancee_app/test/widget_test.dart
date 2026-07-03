@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_core_platform_interface/firebase_core_platform_interface.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -43,10 +42,10 @@ void _setupFakeFirebase() {
   // Firebase Auth will then attempt to open an EventChannel on that name to
   // stream auth-state events, so we mock those EventChannel MethodChannels
   // too (listen/cancel always succeed, no events are ever emitted).
-  const _pigeonCodec = StandardMessageCodec();
+  const pigeonCodec = StandardMessageCodec();
 
   // Success response for void/null methods.
-  final ByteData? nullResponse = _pigeonCodec.encodeMessage(<Object?>[null]);
+  final ByteData? nullResponse = pigeonCodec.encodeMessage(<Object?>[null]);
 
   const firebaseAuthChannelPrefix =
       'dev.flutter.pigeon.firebase_auth_platform_interface.FirebaseAuthHostApi.';
@@ -54,10 +53,10 @@ void _setupFakeFirebase() {
   for (final entry in {
     // registerIdTokenListener returns the channel name for the id-token stream.
     'registerIdTokenListener':
-        _pigeonCodec.encodeMessage(<Object?>['__fake_id_token_channel__']),
+        pigeonCodec.encodeMessage(<Object?>['__fake_id_token_channel__']),
     // registerAuthStateListener returns the channel name for auth-state stream.
     'registerAuthStateListener':
-        _pigeonCodec.encodeMessage(<Object?>['__fake_auth_state_channel__']),
+        pigeonCodec.encodeMessage(<Object?>['__fake_auth_state_channel__']),
     'initializeApp': nullResponse,
     'signOut': nullResponse,
     'currentUser': nullResponse,

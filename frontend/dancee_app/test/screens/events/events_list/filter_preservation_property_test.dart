@@ -55,7 +55,6 @@ import 'package:dancee_app/logic/cubits/event_cubit.dart';
 import 'package:dancee_app/logic/cubits/favorites_cubit.dart';
 import 'package:dancee_app/logic/cubits/filter_cubit.dart';
 import 'package:dancee_app/logic/cubits/settings_cubit.dart';
-import 'package:dancee_app/logic/states/course_state.dart';
 import 'package:dancee_app/logic/states/event_state.dart';
 import 'package:dancee_app/screens/events/events_list/events_list_screen.dart';
 import 'package:dancee_app/screens/events/events_list/sections/featured_events_section.dart';
@@ -64,25 +63,6 @@ import 'package:dancee_app/screens/events/events_list/sections/upcoming_events_s
 // ---------------------------------------------------------------------------
 // Fakes
 // ---------------------------------------------------------------------------
-
-class _FakeUserMetadata extends Fake implements UserMetadata {
-  @override
-  DateTime? get creationTime =>
-      DateTime.now().subtract(const Duration(hours: 1));
-}
-
-class _FakeUser extends Fake implements User {
-  @override
-  String get uid => 'test-uid';
-  @override
-  String? get email => 'test@example.com';
-  @override
-  String? get displayName => null;
-  @override
-  bool get emailVerified => true;
-  @override
-  UserMetadata get metadata => _FakeUserMetadata();
-}
 
 class _FakeAuthRepository extends Fake implements AuthRepository {
   final _controller = StreamController<User?>.broadcast();

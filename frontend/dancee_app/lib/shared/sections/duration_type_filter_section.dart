@@ -12,13 +12,12 @@ class _ChipDef {
   const _ChipDef(this.code, this.label);
 }
 
-class ChipRow extends StatelessWidget {
+class _ChipRow extends StatelessWidget {
   final List<_ChipDef> chips;
   final Set<String> selected;
   final void Function(String?) onTap;
 
-  const ChipRow({
-    super.key,
+  const _ChipRow({
     required this.chips,
     required this.selected,
     required this.onTap,
@@ -77,7 +76,7 @@ class EventDurationTypeFilterSection extends StatelessWidget {
       _ChipDef('multiDay', t.events.filters.multiDay),
     ];
     return BlocBuilder<FilterCubit, FilterState>(
-      builder: (context, state) => ChipRow(
+      builder: (context, state) => _ChipRow(
         chips: chips,
         selected: state.selectedEventDurationTypes,
         onTap: (code) {
@@ -104,7 +103,7 @@ class CourseTypeFilterSection extends StatelessWidget {
       _ChipDef('workshop', t.courses.courseTypes.workshop),
     ];
     return BlocBuilder<FilterCubit, FilterState>(
-      builder: (context, state) => ChipRow(
+      builder: (context, state) => _ChipRow(
         chips: chips,
         selected: state.selectedCourseTypes,
         onTap: (code) {

@@ -46,6 +46,7 @@ dependency_overrides:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  firebase_core_platform_interface: any
 
   flutter_lints: ^4.0.0
   slang_build_runner: ^3.31.0

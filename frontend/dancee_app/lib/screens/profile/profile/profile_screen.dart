@@ -403,11 +403,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
               if (isLoading)
-                Positioned.fill(
+                const Positioned.fill(
                   child: AbsorbPointer(
                     child: ColoredBox(
                       color: appOverlay,
-                      child: const Center(
+                      child: Center(
                         child: CircularProgressIndicator(color: appPrimary),
                       ),
                     ),

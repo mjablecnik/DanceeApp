@@ -29,7 +29,7 @@ String? _randomNullableString([int length = 8]) =>
     _rng.nextBool() ? _randomString(length) : null;
 
 ContactMessageType _randomType() {
-  final values = ContactMessageType.values;
+  const values = ContactMessageType.values;
   return values[_rng.nextInt(values.length)];
 }
 

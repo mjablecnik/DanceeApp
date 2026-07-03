@@ -19,15 +19,15 @@ class AddCourseScreen extends StatelessWidget {
       body: Column(
         children: [
           AddCourseHeaderSection(onBack: () => context.pop()),
-          Expanded(
+          const Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.only(
+              padding: EdgeInsets.only(
                 left: AppSpacing.xl,
                 right: AppSpacing.xl,
                 top: AppSpacing.xxl,
                 bottom: 120,
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   AddCourseBasicInfoSection(),

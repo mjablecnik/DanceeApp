@@ -14,7 +14,6 @@ import 'package:dancee_app/data/repositories/auth_repository.dart';
 import 'package:dancee_app/data/repositories/favorites_repository.dart';
 import 'package:dancee_app/i18n/strings.g.dart';
 import 'package:dancee_app/logic/cubits/auth_cubit.dart';
-import 'package:dancee_app/logic/states/auth_state.dart';
 import 'package:dancee_app/screens/auth/email_verification/email_verification_screen.dart';
 
 // ---------------------------------------------------------------------------
@@ -37,7 +36,6 @@ class _FakeUser extends Fake implements User {
   _FakeUser({
     required this.uid,
     this.email,
-    this.displayName,
     this.emailVerified = false,
     DateTime? creationTime,
   }) : metadata = _FakeUserMetadata(creationTime: creationTime);
@@ -49,7 +47,7 @@ class _FakeUser extends Fake implements User {
   final String? email;
 
   @override
-  final String? displayName;
+  final String? displayName = null;
 
   @override
   final bool emailVerified;

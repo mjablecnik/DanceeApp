@@ -324,17 +324,17 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                           switch (value) {
                             case 'review':
                               await detailCubit.toggleReviewed(widget.courseId, locale);
-                              if (mounted) {
+                              if (context.mounted) {
                                 context.read<CourseCubit>().loadCourses(locale);
                               }
                             case 'publish':
                               await detailCubit.togglePublished(widget.courseId, locale);
-                              if (mounted) {
+                              if (context.mounted) {
                                 context.read<CourseCubit>().loadCourses(locale);
                               }
                             case 'edit':
                               await EditCourseRoute(id: widget.courseId).push(context);
-                              if (mounted) {
+                              if (context.mounted) {
                                 detailCubit.refreshCourse(widget.courseId, locale);
                                 context.read<CourseCubit>().loadCourses(locale);
                               }

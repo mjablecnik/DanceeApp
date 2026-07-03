@@ -28,12 +28,12 @@ class ChangePasswordScreen extends StatelessWidget {
                 top: AppSpacing.xxl,
                 bottom: MediaQuery.of(context).padding.bottom + 40,
               ),
-              child: Column(
+              child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SecurityBannerSection(),
-                  const SizedBox(height: AppSpacing.xxl),
-                  const PasswordFormSection(),
+                  SecurityBannerSection(),
+                  SizedBox(height: AppSpacing.xxl),
+                  PasswordFormSection(),
                 ],
               ),
             ),

@@ -186,7 +186,7 @@ class _AppListenersState extends State<_AppListeners> with WidgetsBindingObserve
   DateTime _lastLoadTime = DateTime.now();
 
   /// Minimum time in background before auto-refreshing data on resume.
-  static final _staleThreshold =
+  static const _staleThreshold =
       Duration(minutes: AppConfig.staleDataThresholdMinutes);
 
   @override

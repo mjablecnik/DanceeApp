@@ -17,3 +17,30 @@
 - Problem: `src/services/image-processor.ts` used `openai.chat.completions.create` with `modalities: ["image"]` (OpenRouter-specific). Tests mocked `openai.images.generate` and expected `{ data: [{ b64_json }] }` format. Also: error message was "no valid image data" vs expected "no image data"; upload used `.png`/`image/png` but tests expected `.jpg`/`image/jpeg`.
 - Solution: Replaced implementation with `openai.images.generate({ response_format: "b64_json" })` and fixed error message and filename.
 - Source: check-build, 2026-07-03
+
+## Flutter SDK root-owned: requires writable wrapper directory
+- Project: frontend/dancee_app
+- Problem: `/opt/flutter` is owned by root. `flutter` always tries to write to its cache (engine.stamp, package_config.json, downloads, artifacts). All flutter commands fail with "Permission denied".
+- Solution: Create `/tmp/flutter_root/` as a writable wrapper: copy the `bin/flutter` shell script there, symlink all top-level SDK directories, then make `bin/cache/` and `packages/flutter_tools/.dart_tool/` real writable directories. Add `/tmp/flutter_root/bin` to PATH. Copy needed artifacts manually (material_fonts, linux-x64 engine binaries, flutter_patched_sdk, shader_lib).
+- Source: check-build, 2026-07-03
+
+## Flutter widget tests need compiled shaders in build/unit_test_assets/shaders/
+- Project: frontend/dancee_app
+- Problem: Widget tests using Material widgets (MaterialApp / MaterialApp.router) fail with `Exception: Asset 'shaders/ink_sparkle.frag' not found` when an InkWell animation is triggered. The `build/unit_test_assets/shaders/` directory was empty.
+- Solution: Compile shaders from `/opt/flutter/packages/flutter/lib/src/material/shaders/` using `impellerc` with `--runtime-stage-vulkan --iplr` flags. Both `ink_sparkle.frag` and `stretch_effect.frag` need to be compiled:
+  ```bash
+  impellerc --runtime-stage-vulkan --iplr --input=<sdk>/shaders/ink_sparkle.frag --sl=build/unit_test_assets/shaders/ink_sparkle.frag --spirv=/tmp/x.spirv --input-type=frag --include=<sdk>/engine/linux-x64/shader_lib
+  ```
+- Source: check-build, 2026-07-03
+
+## Docker uses Flutter 3.29.2; activeThumbColor not available until 3.32.0
+- Project: frontend/dancee_app
+- Problem: The Dockerfile uses `ghcr.io/cirruslabs/flutter:3.29.2` for the web build. The `Switch.activeThumbColor` parameter was only introduced in Flutter 3.32.0+. Using it breaks the Docker web build even though it's the replacement for the deprecated `Switch.activeColor`.
+- Solution: Keep `activeColor` on Switch widgets. Do NOT change it to `activeThumbColor` despite the deprecation warning — the Docker build uses an older SDK.
+- Source: check-build, 2026-07-03
+
+## cp -al fails on Docker overlay filesystem
+- Project: frontend/dancee_app
+- Problem: `cp -al` (hard link copy) fails on Docker overlay filesystems with "Invalid cross-device link". This caused Flutter SDK artifact directories to be created but empty when trying to set up the writable wrapper via hard links.
+- Solution: Use regular `cp -r` (file copy, not hard links) for the Flutter SDK artifacts that need to be in the writable wrapper directory.
+- Source: check-build, 2026-07-03

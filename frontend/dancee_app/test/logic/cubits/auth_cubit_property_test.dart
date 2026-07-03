@@ -295,7 +295,7 @@ void _propertyLoadingStateFirst() {
   });
 
   /// Collects states emitted during [operation] and verifies loading is first.
-  Future<void> _assertLoadingFirst(Future<void> Function() operation) async {
+  Future<void> assertLoadingFirst(Future<void> Function() operation) async {
     final states = <AuthState>[];
     final sub = cubit.stream.listen(states.add);
     await operation();
@@ -317,7 +317,7 @@ void _propertyLoadingStateFirst() {
     repo
       ..throwOnSignInWithEmail = true
       ..errorMessage = 'auth.errors.invalidCredential';
-    await _assertLoadingFirst(
+    await assertLoadingFirst(
         () => cubit.signInWithEmail('a@b.com', 'password'));
   });
 
@@ -325,7 +325,7 @@ void _propertyLoadingStateFirst() {
     repo
       ..throwOnRegister = true
       ..errorMessage = 'auth.errors.emailAlreadyInUse';
-    await _assertLoadingFirst(
+    await assertLoadingFirst(
       () => cubit.register(
         email: 'a@b.com',
         password: 'password',
@@ -427,17 +427,17 @@ void _propertyLoadingStateFirst() {
   });
 
   test('P3h: signOut emits loading first (success path)', () async {
-    await _assertLoadingFirst(() => cubit.signOut());
+    await assertLoadingFirst(() => cubit.signOut());
   });
 
   test('P3i: signOut emits loading first (failure path)', () async {
     repo.throwOnSignOut = true;
-    await _assertLoadingFirst(() => cubit.signOut());
+    await assertLoadingFirst(() => cubit.signOut());
   });
 
   test('P3j: deleteAccount emits loading first (failure path)', () async {
     repo.throwOnReauthenticate = true;
-    await _assertLoadingFirst(
+    await assertLoadingFirst(
         () => cubit.deleteAccount(email: 'a@b.com', password: 'pass'));
   });
 }
@@ -461,7 +461,7 @@ void _propertyFailedOperationsEmitError() {
     repo.dispose();
   });
 
-  void _assertErrorStateNonEmpty() {
+  void assertErrorStateNonEmpty() {
     cubit.state.maybeMap(
       error: (e) {
         expect(
@@ -480,7 +480,7 @@ void _propertyFailedOperationsEmitError() {
       ..throwOnSignInWithEmail = true
       ..errorMessage = 'auth.errors.invalidCredential';
     await cubit.signInWithEmail('a@b.com', 'wrong');
-    _assertErrorStateNonEmpty();
+    assertErrorStateNonEmpty();
   });
 
   test('P4b: register failure → error state with non-empty message', () async {
@@ -493,7 +493,7 @@ void _propertyFailedOperationsEmitError() {
       firstName: 'A',
       lastName: 'B',
     );
-    _assertErrorStateNonEmpty();
+    assertErrorStateNonEmpty();
   });
 
   test('P4c: sendEmailVerification failure → error state with non-empty message',
@@ -502,7 +502,7 @@ void _propertyFailedOperationsEmitError() {
       ..throwOnSendEmailVerification = true
       ..errorMessage = 'auth.errors.generic';
     await cubit.sendEmailVerification();
-    _assertErrorStateNonEmpty();
+    assertErrorStateNonEmpty();
   });
 
   test('P4d: reloadUser failure → error state with non-empty message',
@@ -511,7 +511,7 @@ void _propertyFailedOperationsEmitError() {
       ..throwOnReloadAndCheckVerified = true
       ..errorMessage = 'auth.errors.networkError';
     await cubit.reloadUser();
-    _assertErrorStateNonEmpty();
+    assertErrorStateNonEmpty();
   });
 
   test('P4e: sendPasswordReset failure → always emits passwordReset success (email enumeration protection)',
@@ -539,7 +539,7 @@ void _propertyFailedOperationsEmitError() {
       ..throwOnSignOut = true
       ..errorMessage = 'auth.errors.generic';
     await cubit.signOut();
-    _assertErrorStateNonEmpty();
+    assertErrorStateNonEmpty();
   });
 
   test('P4g: deleteAccount re-auth failure → error state with non-empty message',
@@ -548,7 +548,7 @@ void _propertyFailedOperationsEmitError() {
       ..throwOnReauthenticate = true
       ..errorMessage = 'auth.errors.invalidCredential';
     await cubit.deleteAccount(email: 'a@b.com', password: 'wrong');
-    _assertErrorStateNonEmpty();
+    assertErrorStateNonEmpty();
   });
 
   test('P4h: error message matches thrown exception string', () async {
@@ -625,7 +625,7 @@ void _propertyNewUserDetection() {
     repo.dispose();
   });
 
-  Future<bool?> _getIsNewUser(_FakeUser user) async {
+  Future<bool?> getIsNewUser(_FakeUser user) async {
     repo.pushUser(user);
     await Future.delayed(Duration.zero);
     return cubit.state.maybeMap(
@@ -636,13 +636,13 @@ void _propertyNewUserDetection() {
 
   test('P9a: null creationTime → isNewUser is false', () async {
     final user = _FakeUser(uid: 'uid-no-creation', creationTime: null);
-    final isNew = await _getIsNewUser(user);
+    final isNew = await getIsNewUser(user);
     expect(isNew, isFalse);
   });
 
   test('P9b: creationTime = now → isNewUser is true', () async {
     final user = _FakeUser(uid: 'uid-just-now', creationTime: DateTime.now());
-    final isNew = await _getIsNewUser(user);
+    final isNew = await getIsNewUser(user);
     expect(isNew, isTrue);
   });
 
@@ -651,7 +651,7 @@ void _propertyNewUserDetection() {
       uid: 'uid-30s-ago',
       creationTime: DateTime.now().subtract(const Duration(seconds: 30)),
     );
-    final isNew = await _getIsNewUser(user);
+    final isNew = await getIsNewUser(user);
     expect(isNew, isTrue);
   });
 
@@ -660,7 +660,7 @@ void _propertyNewUserDetection() {
       uid: 'uid-60s-ago',
       creationTime: DateTime.now().subtract(const Duration(seconds: 60)),
     );
-    final isNew = await _getIsNewUser(user);
+    final isNew = await getIsNewUser(user);
     expect(isNew, isTrue);
   });
 
@@ -669,7 +669,7 @@ void _propertyNewUserDetection() {
       uid: 'uid-61s-ago',
       creationTime: DateTime.now().subtract(const Duration(seconds: 61)),
     );
-    final isNew = await _getIsNewUser(user);
+    final isNew = await getIsNewUser(user);
     expect(isNew, isFalse);
   });
 
@@ -678,7 +678,7 @@ void _propertyNewUserDetection() {
       uid: 'uid-5min-ago',
       creationTime: DateTime.now().subtract(const Duration(minutes: 5)),
     );
-    final isNew = await _getIsNewUser(user);
+    final isNew = await getIsNewUser(user);
     expect(isNew, isFalse);
   });
 
@@ -688,7 +688,7 @@ void _propertyNewUserDetection() {
       uid: 'uid-future-30s',
       creationTime: DateTime.now().add(const Duration(seconds: 30)),
     );
-    final isNew = await _getIsNewUser(user);
+    final isNew = await getIsNewUser(user);
     expect(isNew, isTrue);
   });
 
@@ -699,7 +699,7 @@ void _propertyNewUserDetection() {
       uid: 'uid-future-120s',
       creationTime: DateTime.now().add(const Duration(seconds: 120)),
     );
-    final isNew = await _getIsNewUser(user);
+    final isNew = await getIsNewUser(user);
     expect(isNew, isFalse);
   });
 
@@ -713,10 +713,10 @@ void _propertyNewUserDetection() {
       creationTime: DateTime.now(),
     );
 
-    final isOld = await _getIsNewUser(oldUser);
+    final isOld = await getIsNewUser(oldUser);
     expect(isOld, isFalse, reason: 'Returning user must not be marked as new');
 
-    final isNew = await _getIsNewUser(newUser);
+    final isNew = await getIsNewUser(newUser);
     expect(isNew, isTrue, reason: 'Fresh user must be marked as new');
   });
 }

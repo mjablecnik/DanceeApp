@@ -38,7 +38,7 @@ void _propertyErrorCodeMapping() {
     );
   });
 
-  FirebaseAuthException _makeException(String code) =>
+  FirebaseAuthException makeException(String code) =>
       FirebaseAuthException(code: code);
 
   test('P1a: known error codes map to their distinct, non-empty translation keys', () {
@@ -52,7 +52,7 @@ void _propertyErrorCodeMapping() {
     };
 
     for (final entry in knownMappings.entries) {
-      final result = repository.mapFirebaseError(_makeException(entry.key));
+      final result = repository.mapFirebaseError(makeException(entry.key));
       expect(
         result,
         equals(entry.value),
@@ -72,7 +72,7 @@ void _propertyErrorCodeMapping() {
     ];
 
     final results = knownCodes.map((code) {
-      return repository.mapFirebaseError(_makeException(code));
+      return repository.mapFirebaseError(makeException(code));
     }).toList();
 
     // All results should be unique (distinct keys)
@@ -92,7 +92,7 @@ void _propertyErrorCodeMapping() {
 
     const expectedGenericKey = 'auth.errors.generic';
     for (final code in unknownCodes) {
-      final result = repository.mapFirebaseError(_makeException(code));
+      final result = repository.mapFirebaseError(makeException(code));
       expect(
         result,
         equals(expectedGenericKey),
@@ -115,7 +115,7 @@ void _propertyErrorCodeMapping() {
     ];
 
     for (final code in allCodes) {
-      final result = repository.mapFirebaseError(_makeException(code));
+      final result = repository.mapFirebaseError(makeException(code));
       expect(result, isNotNull,
           reason: 'mapFirebaseError("$code") must not return null');
       expect(result, isNotEmpty,
@@ -136,7 +136,7 @@ void _propertyErrorCodeMapping() {
     ];
 
     for (final code in allCodes) {
-      final result = repository.mapFirebaseError(_makeException(code));
+      final result = repository.mapFirebaseError(makeException(code));
       expect(
         result,
         startsWith('auth.errors.'),
