@@ -48,7 +48,17 @@ echo "Output: $BACKUP_FILE"
 # Supabase pooler (PgBouncer) doesn't support pg_dump
 DIRECT_URL=$(echo "$DB_URL" | sed 's/:6543/:5432/' | sed 's/pooler\.supabase\.com/supabase.com/')
 
-pg_dump "$DIRECT_URL" --no-owner --no-privileges --clean --if-exists 2>/dev/null | gzip > "$BACKUP_FILE"
+# Parse connection string components to keep the password out of argv.
+# Format: postgresql://user:password@host:port/dbname[?params]
+DB_USER=$(echo "$DIRECT_URL" | sed 's|.*://\([^:]*\):.*|\1|')
+DB_PASS=$(echo "$DIRECT_URL" | sed 's|.*://[^:]*:\([^@]*\)@.*|\1|')
+DB_HOST=$(echo "$DIRECT_URL" | sed 's|.*@\([^:]*\):.*|\1|')
+DB_PORT=$(echo "$DIRECT_URL" | sed 's|.*:\([0-9]*\)/.*|\1|')
+DB_NAME=$(echo "$DIRECT_URL" | sed 's|.*/\([^?]*\).*|\1|')
+
+PGPASSWORD="$DB_PASS" pg_dump \
+  --host="$DB_HOST" --port="$DB_PORT" --username="$DB_USER" --dbname="$DB_NAME" \
+  --no-owner --no-privileges --clean --if-exists 2>/dev/null | gzip > "$BACKUP_FILE"
 
 SIZE=$(ls -lh "$BACKUP_FILE" | awk '{print $5}')
 echo "Backup complete: $BACKUP_FILE ($SIZE)"
