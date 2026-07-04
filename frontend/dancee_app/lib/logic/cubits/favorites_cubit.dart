@@ -144,8 +144,7 @@ class FavoritesCubit extends Cubit<FavoritesState> {
         _emitLoaded();
       }
     } catch (e) {
-      // ignore: avoid_print
-      print('[FavoritesCubit] toggleFavorite FAILED: $e');
+      if (kDebugMode) debugPrint('[FavoritesCubit] toggleFavorite FAILED: $e');
       // Revert optimistic update on failure
       if (wasAlreadyFavorited) {
         // Re-fetch from server to restore accurate state

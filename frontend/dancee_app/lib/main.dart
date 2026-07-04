@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -281,19 +282,18 @@ class _AppListenersState extends State<_AppListeners> with WidgetsBindingObserve
     // Initialize editor mode with the user's role so editor users see all content.
     profileCubit.state.maybeMap(
       loaded: (s) {
-        debugPrint('[EditorMode] profile.role=${s.profile.role}, editorRoleId=${AppConfig.editorRoleId}, isEditor=${s.profile.role == AppConfig.editorRoleId}');
+        if (kDebugMode) debugPrint('[EditorMode] isEditor=${s.profile.role == AppConfig.editorRoleId}');
         sl<EditorModeCubit>().init(isEditor: s.profile.role == AppConfig.editorRoleId);
       },
       orElse: () {
-        debugPrint('[EditorMode] Profile not in loaded state: ${profileCubit.state}');
+        if (kDebugMode) debugPrint('[EditorMode] Profile not in loaded state');
       },
     );
 
     if (!filterCubit.state.hasActiveFilters) {
       profileCubit.state.maybeMap(
         loaded: (s) {
-          debugPrint('[FilterPrefill] Cold start prefill: '
-              'danceTags=${s.profile.danceTags}, city=${s.profile.city}');
+          if (kDebugMode) debugPrint('[FilterPrefill] Cold start prefill');
           prefillFiltersFromProfile(s.profile, filterCubit);
           if (context.mounted) {
             final fs = filterCubit.state;
@@ -472,8 +472,7 @@ class _AppListenersState extends State<_AppListeners> with WidgetsBindingObserve
             if (!filterCubit.state.hasActiveFilters) {
               profileCubit.state.maybeMap(
                 loaded: (s) {
-                  debugPrint('[FilterPrefill] Prefilling from profile: '
-                      'danceTags=${s.profile.danceTags}, city=${s.profile.city}');
+                  if (kDebugMode) debugPrint('[FilterPrefill] Prefilling from profile');
                   prefillFiltersFromProfile(s.profile, filterCubit);
                   // Explicitly re-apply filters so EventCubit/CourseCubit update
                   if (context.mounted) {
@@ -483,11 +482,11 @@ class _AppListenersState extends State<_AppListeners> with WidgetsBindingObserve
                   }
                 },
                 orElse: () {
-                  debugPrint('[FilterPrefill] Profile not loaded, skipping prefill');
+                  if (kDebugMode) debugPrint('[FilterPrefill] Profile not loaded, skipping prefill');
                 },
               );
             } else {
-              debugPrint('[FilterPrefill] Filters already active, skipping prefill');
+              if (kDebugMode) debugPrint('[FilterPrefill] Filters already active, skipping prefill');
             }
           },
         ),
