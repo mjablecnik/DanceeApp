@@ -16,10 +16,14 @@
 set -e
 
 # ---------------------------------------------------------------------------
-# Configuration
+# Configuration — set these via environment variables or a local .env.test file
 # ---------------------------------------------------------------------------
-FIREBASE_API_KEY="AIzaSyDVScsqpCulertRQ_actn4dWaT0blKruZ8"
-DIRECTUS_URL="https://dancee-cms.fly.dev"
+if [ -z "$FIREBASE_API_KEY" ]; then
+  echo "Error: FIREBASE_API_KEY environment variable is not set."
+  echo "  export FIREBASE_API_KEY=<your-firebase-web-api-key>"
+  exit 1
+fi
+DIRECTUS_URL="${DIRECTUS_URL:-https://dancee-cms.fly.dev}"
 FIREBASE_ENDPOINT_PREFIX="/directus-extension-firebase-auth"
 
 # ---------------------------------------------------------------------------
