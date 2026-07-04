@@ -1,261 +1,110 @@
-# Security Audit — backend/dancee_workflow
+# Security Audit — backend/dancee_cms
 
 **Date:** 2026-07-04
-**Scope:** `backend/dancee_workflow/` (TypeScript / Node.js Restate workflow service)
-**Stack:** Node.js 20, `@restatedev/restate-sdk` 1.11, `openai` 4 (via OpenRouter), `zod` 3, Directus CMS backend, deployed on Fly.io behind a hand-rolled HTTP proxy.
+**Scope:** `backend/dancee_cms/` (Directus 11.17.3 CMS deployment)
 
-## Executive Summary
+## Project profile
+
+- **Framework:** Directus 11.17.3 (self-hosted headless CMS), deployed on Fly.io, backed by Supabase PostgreSQL + Supabase S3 storage.
+- **Custom code:** one Directus *endpoint* extension, `firebase-extension/index.js` (Node.js, ESM), which bridges Firebase Authentication to Directus by minting Directus sessions. Dependencies: `firebase-admin ^13`, `jsonwebtoken ^9`.
+- **Supporting files:** deployment/utility shell scripts (`fly-secrets.sh`, `get-token.sh`, `backup-db.sh`, `start-directus.sh`, `test-firebase-auth.sh`), `Dockerfile`, `fly.toml`, `.env.example`.
+- No `.env` or private keys are committed; `.gitignore` excludes `.env` and `backups/`.
+
+## Executive summary
 
 **Overall risk level: CRITICAL**
 
-The service ships a hand-written HTTP proxy (`src/index.ts`) that is the single public entry point on Fly.io (`internal_port = 9080`, `force_https = true`). Two structural problems dominate the risk profile:
+The custom Firebase auth extension contains two independent, chainable authentication-bypass flaws that each allow full account takeover — including of Directus **administrator** accounts:
 
-1. **The proxy forwards every unmapped path straight to the Restate admin API on `localhost:9070` with no authentication.** The Restate admin API can deregister deployments, cancel/kill/purge invocations, and run introspection SQL over invocation state. This is a full administrative-control and denial-of-service exposure reachable by anyone on the internet.
-2. **None of the `/api/*` business endpoints perform any authentication or authorization.** Any client can mutate published content, trigger unbounded paid LLM/image-generation work, and read/modify any user's favorites (IDOR). User identity (`user_id`) is taken directly from the request body.
+1. The `/auth` endpoint mints a valid Directus access token + persistent session for a user **given only that user's Firebase UID**, with no proof of identity (no token, no password, no secret). A UID is an identifier, not a credential.
+2. The `/link` endpoint verifies a Firebase ID token's signature but **never checks `email_verified`**, and links whatever email the token carries to a pre-existing Directus user with the same email. An attacker can register an unverified Firebase account under a victim's email (e.g. an admin's), link it, then use `/auth` to log in as that victim.
 
-Secondary issues include path-traversal/parameter injection into the Directus API using the service's privileged static token, a wide-open default CORS policy (explicitly `*` in production `fly.toml`), verbose error messages that leak internal structure, absent rate limiting / body-size limits, and an unpinned GitHub `master` dependency (supply-chain risk).
-
-No hardcoded secrets were found in source; all credentials are read from environment variables, and `.env` is git-ignored. That is the main thing done right.
-
-| # | Severity | Title | Location |
-|---|----------|-------|----------|
-| 1 | CRITICAL | Restate admin API (port 9070) publicly exposed via unauthenticated catch-all proxy | `src/index.ts:105-118` |
-| 2 | HIGH | No authentication/authorization on any `/api/*` endpoint (data mutation + financial DoS) | `src/index.ts:60-73`, `src/services/api.ts` |
-| 3 | HIGH | IDOR on favorites — `user_id` trusted from request body, no ownership check | `src/services/api.ts:425-486` |
-| 4 | HIGH | Path traversal / parameter injection into Directus API via unvalidated `id`/`translationId` | `src/services/api.ts:137-145`, `src/clients/directus-client.ts:104-116,329-341` |
-| 5 | MEDIUM | Permissive CORS — default `*` and production `CORS_ORIGINS='*'` | `src/core/config.ts:14`, `src/index.ts:55-87`, `fly.toml` |
-| 6 | MEDIUM | No rate limiting or request-size limits (financial + resource DoS) | `src/index.ts:78-155`, `src/services/api.ts:60-126` |
-| 7 | MEDIUM | Verbose error messages leak internal details (Directus URLs, request bodies) to clients | `src/clients/directus-client.ts:52-87`, `src/index.ts:114-136` |
-| 8 | MEDIUM | Unpinned GitHub `master` dependency (mutable supply chain) | `package.json` (`facebook-event-scraper`) |
-| 9 | LOW | Filter values from `x-dancee-filter` header passed unvalidated into Directus queries | `src/services/api.ts:378-397,668-678` |
-| 10 | LOW | `eval` on `.env`-derived values in `fly-secrets.sh` (shell injection) | `fly-secrets.sh` |
+Both endpoints are also unauthenticated and unthrottled, so UIDs can be brute-forced/replayed at will. These must be fixed before the extension is exposed to production. Additional lower-severity issues (DB TLS verification disabled, an insecure CORS default in the example config, PII in logs, a committed API key) are listed below.
 
 ---
 
-## Findings
+## Findings (sorted by severity)
 
-### 1. [CRITICAL] Restate admin API publicly exposed via unauthenticated catch-all proxy
-**Category:** Configuration & Deployment / Missing Authentication / Exposed admin endpoint
-**File:** `src/index.ts:105-118` (also `:78`, `:157`)
+### 1. [CRITICAL] `/auth` issues Directus tokens with no authentication — UID is treated as a credential
+- **Category:** Authentication & Authorization (broken authentication / account takeover)
+- **File:** `firebase-extension/index.js:124-177`
+- **Description:** The `/auth` route accepts a JSON body `{ "uid": "..." }`, looks up the Directus user whose `external_identifier` equals that UID, and — with no further verification — signs a Directus access token (`jwt.sign(payload, env.SECRET, ...)`), inserts a real refresh session into `directus_sessions`, and returns both tokens. No Firebase ID token is required or verified; possession of the UID string is sufficient. Firebase UIDs are identifiers, not secrets: they are shared with clients, appear in logs and API responses (this extension even logs them, see finding 6), and here they are the *only* thing gating token issuance.
+- **Exploitation scenario:** An attacker who learns any linked user's Firebase UID (from a leaked log, a client bug, another API, or by brute force given no rate limiting) sends `POST /directus-extension-firebase-auth/auth {"uid":"<victim-uid>"}` and receives a fully valid Directus access token acting as that user. If the victim's role has `admin_access`, the attacker gets an admin token. Chained with finding 2, the attacker can take over an existing admin outright.
+- **Recommended fix:** Require and verify a Firebase ID token instead of a bare UID; derive the UID from the verified token, exactly like `/link` does:
+  ```js
+  const idToken = req.body?.id_token;
+  if (!idToken) return res.status(400).json({ error: "id_token is required." });
+  if (!ensureFirebaseInitialized(env, logger))
+    return res.status(500).json({ error: "Firebase not configured." });
+  let decoded;
+  try { decoded = await admin.auth().verifyIdToken(idToken, true); }
+  catch { return res.status(401).json({ error: "Invalid Firebase token." }); }
+  if (!decoded.email_verified) return res.status(403).json({ error: "Email not verified." });
+  const uid = decoded.uid; // never trust req.body.uid
+  // ...look up user by external_identifier === uid, then mint tokens
+  ```
+  Also add Directus rate limiting for these endpoints.
 
-**Description:**
-The public HTTP proxy listens on `0.0.0.0:9080` (the port Fly.io exposes as the HTTPS service). Requests whose path is not one of the mapped `/api/*` routes fall through to:
+### 2. [CRITICAL] `/link` does not check `email_verified` — account takeover of existing users by email squatting
+- **Category:** Authentication & Authorization (broken authentication / privilege escalation)
+- **File:** `firebase-extension/index.js:44-84` (email trust at 50-53, link at 65-84)
+- **Description:** `/link` verifies the Firebase ID token's signature via `admin.auth().verifyIdToken(idToken)` but only checks that an `email` claim exists — it never checks `decodedToken.email_verified`. With Firebase Email/Password auth, an account can hold an arbitrary, *unverified* email. When the email matches an existing Directus user, the code overwrites that user's `external_identifier` with the caller's Firebase UID and sets `provider = "firebase"` (lines 69-72), effectively binding the attacker's Firebase identity to the victim's Directus account.
+- **Exploitation scenario:** A Directus admin `admin@dancee.app` has never used Firebase. An attacker creates a Firebase Email/Password account with email `admin@dancee.app` (no verification required), obtains a valid `id_token`, and calls `/link`. The extension finds the existing admin by email and sets that admin's `external_identifier` to the attacker's UID. The attacker then calls `/auth` (finding 1) with their own UID and receives an **admin** access token. Full administrative account takeover.
+- **Recommended fix:** Reject unverified emails before any linking, and prefer matching by verified UID rather than silently claiming accounts by email:
+  ```js
+  if (!decodedToken.email_verified) {
+    return res.status(403).json({ error: "Firebase email is not verified." });
+  }
+  ```
+  Consider not auto-linking to a pre-existing Directus user by email at all (or gating it behind an explicit, admin-approved verification step), since email match ≠ ownership proof.
 
-```ts
-// Proxy everything else to Restate admin UI/API (port 9070)
-const targetUrl = `http://localhost:9070${pathname}${queryString ? "?" + queryString : ""}`;
-const proxyReq = http.request(targetUrl, { method: req.method, headers: { ...req.headers, host: "localhost:9070" } }, ...);
-```
+### 3. [MEDIUM] Database TLS certificate validation disabled
+- **Category:** Cryptography / Configuration
+- **File:** `.env.example:9` (`DB_SSL__REJECT_UNAUTHORIZED=false`)
+- **Description:** The example configuration (intended to be copied to the deployed `.env`) disables verification of the PostgreSQL server's TLS certificate. The connection may still be encrypted, but with certificate validation off it is vulnerable to man-in-the-middle interception/tampering of all database traffic, including credentials and PII. Supabase provides a valid CA-signed certificate, so disabling verification is unnecessary.
+- **Exploitation scenario:** An attacker positioned on the network path between the Fly.io app and Supabase presents a forged certificate; the client accepts it, and the attacker reads/modifies all queries and results.
+- **Recommended fix:** Remove `DB_SSL__REJECT_UNAUTHORIZED=false` (or set it to `true`) and, if a custom CA is required, provide it via `DB_SSL__CA`. Verify Supabase's certificate chain works with validation enabled.
 
-Port 9070 is the Restate **admin** API/UI. It exposes deployment management, service management, invocation management (cancel / kill / purge), and an introspection SQL query engine over service and invocation state. The proxy forwards **any HTTP method** (`method: req.method`) and pipes the request body through, so an unauthenticated internet client can issue arbitrary admin calls. There is no auth layer anywhere in front of it. `src/__tests__/index.test.ts:116-121` even asserts this pass-through behavior as intended.
+### 4. [MEDIUM] Insecure CORS default in example config (`CORS_ORIGIN=true` with credentials)
+- **Category:** Data Exposure (CORS misconfiguration)
+- **File:** `.env.example:31` (`CORS_ORIGIN=true`) with `.env.example:35` (`CORS_CREDENTIALS=true`)
+- **Description:** The shipped example sets `CORS_ORIGIN=true`, which makes Directus reflect the caller's `Origin` header, combined with `CORS_CREDENTIALS=true`. This lets *any* website make credentialed cross-origin requests to the API. The production `fly.toml` correctly pins `CORS_ORIGIN = "https://dancee-app.fly.dev"`, but the example is the template most likely to be copied, and a CSRF/credential-exposure surface opens if it reaches production.
+- **Exploitation scenario:** A malicious site loaded in a logged-in user's browser issues credentialed `fetch()` calls to the Directus API; because the origin is reflected and credentials are allowed, the browser exposes the responses to the attacker's script.
+- **Recommended fix:** Change the example default to an explicit allow-list and document that `true` is development-only:
+  ```sh
+  # CORS_ORIGIN=true is DEV ONLY. In production set an explicit allow-list:
+  CORS_ORIGIN=https://dancee-app.fly.dev
+  ```
 
-**Exploitation scenario:**
-- `DELETE https://<app>.fly.dev/deployments/<id>` — deregister the service, taking down every endpoint (denial of service).
-- `POST https://<app>.fly.dev/query` (Restate introspection SQL) — read invocation inputs/state, which can contain scraped content and any data passed through workflows.
-- Cancel or purge in-flight invocations, corrupting processing state.
+### 5. [LOW] Firebase Web API key committed in test script
+- **Category:** Authentication & Authorization (credential in source) / Data Exposure
+- **File:** `test-firebase-auth.sh:21` (`FIREBASE_API_KEY="AIzaSy..."`)
+- **Description:** A Firebase Web API key is hardcoded in a committed script. Firebase Web API keys are designed to be public (they identify the project, not authorize privileged actions), so this is low severity, but committing it still discloses the project and lets anyone exercise the project's Identity Toolkit sign-in/sign-up endpoints, which — combined with findings 1 & 2 — assists the email-squatting attack. Firebase Authentication settings (e.g. disabling public sign-up, App Check, authorized domains) are what actually protect the project.
+- **Recommended fix:** Move the key to an environment variable / local untracked config, and harden the Firebase project (restrict the key in Google Cloud, enable App Check, disable open email/password sign-up if not needed).
 
-**Recommended fix:**
-Never proxy to the admin port from a public listener. Remove the catch-all entirely and return `404` for unmapped paths, or restrict it to an authenticated/internal-only path. On Fly.io, keep 9070 bound to the internal interface only.
+### 6. [LOW] PII (email addresses and Firebase UIDs) written to logs
+- **Category:** Data Exposure (sensitive data in logs)
+- **File:** `firebase-extension/index.js:81, 113, 141, 187` (also 46, 144)
+- **Description:** The extension logs user email addresses, Firebase UIDs, and update payloads at info level on the normal auth path. UIDs logged here are exactly the value that finding 1 treats as a credential, so log access effectively becomes token-minting access. This is PII and, given the design, security-sensitive.
+- **Exploitation scenario:** Anyone with read access to application logs (ops staff, a log aggregation service, a log-exposure bug) harvests UIDs/emails and, via finding 1, mints tokens.
+- **Recommended fix:** Drop UIDs/emails from info logs or reduce to counts/opaque internal IDs; keep detailed identifiers at debug level only. Fixing finding 1 also removes the UID-as-credential risk.
 
-```ts
-if (!mappedPath) {
-  res.writeHead(404, { "Content-Type": "application/json" });
-  res.end(JSON.stringify({ error: "Not found" }));
-  return;
-}
-```
+### 7. [LOW] Unpinned dependency installation in Dockerfile
+- **Category:** Dependency Vulnerabilities / Supply chain
+- **File:** `Dockerfile:13` (`RUN pnpm install firebase-admin jsonwebtoken`)
+- **Description:** The image installs `firebase-admin` and `jsonwebtoken` with no version constraint and no lockfile, so each rebuild can silently pull a different (potentially malicious or regressed) version. The extension's own `package.json` pins with caret ranges only.
+- **Recommended fix:** Pin exact versions and commit a lockfile (`pnpm-lock.yaml`), then `pnpm install --frozen-lockfile`. Prefer installing only inside the extension directory (which already has its deps) rather than globally.
 
-If admin access is genuinely required remotely, put it behind a separate authenticated route (bearer token / mTLS) and never behind the same public proxy as the user API.
-
----
-
-### 2. [HIGH] No authentication or authorization on any `/api/*` endpoint
-**Category:** Authentication & Authorization / Missing authentication
-**File:** `src/index.ts:60-73` (route map), all handlers in `src/services/api.ts`
-
-**Description:**
-The proxy maps public paths (`/api/event`, `/api/event/force-reprocess`, `/api/events/process`, `/api/favorites`, `/api/event/retranslate`, …) directly to Restate handlers and forwards them to the ingress on `localhost:8080`. No token, session, or signature is checked at any layer. Every write and every expensive operation is anonymous.
-
-**Exploitation scenario:**
-- `POST /api/events/process` triggers a full batch scrape + LLM classification/extraction/translation + AI image generation across all configured groups. Each processed event spends OpenRouter LLM tokens and Flux image-generation credits. An attacker can loop this to run up unbounded third-party billing (financial DoS).
-- `POST /api/event/force-reprocess` with `{ "id": <n> }` re-scrapes and **overwrites** an existing event's fields and status (`src/services/api.ts:303-376`).
-- `POST /api/event` with any URL enqueues arbitrary scraping/processing work.
-
-**Recommended fix:**
-Introduce an authentication gate in the proxy before forwarding mapped routes — validate a bearer token / API key (or verify the caller's Directus session/JWT) and reject unauthenticated requests with `401`. Separate read-only public endpoints from privileged ones (`process`, `reprocess`, `force-reprocess`, `retranslate`) and require elevated auth for the latter.
-
-```ts
-const auth = req.headers["authorization"];
-if (!isValidApiToken(auth)) {
-  res.writeHead(401, { "Content-Type": "application/json" });
-  res.end(JSON.stringify({ error: "Unauthorized" }));
-  return;
-}
-```
-
----
-
-### 3. [HIGH] IDOR on favorites — user identity trusted from request body
-**Category:** Authentication & Authorization / IDOR (broken object-level authorization)
-**File:** `src/services/api.ts:425-486`
-
-**Description:**
-`createFavorite`, `deleteFavorite`, and `listFavorites` take `user_id` straight from the request payload and act on it with no verification that the caller *is* that user:
-
-```ts
-listFavorites: async (ctx, request: { user_id?: string }) => {
-  if (!request?.user_id) throw new restate.TerminalError("Missing required field: 'user_id'", { errorCode: 400 });
-  return ctx.run("listFavorites", () => listFavorites(request.user_id!));
-}
-```
-
-Combined with Finding 2 (no auth at all), any anonymous client can enumerate or tamper with any user's favorites.
-
-**Exploitation scenario:**
-- `POST /api/favorites/list` with `{"user_id":"<victim-id>"}` returns the victim's favorited events/courses (data exposure of user activity).
-- `POST /api/favorites/delete` with a victim's `user_id` removes their favorites.
-- `POST /api/favorites` writes favorites into another user's account.
-
-**Recommended fix:**
-Derive `user_id` from the authenticated principal (validated token/session), never from the request body. Reject any request where the body `user_id` does not match the authenticated user.
-
-```ts
-const userId = getAuthenticatedUserId(ctx); // from verified token, not the body
-return ctx.run("listFavorites", () => listFavorites(userId));
-```
+### 8. [LOW] Database password exposed via process arguments during backup
+- **Category:** Data Exposure
+- **File:** `backup-db.sh:51` (`pg_dump "$DIRECT_URL" ...`)
+- **Description:** The full connection string (including the DB password) is passed as a command-line argument to `pg_dump`, so it is visible in the process table (`ps aux`) to any local user for the duration of the dump.
+- **Recommended fix:** Pass the password via the `PGPASSWORD` environment variable or a `~/.pgpass` file and give `pg_dump` the host/port/db/user flags separately, keeping the secret out of `argv`.
 
 ---
 
-### 4. [HIGH] Path traversal / parameter injection into Directus API via unvalidated identifiers
-**Category:** Injection / Path traversal
-**File:** `src/services/api.ts:137-145`; `src/clients/directus-client.ts:104-116`, `:329-341`, `:113-116`
-
-**Description:**
-Identifier values from request bodies are interpolated directly into Directus API URL **paths** without validation or encoding, then handed to `fetch`, which normalizes `..` segments. Because these calls use the service's privileged static `DIRECTUS_ACCESS_TOKEN`, an attacker who controls the identifier can redirect the request to arbitrary Directus endpoints under that token's authority.
-
-`reprocessEvent` (`api.ts:137-145`):
-```ts
-const res = await fetch(
-  `${config.directusBaseUrl}/items/events_translations/${request.translationId}?fields=events_id,languages_code`,
-  { headers: { Authorization: `Bearer ${config.directusAccessToken}`, ... } },
-);
-```
-`getEventById` / `getCourseById` / `updateEvent` (`directus-client.ts:104-116,329-341`) interpolate `${id}` the same way. `reprocessEvent.request.id` and `forceReprocessEvent.request.id` are typed `string | number` and never validated numeric.
-
-**Exploitation scenario:**
-`POST /api/event/reprocess` with `{"translationId":"../../users"}` resolves to `${directusBaseUrl}/users?fields=events_id,languages_code`, issued with the privileged token — potentially reading the Directus user collection. More generally, `id`/`translationId` values containing `../` or `?`/`&` let an attacker reach other collections or inject query parameters into Directus requests made with elevated privileges.
-
-**Recommended fix:**
-Validate every identifier as a strict positive integer (or the exact expected format) before use, and reject anything else. Apply the same `z.number()`/regex guard already used in `retranslateItem` (`api.ts:496-501`) to `reprocessEvent`, `forceReprocessEvent`, and the client functions.
-
-```ts
-const idNum = z.number().int().positive().parse(Number(request.id));
-// build path from idNum only
-```
-
----
-
-### 5. [MEDIUM] Permissive CORS configuration (default and production `*`)
-**Category:** Data Exposure / CORS misconfiguration
-**File:** `src/core/config.ts:14`, `src/index.ts:55-87`, `fly.toml` (`CORS_ORIGINS='*'`)
-
-**Description:**
-`corsOrigins` defaults to `"*"` and production `fly.toml` sets `CORS_ORIGINS='*'`. When `*`, the proxy sets `Access-Control-Allow-Origin` to `*` (or reflects any origin), allowing any website to call the API from a victim's browser. This meaningfully widens the blast radius of the missing-auth findings: any page on the web can drive the (unauthenticated) mutation/favorites endpoints on behalf of a visitor.
-
-**Exploitation scenario:**
-A malicious site loaded by any user issues cross-origin `fetch` calls to `/api/events/process` or `/api/favorites/delete`; the browser permits them because the origin is reflected/allowed.
-
-**Recommended fix:**
-Set an explicit allow-list of trusted front-end origins in production (`CORS_ORIGINS=https://app.dancee.example`). Change the code default away from `*` so a misconfiguration fails closed rather than open, and never combine `*` with credentialed requests.
-
----
-
-### 6. [MEDIUM] No rate limiting or request-size limits
-**Category:** Data Exposure / Input Validation (DoS)
-**File:** `src/index.ts:78-155`, `src/services/api.ts:60-126`
-
-**Description:**
-Neither the proxy nor the handlers enforce per-client rate limits or maximum request body sizes. Request bodies are piped to the upstream unbounded (`req.pipe(proxyReq)`). Combined with unauthenticated, cost-incurring endpoints (LLM + image generation), this permits both financial abuse and resource exhaustion.
-
-**Exploitation scenario:**
-An attacker scripts thousands of `POST /api/event` / `/api/events/process` calls, each fanning out to paid LLM/image APIs and Directus writes, exhausting quota/budget and backlogging the queue.
-
-**Recommended fix:**
-Add IP/token-based rate limiting in the proxy and a request-body size cap (reject bodies over a small threshold for JSON endpoints). Apply stricter limits to processing endpoints. Consider a queue/concurrency cap on batch triggering.
-
----
-
-### 7. [MEDIUM] Verbose error messages leak internal details to clients
-**Category:** Data Exposure / Verbose errors
-**File:** `src/clients/directus-client.ts:52-57,66-72,74-87`; `src/index.ts:114-116,133-136`
-
-**Description:**
-Directus helper errors embed the internal path, HTTP status, raw response body, and a preview of the outgoing request body:
-
-```ts
-throw new Error(`Directus POST ${path} error ${response.status}: ${text} (body: ${bodyPreview})`);
-```
-
-These messages propagate up and, for terminal errors, are surfaced in the API response (and the proxy's 502 handler returns `details: err.message`). This leaks backend URL structure, Directus error text, and request payloads to unauthenticated callers, aiding reconnaissance.
-
-**Exploitation scenario:**
-A crafted request that triggers a Directus 4xx returns the internal collection path and Directus's error body to the client, revealing schema/configuration details.
-
-**Recommended fix:**
-Log full detail server-side only; return a generic message + correlation id to clients. Strip `details`/`body`/upstream text from client-facing responses.
-
-```ts
-log({ level: "error", message: "Directus POST failed", path, status, text });
-throw new Error("Upstream request failed"); // generic for the client
-```
-
----
-
-### 8. [MEDIUM] Unpinned GitHub `master` dependency (mutable supply chain)
-**Category:** Dependency Vulnerabilities / Supply chain
-**File:** `package.json` — `"facebook-event-scraper": "github:mjablecnik/facebook-event-scraper#master"`
-
-**Description:**
-A core dependency is installed from a GitHub fork's `master` branch with no version/commit pin and no integrity hash. Any push to that branch (or a compromise of the fork) is pulled into the next build. The Dockerfile compiles it from source (`tsc`) and executes it in-process, so a malicious change would run with the service's full privileges and network access (including the Directus token and outbound scraping).
-
-**Exploitation scenario:**
-If the fork is compromised or its owner pushes malicious code, the next image build silently ships and runs it — a classic supply-chain compromise vector.
-
-**Recommended fix:**
-Pin to an immutable commit SHA (`github:mjablecnik/facebook-event-scraper#<full-sha>`) or, better, publish a vetted, versioned package and rely on the lockfile integrity hash. Review upstream changes before bumping.
-
----
-
-### 9. [LOW] Filter values from `x-dancee-filter` header passed unvalidated into Directus queries
-**Category:** Input Validation / NoSQL-style filter injection
-**File:** `src/services/api.ts:378-397` (`listCourses`), `:668-678` / `:43-55` (`listEvents` / `sanitizeFilter`)
-
-**Description:**
-Only the top-level filter *keys* are allow-listed; the *values* are forwarded verbatim into the Directus filter object (`{_and:[publishedFilter, extraFilter]}`). The published-only restriction is preserved by the `_and` wrapper, but arbitrary operator objects as values allow crafting expensive relational/deep queries against the CMS.
-
-**Exploitation scenario:**
-A client sets `x-dancee-filter: {"venue":{<deep relational / expensive operator tree>}}` to force costly Directus query plans (mild DoS).
-
-**Recommended fix:**
-Validate filter values with a schema (allowed operators + scalar value types per field) in addition to the key allow-list; reject unexpected shapes.
-
----
-
-### 10. [LOW] `eval` on `.env`-derived values in `fly-secrets.sh`
-**Category:** Injection / Command injection (deploy tooling)
-**File:** `fly-secrets.sh` (`eval fly secrets set $secrets ...`)
-
-**Description:**
-Secret values read from `.env` are concatenated into a string and passed to `eval`. A value containing shell metacharacters (`$(...)`, `;`, backticks) executes on the developer's machine during deployment. Scope is limited to whoever runs the script with their own `.env`, hence LOW, but it is an avoidable injection sink.
-
-**Recommended fix:**
-Avoid `eval`; pass key/value pairs as proper arguments (e.g. build an array and call `fly secrets set "$key=$value" ...`), quoting values.
-
----
-
-## Notes / Positives
-- No hardcoded credentials, API keys, or tokens in source; all secrets come from environment variables. `.env` is git-ignored and excluded from the Docker image (`.dockerignore`).
-- Inputs to workflow handlers are largely validated with Zod schemas; scraped data is schema-parsed.
-- Directus filter keys are allow-listed to prevent trivially bypassing the published-only restriction.
-- `force_https = true` is set in `fly.toml`.
-- Restate's deterministic RNG (`ctx.rand.uuidv4()`) is used only for workflow keys, not security tokens — acceptable.
+## Notes / things checked and found OK
+- No SQL injection in the extension: all DB access goes through Directus services (`readByQuery`, `createOne`, `updateOne`) and parameterized Knex queries.
+- No command injection in the shell scripts: `get-token.sh` builds JSON via `jq` (with a safe `sed` escaping fallback), and `fly-secrets.sh` uses `fly secrets import` with no `eval`.
+- Access tokens are signed with the real Directus `env.SECRET` (not a hardcoded key) using HS256 with an `expiresIn`; refresh tokens use `crypto.randomBytes(32)` (CSPRNG). Expired sessions are pruned on each `/auth`.
+- `force_https = true` in `fly.toml`; no `.env`/private keys committed; `.gitignore`/`.dockerignore` exclude secrets.
