@@ -146,7 +146,6 @@ class AuthRepository {
 
     await _directus.linkAndAuthenticate(
       firebaseIdToken: idToken,
-      firebaseUid: user.uid,
     );
   }
 }

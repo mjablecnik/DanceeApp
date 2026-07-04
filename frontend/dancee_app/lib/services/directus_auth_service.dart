@@ -69,55 +69,20 @@ class DirectusAuthService {
   /// Links a Firebase user to Directus and obtains session tokens.
   ///
   /// [firebaseIdToken] — a fresh Firebase ID token.
-  /// [firebaseUid] — the Firebase user UID.
   ///
   /// Throws on network or server errors — the caller ([AuthRepository])
   /// decides how to handle the failure.
   Future<void> linkAndAuthenticate({
     required String firebaseIdToken,
-    required String firebaseUid,
   }) async {
-    // Step 1: Link — creates Directus user if it doesn't exist.
+    // Step 1: Link — creates/reactivates Directus user server-side.
     await _dio.post('/directus-extension-firebase-auth/link',
         data: {'id_token': firebaseIdToken});
 
-    // Step 2: Reactivate if previously deleted (suspended) account.
-    // Uses the static admin token because a suspended user can't auth.
-    try {
-      // Find user by firebase_uid
-      final searchResponse = await _dio.get(
-        '/users',
-        queryParameters: {
-          'filter[firebase_uid][_eq]': firebaseUid,
-          'fields': 'id,status',
-          'limit': '1',
-        },
-        options: Options(headers: {
-          'Authorization': 'Bearer ${AppConfig.directusAccessToken}',
-        }),
-      );
-      final users = (searchResponse.data?['data'] as List?) ?? [];
-      if (users.isNotEmpty) {
-        final user = users.first as Map<String, dynamic>;
-        if (user['status'] == 'suspended') {
-          final userId = user['id'];
-          await _dio.patch(
-            '/users/$userId',
-            data: {'status': 'active'},
-            options: Options(headers: {
-              'Authorization': 'Bearer ${AppConfig.directusAccessToken}',
-            }),
-          );
-        }
-      }
-    } catch (_) {
-      // Best effort — continue with auth even if reactivation fails
-    }
-
-    // Step 3: Authenticate — get Directus tokens.
+    // Step 2: Authenticate — backend verifies the ID token and returns tokens.
     final response = await _dio.post(
       '/directus-extension-firebase-auth/auth',
-      data: {'uid': firebaseUid},
+      data: {'id_token': firebaseIdToken},
     );
 
     _storeTokens(response.data);
