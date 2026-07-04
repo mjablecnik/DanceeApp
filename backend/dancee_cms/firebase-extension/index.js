@@ -41,10 +41,14 @@ export default (router, { services, env, database, getSchema, logger }) => {
 
       let decodedToken;
       try {
-        decodedToken = await admin.auth().verifyIdToken(idToken);
+        decodedToken = await admin.auth().verifyIdToken(idToken, true);
       } catch (error) {
         logger.info(`[Firebase Auth] Token verification failed: ${error.message}`);
         return res.status(401).json({ error: "Invalid Firebase token." });
+      }
+
+      if (!decodedToken.email_verified) {
+        return res.status(403).json({ error: "Firebase email is not verified." });
       }
 
       const { email, uid, name } = decodedToken;
