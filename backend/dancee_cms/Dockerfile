@@ -9,8 +9,6 @@ RUN chown -R node:node /directus/extensions/directus-extension-firebase-auth
 
 USER node
 
-# Install firebase-admin and jsonwebtoken globally in Directus
-RUN pnpm install firebase-admin jsonwebtoken
-
-# Install extension's own dependencies
+# Install extension's own dependencies.
+# TODO: commit a pnpm-lock.yaml and add --frozen-lockfile to prevent silent version drift.
 RUN cd /directus/extensions/directus-extension-firebase-auth && pnpm install --prod
