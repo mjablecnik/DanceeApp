@@ -82,7 +82,7 @@ export default (router, { services, env, database, getSchema, logger }) => {
         }
         if (Object.keys(updates).length > 0) {
           await usersService.updateOne(user.id, updates);
-          logger.info(`[Firebase Auth] Updated user ${email}: ${JSON.stringify(updates)}`);
+          logger.debug(`[Firebase Auth] Updated existing user id=${user.id}.`);
         }
         return res.json({ data: { id: user.id, email: user.email, role: user.role } });
       }
@@ -114,7 +114,7 @@ export default (router, { services, env, database, getSchema, logger }) => {
       });
 
       const newUser = await usersService.readOne(userId);
-      logger.info(`[Firebase Auth] Created user ${email} (${userId}).`);
+      logger.debug(`[Firebase Auth] Created new user id=${userId}.`);
 
       return res.json({ data: { id: newUser.id, email: newUser.email, role: newUser.role } });
     } catch (error) {
