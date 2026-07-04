@@ -11,7 +11,10 @@ export const config = {
   directusAccessToken: process.env.DIRECTUS_ACCESS_TOKEN ?? "",
   nominatimBaseUrl: process.env.NOMINATIM_BASE_URL ?? "https://nominatim.openstreetmap.org",
   sentryDsn: process.env.SENTRY_DSN ?? "",
-  corsOrigins: process.env.CORS_ORIGINS ?? "*",
+  corsOrigins: process.env.CORS_ORIGINS ?? "",
+  // Secret token required for privileged write/admin endpoints.
+  // Set via INTERNAL_API_KEY environment variable.
+  internalApiKey: process.env.INTERNAL_API_KEY ?? "",
   appPort: parseInt(process.env.APP_PORT ?? "9080", 10),
   // Request timeout in milliseconds for each external service.
   // These prevent hanging workflows when a downstream service is unresponsive.

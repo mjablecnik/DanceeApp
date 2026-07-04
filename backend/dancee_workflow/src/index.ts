@@ -54,7 +54,18 @@ async function registerDeployment() {
 // HTTP/1.1 proxy server exposed to Fly.io on config.appPort
 const allowedOrigins = config.corsOrigins === "*"
   ? null
-  : config.corsOrigins.split(",").map((o) => o.trim());
+  : config.corsOrigins.split(",").map((o) => o.trim()).filter(Boolean);
+
+// Routes that require a valid INTERNAL_API_KEY bearer token.
+// These endpoints trigger expensive LLM/image-gen work or mutate event data.
+const PRIVILEGED_ROUTES = new Set([
+  "/api/event",
+  "/api/event/reprocess",
+  "/api/event/force-reprocess",
+  "/api/events/process",
+  "/api/events/process-group",
+  "/api/event/retranslate",
+]);
 
 // Map /api/* paths to Restate service handler paths
 const apiRoutes: Record<string, string> = {
@@ -106,6 +117,17 @@ const server = http.createServer((req, res) => {
     res.writeHead(404, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "Not found" }));
     return;
+  }
+
+  // Require INTERNAL_API_KEY bearer token for privileged write/admin routes.
+  if (PRIVILEGED_ROUTES.has(pathname)) {
+    const authHeader = req.headers["authorization"] as string | undefined;
+    const expectedToken = `Bearer ${config.internalApiKey}`;
+    if (!config.internalApiKey || authHeader !== expectedToken) {
+      res.writeHead(401, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Unauthorized" }));
+      return;
+    }
   }
 
   const targetPath = queryString ? `${mappedPath}?${queryString}` : mappedPath;

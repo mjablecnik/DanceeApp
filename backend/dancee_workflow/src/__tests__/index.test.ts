@@ -6,6 +6,7 @@ vi.mock("../core/config", () => ({
   config: {
     corsOrigins: "*",
     appPort: 9080,
+    internalApiKey: "test-api-key",
   },
   validateConfig: vi.fn(),
   initSentry: vi.fn(),
@@ -59,10 +60,12 @@ function makeMockReqRes(overrides: {
   method?: string;
   url?: string;
   origin?: string;
+  authorization?: string;
 } = {}) {
-  const { method = "GET", url = "/api/events/list", origin } = overrides;
+  const { method = "GET", url = "/api/events/list", origin, authorization } = overrides;
   const headers: Record<string, string | undefined> = {};
   if (origin) headers["origin"] = origin;
+  if (authorization) headers["authorization"] = authorization;
 
   const setHeaderCalls: Array<[string, string]> = [];
   const res = {
@@ -92,7 +95,7 @@ beforeEach(() => {
 
 describe("index.ts: route mapping", () => {
   it("maps /api/event to /ApiService/processEvent via proxy to port 8080", () => {
-    const { req, res } = makeMockReqRes({ method: "POST", url: "/api/event" });
+    const { req, res } = makeMockReqRes({ method: "POST", url: "/api/event", authorization: "Bearer test-api-key" });
     capturedHandler(req, res);
     const firstCall = mockHttpRequest.mock.calls[0];
     expect(firstCall[0]).toContain("/ApiService/processEvent");
@@ -100,10 +103,17 @@ describe("index.ts: route mapping", () => {
   });
 
   it("maps /api/events/process to /ApiService/processBatch", () => {
-    const { req, res } = makeMockReqRes({ url: "/api/events/process" });
+    const { req, res } = makeMockReqRes({ url: "/api/events/process", authorization: "Bearer test-api-key" });
     capturedHandler(req, res);
     const firstCall = mockHttpRequest.mock.calls[0];
     expect(firstCall[0]).toContain("/ApiService/processBatch");
+  });
+
+  it("returns 401 for privileged routes without a valid API key", () => {
+    const { req, res } = makeMockReqRes({ url: "/api/events/process" });
+    capturedHandler(req, res);
+    expect(res.writeHead).toHaveBeenCalledWith(401, expect.objectContaining({ "Content-Type": "application/json" }));
+    expect(mockHttpRequest).not.toHaveBeenCalled();
   });
 
   it("maps /api/events/list to /ApiService/listEvents", () => {
