@@ -56,3 +56,9 @@
 - Problem: `src/__tests__/clients/directus-client.test.ts` had a "POST/PATCH error messages include truncated request body" describe block that asserted `/body:/` appeared in error messages. After removing the body preview for security (Fix 7), these tests failed.
 - Solution: Rename the describe block to "error messages are generic" and update assertions to check `/failed \(status NNN\)/` and verify `/body:/` is NOT present.
 - Source: security-audit, 2026-07-04
+
+## Flutter wrapper: packages/flutter_tools needs writable .dart_tool AND updated package_config.json
+- Project: frontend/dancee_app
+- Problem: After copying engine artifacts and creating the writable cache, flutter still failed with "Permission denied" trying to write `packages/flutter_tools/.dart_tool/package_config.json`. The symlink at `/tmp/fw/packages` pointed to `/opt/flutter/packages` (root-owned), so even creating a writable `.dart_tool` inside it failed.
+- Solution: Remove the packages symlink. Create a real `/tmp/fw/packages/` directory. Symlink all subdirectories except `flutter_tools`. Create a real `flutter_tools` directory. Symlink all flutter_tools contents except `.dart_tool`. Create writable `.dart_tool/`. Use `sed 's|/opt/flutter|/tmp/fw|g'` to rewrite `package_config.json` paths. Also: the `artifacts/engine` directory must be created BEFORE copying linux-x64 into it — otherwise `cp -r .../linux-x64 /path/engine/` copies the contents directly into `engine/` rather than creating `engine/linux-x64/`.
+- Source: security-audit, 2026-07-04
