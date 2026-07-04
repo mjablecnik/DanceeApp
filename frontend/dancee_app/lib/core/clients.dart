@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import 'config.dart';
 import 'exceptions.dart';
@@ -228,11 +229,9 @@ class DirectusClient {
           originalError: e,
         );
       case DioExceptionType.badResponse:
-        // ignore: avoid_print
-        print(
-          '[DirectusClient] badResponse: status=$statusCode '
-          'body=${e.response?.data}',
-        );
+        if (kDebugMode) {
+          debugPrint('[DirectusClient] badResponse: status=$statusCode');
+        }
         return ApiException(
           statusCode: statusCode,
           message: _keyForStatusCode(
