@@ -21,7 +21,7 @@
     "@restatedev/restate-sdk": "^1.11.1",
     "@sentry/node": "^8.0.0",
     "dotenv": "^16.0.0",
-    "facebook-event-scraper": "github:mjablecnik/facebook-event-scraper#master",
+    "facebook-event-scraper": "github:mjablecnik/facebook-event-scraper#91cebdb14448e9c52f6821973d3bce3dab2a50bb",
     "luxon": "^3.7.2",
     "openai": "^4.0.0",
     "zod": "^3.0.0"
