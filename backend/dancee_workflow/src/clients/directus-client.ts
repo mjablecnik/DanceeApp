@@ -101,9 +101,18 @@ export async function findEventByOriginalUrl(originalUrl: string): Promise<Direc
   return DirectusEventSchema.parse(items[0]);
 }
 
+function requirePositiveInt(id: string | number, context: string): number {
+  const n = typeof id === "number" ? id : Number(id);
+  if (!Number.isInteger(n) || n <= 0) {
+    throw new Error(`${context}: id must be a positive integer, got: ${JSON.stringify(id)}`);
+  }
+  return n;
+}
+
 export async function getEventById(id: string | number): Promise<DirectusEvent | null> {
   try {
-    const data = await directusGet(`/items/events/${id}?fields=*,translations.*`);
+    const safeId = requirePositiveInt(id, "getEventById");
+    const data = await directusGet(`/items/events/${safeId}?fields=*,translations.*`);
     return DirectusEventSchema.parse(extractDirectusData(data, "getEventById"));
   } catch {
     return null;
@@ -111,7 +120,8 @@ export async function getEventById(id: string | number): Promise<DirectusEvent |
 }
 
 export async function updateEvent(id: string | number, patch: Partial<DirectusEvent>): Promise<DirectusEvent> {
-  const data = await directusPatch(`/items/events/${id}`, patch);
+  const safeId = requirePositiveInt(id, "updateEvent");
+  const data = await directusPatch(`/items/events/${safeId}`, patch);
   return DirectusEventSchema.parse(extractDirectusData(data, "updateEvent"));
 }
 
@@ -328,7 +338,8 @@ export async function createCourse(course: DirectusCourse): Promise<DirectusCour
 
 export async function getCourseById(id: string | number): Promise<DirectusCourse | null> {
   try {
-    const data = await directusGet(`/items/courses/${id}?fields=*,translations.*`);
+    const safeId = requirePositiveInt(id, "getCourseById");
+    const data = await directusGet(`/items/courses/${safeId}?fields=*,translations.*`);
     return DirectusCourseSchema.parse(extractDirectusData(data, "getCourseById"));
   } catch {
     return null;
@@ -336,7 +347,8 @@ export async function getCourseById(id: string | number): Promise<DirectusCourse
 }
 
 export async function updateCourse(id: string | number, patch: Partial<DirectusCourse>): Promise<DirectusCourse> {
-  const data = await directusPatch(`/items/courses/${id}`, patch);
+  const safeId = requirePositiveInt(id, "updateCourse");
+  const data = await directusPatch(`/items/courses/${safeId}`, patch);
   return DirectusCourseSchema.parse(extractDirectusData(data, "updateCourse"));
 }
 

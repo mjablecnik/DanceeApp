@@ -130,13 +130,28 @@ export const apiService = restate.service({
       request: { id?: string | number; translationId?: string | number; steps?: string[]; lang?: string },
     ) => {
       // Support calling from events_translations detail: look up parent event
-      let eventId = request.id;
+      let eventId: number | undefined;
       let targetLang = request.lang;
 
-      if (!eventId && request.translationId) {
+      // Validate id/translationId as strict positive integers to prevent path
+      // traversal into other Directus collections via the privileged service token.
+      if (request.id !== undefined && request.id !== null && request.id !== "") {
+        const parsed = z.number().int().positive().safeParse(Number(request.id));
+        if (!parsed.success) {
+          throw new restate.TerminalError("Invalid field: 'id' must be a positive integer", { errorCode: 400 });
+        }
+        eventId = parsed.data;
+      }
+
+      if (eventId === undefined && request.translationId !== undefined && request.translationId !== null && request.translationId !== "") {
+        const parsedTid = z.number().int().positive().safeParse(Number(request.translationId));
+        if (!parsedTid.success) {
+          throw new restate.TerminalError("Invalid field: 'translationId' must be a positive integer", { errorCode: 400 });
+        }
+        const safeTranslationId = parsedTid.data;
         const trData = await ctx.run("getTranslation", async () => {
           const res = await fetch(
-            `${config.directusBaseUrl}/items/events_translations/${request.translationId}?fields=events_id,languages_code`,
+            `${config.directusBaseUrl}/items/events_translations/${safeTranslationId}?fields=events_id,languages_code`,
             { headers: { Authorization: `Bearer ${config.directusAccessToken}`, "Content-Type": "application/json" } },
           );
           if (!res.ok) return null;
@@ -144,13 +159,17 @@ export const apiService = restate.service({
           return json.data;
         });
         if (!trData) {
-          throw new restate.TerminalError(`Translation ${request.translationId} not found`, { errorCode: 404 });
+          throw new restate.TerminalError(`Translation ${safeTranslationId} not found`, { errorCode: 404 });
         }
-        eventId = trData.events_id;
+        const parentId = z.number().int().positive().safeParse(Number(trData.events_id));
+        if (!parentId.success) {
+          throw new restate.TerminalError("Invalid events_id in translation record", { errorCode: 500 });
+        }
+        eventId = parentId.data;
         targetLang = targetLang ?? trData.languages_code;
       }
 
-      if (!eventId) {
+      if (eventId === undefined) {
         throw new restate.TerminalError("Missing required field: 'id' or 'translationId'", { errorCode: 400 });
       }
 
@@ -304,19 +323,24 @@ export const apiService = restate.service({
       ctx: restate.Context,
       request: { id?: string | number },
     ) => {
-      if (!request?.id) {
+      if (request?.id === undefined || request?.id === null || request?.id === "") {
         throw new restate.TerminalError("Missing required field: 'id'", { errorCode: 400 });
       }
+      const parsedId = z.number().int().positive().safeParse(Number(request.id));
+      if (!parsedId.success) {
+        throw new restate.TerminalError("Invalid field: 'id' must be a positive integer", { errorCode: 400 });
+      }
+      const safeId = parsedId.data;
 
       // Step 1: Load existing event from Directus
-      const event = await ctx.run("getEvent", () => getEventById(request.id!));
+      const event = await ctx.run("getEvent", () => getEventById(safeId));
       if (!event) {
-        throw new restate.TerminalError(`Event ${request.id} not found`, { errorCode: 404 });
+        throw new restate.TerminalError(`Event ${safeId} not found`, { errorCode: 404 });
       }
 
       const eventUrl = event.original_url;
       if (!eventUrl) {
-        throw new restate.TerminalError(`Event ${request.id} has no original_url`, { errorCode: 400 });
+        throw new restate.TerminalError(`Event ${safeId} has no original_url`, { errorCode: 400 });
       }
 
       // Step 2: Re-scrape from Facebook
@@ -324,7 +348,7 @@ export const apiService = restate.service({
 
       if (facebookEvent.startTimestamp <= 0) {
         throw new restate.TerminalError(
-          `Invalid startTimestamp from Facebook for event ${request.id}`,
+          `Invalid startTimestamp from Facebook for event ${safeId}`,
           { errorCode: 422 },
         );
       }
@@ -370,8 +394,8 @@ export const apiService = restate.service({
         translations: translationsPatch,
       };
 
-      const updated = await ctx.run("updateEvent", () => updateEvent(request.id!, patch));
-      log({ level: "info", message: "forceReprocessEvent completed", eventId: String(request.id), url: eventUrl });
+      const updated = await ctx.run("updateEvent", () => updateEvent(safeId, patch));
+      log({ level: "info", message: "forceReprocessEvent completed", eventId: String(safeId), url: eventUrl });
       return updated;
     },
 
