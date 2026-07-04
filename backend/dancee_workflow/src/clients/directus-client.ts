@@ -51,7 +51,9 @@ async function directusGet(path: string): Promise<unknown> {
   });
   if (!response.ok) {
     const text = await response.text().catch(() => "");
-    throw new Error(`Directus GET ${path} error ${response.status}: ${text}`);
+    // Log full detail server-side; callers only get a generic message.
+    console.error(`Directus GET ${path} error ${response.status}: ${text}`);
+    throw new Error(`Directus GET request failed (status ${response.status})`);
   }
   return response.json();
 }
@@ -65,8 +67,8 @@ async function directusPost(path: string, body: unknown): Promise<unknown> {
   });
   if (!response.ok) {
     const text = await response.text().catch(() => "");
-    const bodyPreview = JSON.stringify(body).slice(0, 200);
-    throw new Error(`Directus POST ${path} error ${response.status}: ${text} (body: ${bodyPreview})`);
+    console.error(`Directus POST ${path} error ${response.status}: ${text}`);
+    throw new Error(`Directus POST request failed (status ${response.status})`);
   }
   return response.json();
 }
@@ -80,8 +82,8 @@ async function directusPatch(path: string, body: unknown): Promise<unknown> {
   });
   if (!response.ok) {
     const text = await response.text().catch(() => "");
-    const bodyPreview = JSON.stringify(body).slice(0, 200);
-    throw new Error(`Directus PATCH ${path} error ${response.status}: ${text} (body: ${bodyPreview})`);
+    console.error(`Directus PATCH ${path} error ${response.status}: ${text}`);
+    throw new Error(`Directus PATCH request failed (status ${response.status})`);
   }
   return response.json();
 }
@@ -319,7 +321,8 @@ export async function uploadFile(
   });
   if (!response.ok) {
     const text = await response.text().catch(() => "");
-    throw new Error(`Directus POST /files error ${response.status}: ${text}`);
+    console.error(`Directus POST /files error ${response.status}: ${text}`);
+    throw new Error(`Directus file upload failed (status ${response.status})`);
   }
   const responseData = await response.json();
   const fileData = extractDirectusData(responseData, "uploadFile") as { id: string };
@@ -513,6 +516,7 @@ export async function deleteFavorite(
   });
   if (!response.ok) {
     const text = await response.text().catch(() => "");
-    throw new Error(`Directus DELETE /items/favorites/${id} error ${response.status}: ${text}`);
+    console.error(`Directus DELETE /items/favorites/${id} error ${response.status}: ${text}`);
+    throw new Error(`Directus DELETE request failed (status ${response.status})`);
   }
 }

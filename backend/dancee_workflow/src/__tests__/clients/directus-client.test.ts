@@ -473,8 +473,8 @@ describe("Directus response envelope validator: throws on missing data field", (
   });
 });
 
-describe("POST/PATCH error messages include truncated request body", () => {
-  it("createVenue (POST) error includes body preview", async () => {
+describe("POST/PATCH error messages are generic (no internal details leaked)", () => {
+  it("createVenue (POST) error is generic and does not include the request body", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({
@@ -494,10 +494,11 @@ describe("POST/PATCH error messages include truncated request body", () => {
       latitude: 50.0,
       longitude: 14.0,
     };
-    await expect(createVenue(venue)).rejects.toThrow(/body:/);
+    await expect(createVenue(venue)).rejects.toThrow(/failed \(status 400\)/);
+    await expect(createVenue(venue)).rejects.not.toThrow(/body:/);
   });
 
-  it("updateGroupTimestamp (PATCH) error includes body preview", async () => {
+  it("updateGroupTimestamp (PATCH) error is generic and does not include the request body", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({
@@ -506,39 +507,7 @@ describe("POST/PATCH error messages include truncated request body", () => {
         text: async () => "Server error",
       })
     );
-    await expect(updateGroupTimestamp(1, "2025-01-01T00:00:00Z")).rejects.toThrow(/body:/);
-  });
-
-  it("body preview is truncated to 200 characters", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: false,
-        status: 400,
-        text: async () => "Bad request",
-      })
-    );
-    const largeVenue = {
-      name: "A".repeat(300),
-      street: "B".repeat(300),
-      number: "1",
-      town: "C".repeat(300),
-      country: "CZ",
-      postal_code: "11000",
-      region: "Prague",
-      latitude: 50.0,
-      longitude: 14.0,
-    };
-    let errorMessage = "";
-    try {
-      await createVenue(largeVenue);
-    } catch (e) {
-      errorMessage = (e as Error).message;
-    }
-    // Extract the body preview part from the error message: "(body: <preview>)"
-    const bodyMatch = errorMessage.match(/\(body: (.+)\)$/);
-    expect(bodyMatch).not.toBeNull();
-    // The body preview should be at most 200 chars
-    expect(bodyMatch![1].length).toBeLessThanOrEqual(200);
+    await expect(updateGroupTimestamp(1, "2025-01-01T00:00:00Z")).rejects.toThrow(/failed \(status 500\)/);
+    await expect(updateGroupTimestamp(1, "2025-01-01T00:00:00Z")).rejects.not.toThrow(/body:/);
   });
 });
