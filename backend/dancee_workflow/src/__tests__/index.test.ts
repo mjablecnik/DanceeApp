@@ -113,12 +113,11 @@ describe("index.ts: route mapping", () => {
     expect(firstCall[0]).toContain("/ApiService/listEvents");
   });
 
-  it("passes unmapped paths through to port 9070 unchanged", () => {
+  it("returns 404 for unmapped paths instead of proxying to admin port", () => {
     const { req, res } = makeMockReqRes({ url: "/restate/health" });
     capturedHandler(req, res);
-    const firstCall = mockHttpRequest.mock.calls[0];
-    expect(firstCall[0]).toContain("/restate/health");
-    expect(firstCall[0]).toContain("localhost:9070");
+    expect(res.writeHead).toHaveBeenCalledWith(404, expect.objectContaining({ "Content-Type": "application/json" }));
+    expect(mockHttpRequest).not.toHaveBeenCalled();
   });
 
   it("preserves query string when mapping routes", () => {

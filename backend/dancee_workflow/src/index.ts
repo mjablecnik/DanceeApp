@@ -103,18 +103,8 @@ const server = http.createServer((req, res) => {
   const mappedPath = apiRoutes[pathname];
 
   if (!mappedPath) {
-    // Proxy everything else to Restate admin UI/API (port 9070)
-    const targetUrl = `http://localhost:9070${pathname}${queryString ? "?" + queryString : ""}`;
-
-    const proxyReq = http.request(targetUrl, { method: req.method, headers: { ...req.headers, host: "localhost:9070" } }, (proxyRes) => {
-      res.writeHead(proxyRes.statusCode ?? 200, proxyRes.headers);
-      proxyRes.pipe(res);
-    });
-    proxyReq.on("error", (err) => {
-      res.writeHead(502, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: "Restate admin unavailable", details: err.message }));
-    });
-    req.pipe(proxyReq);
+    res.writeHead(404, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Not found" }));
     return;
   }
 
