@@ -35,7 +35,8 @@ if ! command -v fly > /dev/null 2>&1; then
   exit 1
 fi
 
-secrets=""
+# Build an argument list without eval to prevent shell injection from .env values.
+set --
 
 while IFS= read -r line || [ -n "$line" ]; do
   # Skip empty lines and comments
@@ -52,14 +53,14 @@ while IFS= read -r line || [ -n "$line" ]; do
     continue
   fi
 
-  secrets="$secrets $key=$value"
+  set -- "$@" "${key}=${value}"
 done < "$ENV_FILE"
 
-if [ -z "$secrets" ]; then
+if [ "$#" -eq 0 ]; then
   echo "No secrets to set."
   exit 0
 fi
 
 echo "Setting secrets on $APP_NAME..."
-eval fly secrets set $secrets --app "$APP_NAME"
+fly secrets set "$@" --app "$APP_NAME"
 echo "Done."
