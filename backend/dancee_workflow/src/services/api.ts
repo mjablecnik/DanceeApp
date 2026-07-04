@@ -36,20 +36,71 @@ const ALLOWED_COURSE_FILTER_FIELDS = new Set([
   "translation_status",
 ]);
 
+// Allowed Directus filter operators that accept only scalar (non-relational) values.
+// This prevents expensive deep-relational query trees that can cause DoS.
+const ALLOWED_FILTER_OPERATORS = new Set([
+  "_eq",
+  "_neq",
+  "_lt",
+  "_lte",
+  "_gt",
+  "_gte",
+  "_in",
+  "_nin",
+  "_contains",
+  "_ncontains",
+  "_null",
+  "_nnull",
+]);
+
 /**
- * Strips any filter keys that are not in the allowed set.
+ * Validates a single filter value: must be an object with at most one allowed
+ * operator key whose value is a scalar or an array of scalars.
+ */
+function isValidFilterValue(value: unknown): boolean {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return false;
+  }
+  const opObj = value as Record<string, unknown>;
+  const keys = Object.keys(opObj);
+  if (keys.length !== 1) return false;
+  const op = keys[0];
+  if (!ALLOWED_FILTER_OPERATORS.has(op)) return false;
+  const operand = opObj[op];
+  // Scalar operand
+  if (typeof operand === "string" || typeof operand === "number" || typeof operand === "boolean" || operand === null) {
+    return true;
+  }
+  // Array of scalars (for _in / _nin)
+  if (Array.isArray(operand)) {
+    return operand.every(
+      (item) => typeof item === "string" || typeof item === "number" || typeof item === "boolean",
+    );
+  }
+  return false;
+}
+
+/**
+ * Strips any filter keys that are not in the allowed set and validates filter
+ * values to only allow scalar-typed operators, preventing relational/deep
+ * query injection that could cause expensive Directus query plans.
  * Returns undefined if no valid keys remain.
  */
 export function sanitizeFilter(
   raw: Record<string, unknown>,
+  allowedFields: Set<string> = ALLOWED_FILTER_FIELDS,
 ): Record<string, unknown> | undefined {
   const sanitized: Record<string, unknown> = {};
   for (const key of Object.keys(raw)) {
-    if (ALLOWED_FILTER_FIELDS.has(key)) {
-      sanitized[key] = raw[key];
-    } else {
+    if (!allowedFields.has(key)) {
       log({ level: "warn", message: `sanitizeFilter: dropping disallowed filter field "${key}"` });
+      continue;
     }
+    if (!isValidFilterValue(raw[key])) {
+      log({ level: "warn", message: `sanitizeFilter: dropping field "${key}" with invalid operator/value shape` });
+      continue;
+    }
+    sanitized[key] = raw[key];
   }
   return Object.keys(sanitized).length > 0 ? sanitized : undefined;
 }
@@ -405,16 +456,7 @@ export const apiService = restate.service({
       if (filterHeader) {
         try {
           const parsed = JSON.parse(filterHeader) as Record<string, unknown>;
-          // Sanitize using course-specific allowed fields
-          const sanitized: Record<string, unknown> = {};
-          for (const key of Object.keys(parsed)) {
-            if (ALLOWED_COURSE_FILTER_FIELDS.has(key)) {
-              sanitized[key] = parsed[key];
-            } else {
-              log({ level: "warn", message: `listCourses: dropping disallowed filter field "${key}"` });
-            }
-          }
-          extraFilter = Object.keys(sanitized).length > 0 ? sanitized : undefined;
+          extraFilter = sanitizeFilter(parsed, ALLOWED_COURSE_FILTER_FIELDS);
         } catch {
           log({ level: "warn", message: "listCourses: x-dancee-filter header contains invalid JSON, ignoring filter", header: filterHeader });
         }
