@@ -90,7 +90,7 @@ echo ""
 AUTH_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
   "$DIRECTUS_URL${FIREBASE_ENDPOINT_PREFIX}/auth" \
   -H "Content-Type: application/json" \
-  -d "{\"uid\":\"${LOCAL_ID}\"}")
+  -d "{\"id_token\":\"${ID_TOKEN}\"}")
 
 AUTH_HTTP_CODE=$(echo "$AUTH_RESPONSE" | tail -1)
 AUTH_BODY=$(echo "$AUTH_RESPONSE" | sed '$d')

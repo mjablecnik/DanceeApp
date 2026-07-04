@@ -123,10 +123,27 @@ export default (router, { services, env, database, getSchema, logger }) => {
 
   router.post("/auth", async (req, res, next) => {
     try {
-      const { uid } = req.body || {};
-      if (!uid) {
-        return res.status(400).json({ error: "uid is required." });
+      if (!ensureFirebaseInitialized(env, logger)) {
+        return res.status(500).json({ error: "Firebase not configured." });
       }
+
+      const idToken = req.body?.id_token;
+      if (!idToken) {
+        return res.status(400).json({ error: "id_token is required." });
+      }
+
+      let decoded;
+      try {
+        decoded = await admin.auth().verifyIdToken(idToken, true);
+      } catch {
+        return res.status(401).json({ error: "Invalid Firebase token." });
+      }
+
+      if (!decoded.email_verified) {
+        return res.status(403).json({ error: "Email not verified." });
+      }
+
+      const uid = decoded.uid; // derived from verified token, never from req.body
 
       const schema = await getSchema();
       const { UsersService, RolesService } = services;
@@ -138,10 +155,7 @@ export default (router, { services, env, database, getSchema, logger }) => {
         limit: 1,
       });
 
-      logger.info(`[Firebase Auth] /auth lookup for external_identifier=${uid}, found=${users?.length ?? 0}`);
-
       if (!users || users.length === 0) {
-        logger.warn(`[Firebase Auth] /auth: User not found for uid=${uid}`);
         return res.status(404).json({ error: "User not found. Call /firebase/link first." });
       }
 
@@ -184,7 +198,7 @@ export default (router, { services, env, database, getSchema, logger }) => {
         .delete()
         .where("expires", "<", new Date());
 
-      logger.info(`[Firebase Auth] Issued tokens for user ${user.email}.`);
+      logger.debug(`[Firebase Auth] Issued tokens for user id=${user.id}.`);
 
       return res.json({
         data: {
