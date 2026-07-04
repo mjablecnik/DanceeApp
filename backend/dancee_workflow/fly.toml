@@ -10,7 +10,7 @@ primary_region = 'fra'
 
 [env]
   APP_PORT = '9080'
-  CORS_ORIGINS = '*'
+  CORS_ORIGINS = 'https://app.dancee.cz'
   DIRECTUS_TIMEOUT_MS = '30000'
   IMAGE_GENERATION_MODEL = 'black-forest-labs/flux.2-pro'
   LLM_TEMPERATURE = '0.1'
