@@ -1,0 +1,24 @@
+{
+  "segments": [
+    {
+      "pipeline_path": "/home/martin/.trayline/pipelines/processes/10-security-audit.yaml",
+      "vars": {
+        "path": "backend/dancee_workflow/"
+      }
+    },
+    {
+      "pipeline_path": "/home/martin/.trayline/pipelines/processes/10-security-audit.yaml",
+      "vars": {
+        "path": "backend/dancee_cms/"
+      }
+    },
+    {
+      "pipeline_path": "/home/martin/.trayline/pipelines/processes/10-security-audit.yaml",
+      "vars": {
+        "path": "frontend/dancee_app/"
+      }
+    }
+  ],
+  "completed_segments": 1,
+  "timestamp": "2026-07-04T18:40:09+02:00"
+}

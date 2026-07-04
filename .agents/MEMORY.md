@@ -44,3 +44,15 @@
 - Problem: `cp -al` (hard link copy) fails on Docker overlay filesystems with "Invalid cross-device link". This caused Flutter SDK artifact directories to be created but empty when trying to set up the writable wrapper via hard links.
 - Solution: Use regular `cp -r` (file copy, not hard links) for the Flutter SDK artifacts that need to be in the writable wrapper directory.
 - Source: check-build, 2026-07-03
+
+## Security audit: converting sync http.createServer handler to async for favorites JWT validation
+- Project: backend/dancee_workflow
+- Problem: The proxy's http.createServer handler was synchronous; making it async to validate Directus JWTs for favorites routes required adding an error-catching wrapper (`handleRequest` async function + createServer wrapper that calls `.catch()`).
+- Solution: Extract `handleRequest` as an `async function`, then wrap with `http.createServer((req, res) => { handleRequest(req, res).catch(...) })`. Node.js buffers request data until consumed, so async operations before `req.pipe(proxyReq)` are safe.
+- Source: security-audit, 2026-07-04
+
+## Security audit: tests for old insecure error format need updating when sanitizing errors
+- Project: backend/dancee_workflow
+- Problem: `src/__tests__/clients/directus-client.test.ts` had a "POST/PATCH error messages include truncated request body" describe block that asserted `/body:/` appeared in error messages. After removing the body preview for security (Fix 7), these tests failed.
+- Solution: Rename the describe block to "error messages are generic" and update assertions to check `/failed \(status NNN\)/` and verify `/body:/` is NOT present.
+- Source: security-audit, 2026-07-04
