@@ -127,6 +127,16 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
     return;
   }
 
+  // Reject oversized request bodies before any auth or proxying.
+  // Protects against memory exhaustion; 64 KiB is enough for all JSON endpoints.
+  const contentLength = parseInt(req.headers["content-length"] ?? "0", 10);
+  const MAX_BODY_BYTES = 65_536; // 64 KiB
+  if (contentLength > MAX_BODY_BYTES) {
+    res.writeHead(413, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Request body too large" }));
+    return;
+  }
+
   // Require INTERNAL_API_KEY bearer token for privileged write/admin routes.
   if (PRIVILEGED_ROUTES.has(pathname)) {
     const authHeader = req.headers["authorization"] as string | undefined;
