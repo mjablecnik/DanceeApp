@@ -67,6 +67,14 @@ const PRIVILEGED_ROUTES = new Set([
   "/api/event/retranslate",
 ]);
 
+// Favorites routes require a Directus user JWT to prevent IDOR.
+// The proxy validates the token and forwards the verified user_id.
+const FAVORITES_ROUTES = new Set([
+  "/api/favorites",
+  "/api/favorites/delete",
+  "/api/favorites/list",
+]);
+
 // Map /api/* paths to Restate service handler paths
 const apiRoutes: Record<string, string> = {
   "/api/event": "/ApiService/processEvent",
@@ -86,7 +94,7 @@ const apiRoutes: Record<string, string> = {
 // Restate server ingress port (HTTP/1.1 compatible)
 const RESTATE_INGRESS_PORT = 8080;
 
-const server = http.createServer((req, res) => {
+async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
   const origin = req.headers["origin"] as string | undefined;
 
   if (origin) {
@@ -130,6 +138,42 @@ const server = http.createServer((req, res) => {
     }
   }
 
+  // Favorites routes require a Directus user JWT. Validate it and extract the
+  // user_id so the handler never trusts user-supplied identity from the body.
+  let verifiedUserId: string | null = null;
+  if (FAVORITES_ROUTES.has(pathname)) {
+    const authHeader = req.headers["authorization"] as string | undefined;
+    if (!authHeader?.startsWith("Bearer ")) {
+      res.writeHead(401, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Unauthorized" }));
+      return;
+    }
+    const token = authHeader.slice(7);
+    try {
+      const meRes = await fetch(`${config.directusBaseUrl}/users/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+        signal: AbortSignal.timeout(5000),
+      });
+      if (!meRes.ok) {
+        res.writeHead(401, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Unauthorized" }));
+        return;
+      }
+      const meData = await meRes.json() as { data?: { id?: string } };
+      const userId = meData?.data?.id;
+      if (!userId) {
+        res.writeHead(401, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Unauthorized" }));
+        return;
+      }
+      verifiedUserId = userId;
+    } catch {
+      res.writeHead(401, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Unauthorized" }));
+      return;
+    }
+  }
+
   const targetPath = queryString ? `${mappedPath}?${queryString}` : mappedPath;
 
   // Forward to Restate server ingress (port 8080) via HTTP/1.1
@@ -144,7 +188,8 @@ const server = http.createServer((req, res) => {
 
   proxyReq.on("error", (err) => {
     res.writeHead(502, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Upstream error", details: err.message }));
+    res.end(JSON.stringify({ error: "Upstream error" }));
+    console.error("Proxy error:", err.message);
   });
 
   // Forward all x-dancee-* headers to Restate
@@ -163,7 +208,22 @@ const server = http.createServer((req, res) => {
     }
   }
 
+  // Forward the verified user_id for favorites routes (never from the body)
+  if (verifiedUserId) {
+    proxyReq.setHeader("x-dancee-user-id", verifiedUserId);
+  }
+
   req.pipe(proxyReq);
+}
+
+const server = http.createServer((req, res) => {
+  handleRequest(req, res).catch((err) => {
+    if (!res.headersSent) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Internal server error" }));
+    }
+    console.error("Unhandled proxy error:", err);
+  });
 });
 
 server.listen(config.appPort, "0.0.0.0", () => {

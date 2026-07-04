@@ -424,11 +424,17 @@ export const apiService = restate.service({
 
     createFavorite: async (
       ctx: restate.Context,
-      request: { user_id?: string; item_type?: string; item_id?: number },
+      request: { item_type?: string; item_id?: number },
     ) => {
-      if (!request?.user_id || !request?.item_type || request?.item_id === undefined) {
+      // user_id is derived from the verified Directus JWT forwarded by the proxy,
+      // never from the request body, to prevent IDOR.
+      const userId = ctx.request().headers.get("x-dancee-user-id");
+      if (!userId) {
+        throw new restate.TerminalError("Unauthorized", { errorCode: 401 });
+      }
+      if (!request?.item_type || request?.item_id === undefined) {
         throw new restate.TerminalError(
-          "Missing required fields: 'user_id', 'item_type', 'item_id'",
+          "Missing required fields: 'item_type', 'item_id'",
           { errorCode: 400 },
         );
       }
@@ -440,7 +446,7 @@ export const apiService = restate.service({
       }
 
       const favorite: DirectusFavorite = {
-        user_id: request.user_id,
+        user_id: userId,
         item_type: request.item_type as "event" | "course",
         item_id: request.item_id,
       };
@@ -450,11 +456,15 @@ export const apiService = restate.service({
 
     deleteFavorite: async (
       ctx: restate.Context,
-      request: { user_id?: string; item_type?: string; item_id?: number },
+      request: { item_type?: string; item_id?: number },
     ) => {
-      if (!request?.user_id || !request?.item_type || request?.item_id === undefined) {
+      const userId = ctx.request().headers.get("x-dancee-user-id");
+      if (!userId) {
+        throw new restate.TerminalError("Unauthorized", { errorCode: 401 });
+      }
+      if (!request?.item_type || request?.item_id === undefined) {
         throw new restate.TerminalError(
-          "Missing required fields: 'user_id', 'item_type', 'item_id'",
+          "Missing required fields: 'item_type', 'item_id'",
           { errorCode: 400 },
         );
       }
@@ -466,23 +476,20 @@ export const apiService = restate.service({
       }
 
       await ctx.run("deleteFavorite", () =>
-        deleteFavorite(request.user_id!, request.item_type as "event" | "course", request.item_id!)
+        deleteFavorite(userId, request.item_type as "event" | "course", request.item_id!)
       );
       return { success: true };
     },
 
-    listFavorites: async (
-      ctx: restate.Context,
-      request: { user_id?: string },
-    ) => {
-      if (!request?.user_id) {
-        throw new restate.TerminalError(
-          "Missing required field: 'user_id'",
-          { errorCode: 400 },
-        );
+    listFavorites: async (ctx: restate.Context) => {
+      // user_id is derived from the verified Directus JWT forwarded by the proxy,
+      // never from the request body, to prevent IDOR.
+      const userId = ctx.request().headers.get("x-dancee-user-id");
+      if (!userId) {
+        throw new restate.TerminalError("Unauthorized", { errorCode: 401 });
       }
 
-      return ctx.run("listFavorites", () => listFavorites(request.user_id!));
+      return ctx.run("listFavorites", () => listFavorites(userId));
     },
 
     listDanceStyles: async (ctx: restate.Context) => {
