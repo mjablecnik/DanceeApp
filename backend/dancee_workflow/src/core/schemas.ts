@@ -231,7 +231,10 @@ export const DirectusEventSchema = z.object({
   timezone: z.string(),
   original_url: z.string(),
   parts: z.array(EventPartSchema),
-  info: z.array(EventInfoSchema),
+  // Directus may contain info items from older versions or manual edits that lack
+  // a valid `type` field. We accept any objects here and filter to valid EventInfo
+  // items via transform, so that a single malformed item does not break the entire parse.
+  info: z.array(z.any()).transform((items) => filterEventInfo(items)),
   dances: z.array(z.string()),
   image: z.union([z.number(), z.string()]).nullable().optional(),
   image_source: z.string().nullable().optional(),
