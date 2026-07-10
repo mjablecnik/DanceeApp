@@ -465,8 +465,7 @@ describe("POST/PATCH error messages are generic (no internal details leaked)", (
     );
     const venue = {
       name: "Club Test",
-      street: "Main St",
-      number: "1",
+      address: "Main St 1",
       town: "Prague",
       country: "CZ",
       postal_code: "11000",

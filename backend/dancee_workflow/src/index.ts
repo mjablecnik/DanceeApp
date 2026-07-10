@@ -122,8 +122,21 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
   const mappedPath = apiRoutes[pathname];
 
   if (!mappedPath) {
-    res.writeHead(404, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Not found" }));
+    // Forward unmapped paths to Restate admin API (port 9070) for UI and admin endpoints
+    const adminReq = http.request(
+      `http://localhost:9070${fullUrl}`,
+      { method: req.method ?? "GET", headers: { ...req.headers, host: "localhost:9070" } },
+      (adminRes) => {
+        res.writeHead(adminRes.statusCode ?? 200, adminRes.headers);
+        adminRes.pipe(res);
+      },
+    );
+    adminReq.on("error", (err) => {
+      res.writeHead(502, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Admin API unavailable" }));
+      console.error("Admin proxy error:", err.message);
+    });
+    req.pipe(adminReq);
     return;
   }
 

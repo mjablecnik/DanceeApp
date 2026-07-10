@@ -4,8 +4,7 @@ class Venue extends Equatable {
   const Venue({
     required this.id,
     required this.name,
-    required this.street,
-    required this.number,
+    required this.address,
     required this.town,
     required this.country,
     required this.postalCode,
@@ -16,8 +15,7 @@ class Venue extends Equatable {
 
   final int id;
   final String name;
-  final String street;
-  final String number;
+  final String address;
   final String town;
   final String country;
   final String postalCode;
@@ -26,16 +24,16 @@ class Venue extends Equatable {
   final double longitude;
 
   String get fullAddress {
-    final streetPart = number.isNotEmpty ? '$street $number' : street;
-    return '$streetPart, $postalCode $town, $country';
+    if (address.isEmpty && town.isEmpty) return '';
+    if (address.isEmpty) return '$postalCode $town, $country'.trim();
+    return '$address, $postalCode $town, $country';
   }
 
   factory Venue.fromDirectus(Map<String, dynamic> json) {
     return Venue(
       id: json['id'] as int,
       name: (json['name'] as String?) ?? '',
-      street: (json['street'] as String?) ?? '',
-      number: (json['number'] as String?) ?? '',
+      address: (json['address'] as String?) ?? '',
       town: (json['town'] as String?) ?? '',
       country: (json['country'] as String?) ?? '',
       postalCode: (json['postal_code'] as String?) ?? '',
@@ -49,8 +47,7 @@ class Venue extends Equatable {
   List<Object?> get props => [
         id,
         name,
-        street,
-        number,
+        address,
         town,
         country,
         postalCode,
