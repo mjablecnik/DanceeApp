@@ -21,7 +21,7 @@ export function createSpecRouter(specAggregator: SpecAggregator): Router {
    * Get OpenAPI specification for a specific service
    * 
    * Parameters:
-   * - serviceId (path): Service identifier (e.g., "dancee-events")
+   * - serviceId (path): Service identifier (e.g., "dancee-workflow")
    * 
    * Returns:
    * - 200 OK: OpenAPI spec as JSON
@@ -76,7 +76,7 @@ export function createSpecRouter(specAggregator: SpecAggregator): Router {
  * Only allows alphanumeric characters and hyphens (kebab-case)
  * 
  * Examples:
- * - Valid: "dancee-events", "dancee-scraper", "my-service-123"
+ * - Valid: "dancee-workflow", "dancee-cms", "my-service-123"
  * - Invalid: "../etc/passwd", "./config", "service/path", "service\\path"
  * 
  * @param serviceId - Service ID to validate

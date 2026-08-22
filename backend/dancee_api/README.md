@@ -6,8 +6,8 @@
 
 The Dancee API Documentation Service is a standalone Node.js/TypeScript service that provides a unified Swagger UI interface for exploring and testing APIs from multiple backend services. It runs on port 3003 and serves as the central documentation hub for:
 
-- **dancee_events** (Port 8080) - Event management and favorites API
-- **dancee_scraper** (Port 3002) - Facebook event scraping API
+- **dancee_workflow** (Port 8080) - Facebook event processing pipeline: scraping, AI parsing, translation, geocoding
+- **dancee_cms** (Port 8055) - Directus headless CMS: event data, venues, groups
 
 ## Key Features
 
@@ -34,31 +34,31 @@ Access the documentation at: http://localhost:3003
 
 ## Documented Services
 
-### Dancee Events API (dancee-events)
+### Dancee Workflow API (dancee-workflow)
 
-Event management and user favorites API built with Go/Gin.
+Event processing pipeline built with TypeScript/Restate, fronted by a custom HTTP proxy.
 
 - **Development**: http://localhost:8080
-- **Production**: https://dancee-events.fly.dev
-- **Spec File**: `specs/events.openapi.yaml`
+- **Production**: https://dancee-workflow.fly.dev
+- **Spec File**: `specs/workflow.openapi.yaml`
 
 **Key Features**:
-- Event CRUD operations
-- User favorites management
-- Event filtering and search
+- Facebook event scraping
+- LLM-based event parsing and translation
+- Venue geocoding
+- Favorites and course listing
 
-### Dancee Scraper API (dancee-scraper)
+### Dancee CMS API (dancee-cms)
 
-Facebook event scraping service built with Express/TypeScript.
+Directus headless CMS, including the custom firebase-auth extension.
 
-- **Development**: http://localhost:3002
-- **Production**: https://dancee-scraper.fly.dev
-- **Spec File**: `specs/scraper.openapi.yaml`
+- **Development**: http://localhost:8055
+- **Production**: https://dancee-cms.fly.dev
+- **Spec File**: `specs/cms.openapi.yaml`
 
 **Key Features**:
-- Facebook event data extraction
-- Event metadata scraping
-- Batch scraping operations
+- Event, venue, and group content collections
+- Firebase-backed authentication (`/auth`, `/link`)
 
 ## Available Tasks
 
@@ -95,8 +95,9 @@ backend/dancee_api/
 │       ├── cors.middleware.ts   # CORS configuration
 │       └── error.middleware.ts  # Error handling
 ├── specs/                       # ⭐ Single Source of Truth
-│   ├── events.openapi.yaml      # dancee_events API spec
-│   └── scraper.openapi.yaml     # dancee_scraper API spec
+│   ├── workflow.openapi.yaml    # dancee_workflow API spec
+│   ├── cms.openapi.yaml         # dancee_cms API spec
+│   └── combined.openapi.yaml    # hand-maintained merge of both, for a single Swagger UI view
 ├── docs/                        # Documentation files
 ├── .env.example                 # Environment variables template
 ├── taskfile.yaml                # Task automation
@@ -119,20 +120,20 @@ Returns a JSON array of all available backend services with their metadata.
 ```json
 [
   {
-    "id": "dancee-events",
-    "name": "Dancee Events API",
+    "id": "dancee-workflow",
+    "name": "Dancee Workflow API",
     "version": "1.0.0",
-    "description": "Event management and favorites API",
+    "description": "Facebook event processing pipeline — scraping, AI parsing, translation, geocoding",
     "baseUrl": "http://localhost:8080",
-    "specPath": "/api/spec/dancee-events"
+    "specPath": "/api/spec/dancee-workflow"
   },
   {
-    "id": "dancee-scraper",
-    "name": "Dancee Scraper API",
+    "id": "dancee-cms",
+    "name": "Dancee CMS API",
     "version": "1.0.0",
-    "description": "Facebook event scraping API",
-    "baseUrl": "http://localhost:3002",
-    "specPath": "/api/spec/dancee-scraper"
+    "description": "Directus headless CMS — event data, venues, groups",
+    "baseUrl": "http://localhost:8055",
+    "specPath": "/api/spec/dancee-cms"
   }
 ]
 ```
@@ -142,9 +143,9 @@ Returns a JSON array of all available backend services with their metadata.
 Returns the OpenAPI 3.0 specification for a specific service.
 
 **Parameters**:
-- `serviceId` - Service identifier (e.g., "dancee-events", "dancee-scraper")
+- `serviceId` - Service identifier (e.g., "dancee-workflow", "dancee-cms")
 
-**Example**: http://localhost:3003/api/spec/dancee-events
+**Example**: http://localhost:3003/api/spec/dancee-workflow
 
 **Response**: Full OpenAPI 3.0 specification in JSON format
 
@@ -157,15 +158,15 @@ Health check endpoint for monitoring service availability.
 {
   "status": "ok",
   "services": {
-    "dancee-events": "loaded",
-    "dancee-scraper": "loaded"
+    "dancee-workflow": "loaded",
+    "dancee-cms": "loaded"
   }
 }
 ```
 
 ## Single Source of Truth Principle
 
-**Critical Design Decision**: All OpenAPI specifications are stored exclusively in `backend/dancee_api/specs/`. Individual backend services (dancee_events, dancee_scraper) do NOT maintain their own OpenAPI specs or Swagger UI implementations.
+**Critical Design Decision**: All OpenAPI specifications are stored exclusively in `backend/dancee_api/specs/`. Individual backend services (dancee_workflow, dancee_cms) do NOT maintain their own OpenAPI specs or Swagger UI implementations.
 
 ### Why This Matters
 

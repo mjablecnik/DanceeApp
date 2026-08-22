@@ -39,8 +39,8 @@ You should see the Swagger UI interface with a service selector at the top.
 ### 3. Select a Service
 
 Click the service selector dropdown in the top-right corner and choose a service:
-- **Dancee Events API** - Event management and favorites
-- **Dancee Scraper API** - Facebook event scraping
+- **Dancee Workflow API** - Facebook event processing pipeline (scraping, AI parsing, translation, geocoding)
+- **Dancee CMS API** - Directus headless CMS (event data, venues, groups, Firebase-backed auth)
 
 ### 4. Explore and Test
 
@@ -101,43 +101,46 @@ http://localhost:3003
 
 ### Available Services
 
-#### Dancee Events API (dancee-events)
+#### Dancee Workflow API (dancee-workflow)
 
-**Purpose**: Event management and user favorites
+**Purpose**: Facebook event processing pipeline — scraping, AI parsing, translation, geocoding
 
 **Base URLs**:
 - Development: `http://localhost:8080`
-- Production: `https://dancee-events.fly.dev`
+- Production: `https://dancee-workflow.fly.dev`
 
 **Key Endpoints**:
-- `GET /events` - List all events
-- `GET /events/{id}` - Get event details
-- `POST /favorites` - Add event to favorites
-- `GET /favorites/{userId}` - Get user's favorite events
-- `DELETE /favorites/{userId}/{eventId}` - Remove from favorites
+- `POST /api/event` - Process a single Facebook event
+- `POST /api/events/process` - Process a batch of events
+- `GET /api/events/list` - List processed events
+- `POST /api/favorites` - Add event to favorites
+- `GET /api/favorites/list` - Get favorite events
+- `GET /api/courses/list` - List courses
 
 **Use Cases**:
-- Browse available dance events
-- Manage user favorite events
-- Filter events by criteria
+- Trigger Facebook event scraping and AI processing
+- Browse processed dance events and courses
+- Manage user favorites
 
-#### Dancee Scraper API (dancee-scraper)
+**Important**: this API is an HTTP proxy in front of a Restate service, not a plain REST server. It filters `GET`-style list requests by custom headers (`x-dancee-filter`, `x-dancee-lang`, `x-dancee-include`) rather than query parameters, and it has **no `/health` endpoint** — see [Troubleshooting](#troubleshooting).
 
-**Purpose**: Facebook event data extraction
+#### Dancee CMS API (dancee-cms)
+
+**Purpose**: Directus headless CMS — event data, venues, groups, and Firebase-backed authentication
 
 **Base URLs**:
-- Development: `http://localhost:3002`
-- Production: `https://dancee-scraper.fly.dev`
+- Development: `http://localhost:8055`
+- Production: `https://dancee-cms.fly.dev`
 
 **Key Endpoints**:
-- `GET /scraper/event?url={facebookEventUrl}` - Scrape single event
-- `GET /scraper/events?url={facebookPageUrl}` - Scrape multiple events
-- `GET /scraper/health` - Check scraper status
+- `GET /items/{collection}` - List items in a Directus collection (e.g. `events`, `venues`, `courses`, `dance_styles`, `favorites`)
+- `GET /items/{collection}/{id}` - Get a single item
+- `POST /directus-extension-firebase-auth/auth` - Authenticate with a Firebase ID token
+- `POST /directus-extension-firebase-auth/link` - Link a Firebase account to a Directus user
 
 **Use Cases**:
-- Extract event data from Facebook
-- Batch scrape multiple events
-- Validate scraper functionality
+- Browse and manage CMS content collections
+- Authenticate app users via Firebase
 
 ## Exploring API Endpoints
 
@@ -148,67 +151,76 @@ When you expand an endpoint, you'll see:
 #### 1. Summary and Description
 
 ```
-GET /events
-Summary: List all events
-Description: Retrieves a paginated list of all dance events with optional filtering
+GET /items/events
+Summary: List events
+Description: Supports standard Directus query parameters — filter, sort, limit, offset, fields.
 ```
 
 #### 2. Parameters
 
 **Path Parameters** (part of the URL):
 ```
-GET /events/{id}
-  id: string (required) - Event ID
+GET /items/events/{id}
+  id: integer | string (required) - Event ID
 ```
 
-**Query Parameters** (URL query string):
+**Query Parameters** (Directus endpoints, e.g. `dancee-cms`, use standard Directus query syntax):
 ```
-GET /events?city=Prague&limit=10
-  city: string (optional) - Filter by city
-  limit: integer (optional) - Number of results (default: 20)
+GET /items/events?filter[organizer][_eq]=Prague Salsa Club&limit=10
+  filter: object (optional) - Directus filter expression
+  limit: integer (optional) - Number of results
 ```
 
-**Header Parameters**:
+**Header Parameters** (`dancee-workflow` list endpoints use custom headers instead of query parameters for filtering):
 ```
-Authorization: Bearer <token>
-Content-Type: application/json
+GET /api/events/list
+  Authorization: Bearer <token>       - required only on privileged/favorites routes, see below
+  x-dancee-filter: {"organizer":"Prague Salsa Club"}   - JSON filter object
+  x-dancee-lang: cs                   - flattens the matching translation onto each event
+  x-dancee-include: original_description  - include the untranslated source text
 ```
 
 #### 3. Request Body
 
-For POST/PUT/PATCH requests, you'll see the expected request body schema:
+For POST requests, you'll see the expected request body schema. Example — `POST /api/favorites` (dancee-workflow):
 
 ```json
 {
-  "userId": "string",
-  "eventId": "string"
+  "item_type": "event",
+  "item_id": 42
 }
 ```
 
+The favorited item's owner (`user_id`) is derived server-side from the caller's verified Directus JWT — it is never read from the request body.
+
 #### 4. Responses
 
-Each endpoint shows possible responses:
+Each endpoint shows possible responses. Directus collection endpoints (`dancee-cms`) wrap results in a `data` envelope:
 
 **200 OK** - Success response with data
 ```json
 {
-  "id": "123",
-  "name": "Summer Dance Party",
-  "date": "2024-07-15T20:00:00Z"
+  "data": {
+    "id": 42,
+    "title": "Pražská Salsa Noc",
+    "organizer": "Prague Salsa Club",
+    "venue": 7,
+    "start_time": "2026-07-15T20:00:00Z"
+  }
 }
 ```
 
 **400 Bad Request** - Invalid input
 ```json
 {
-  "error": "Invalid event ID format"
+  "error": "Missing required fields: 'item_type', 'item_id'"
 }
 ```
 
-**404 Not Found** - Resource not found
+**404 Not Found** - Resource not found (unmapped path on `dancee-workflow`, or missing item on `dancee-cms`)
 ```json
 {
-  "error": "Event not found"
+  "error": "Not found"
 }
 ```
 
@@ -221,27 +233,27 @@ Each endpoint shows possible responses:
 
 ### Reading Data Models
 
-Scroll to the **Models** section at the bottom to see detailed schemas:
+Scroll to the **Models** section at the bottom to see detailed schemas. Example models from `dancee-cms` (`DirectusEvent`/`DirectusVenue`):
 
-**Event Model**:
+**DirectusEvent Model**:
 ```
-Event {
-  id: string
-  name: string
-  description: string
-  date: string (date-time)
-  location: Location
-  organizer: string
+DirectusEvent {
+  id: integer | string
+  title: string           # e.g. "Pražská Salsa Noc"
+  original_description: string
+  organizer: string       # e.g. "Prague Salsa Club"
+  venue: integer | string | DirectusVenue | null
+  start_time: string (date-time, nullable)
 }
 ```
 
-**Location Model**:
+**DirectusVenue Model**:
 ```
-Location {
-  venue: string
-  address: string
-  city: string
-  country: string
+DirectusVenue {
+  id: integer | string
+  name: string     # e.g. "Lucerna Music Bar"
+  street: string   # e.g. "Vodičkova"
+  number: string   # e.g. "36"
 }
 ```
 
@@ -259,31 +271,32 @@ Look for the blue "Try it out" button in the top-right of the endpoint section.
 
 #### Step 3: Fill in Parameters
 
-**Example: GET /events with query parameters**
+**Example: GET /items/events with query parameters (dancee-cms)**
 
 1. Click "Try it out"
 2. Fill in optional parameters:
-   - `city`: Prague
+   - `filter`: `{"organizer":{"_eq":"Prague Salsa Club"}}`
    - `limit`: 10
 3. Click "Execute"
 
-**Example: POST /favorites (add to favorites)**
+**Example: POST /api/favorites (dancee-workflow — add to favorites)**
 
 1. Click "Try it out"
-2. Edit the request body:
+2. Click "Authorize" first and provide a valid Directus user JWT (see [Testing with Authentication](#testing-with-authentication))
+3. Edit the request body:
    ```json
    {
-     "userId": "user123",
-     "eventId": "event456"
+     "item_type": "event",
+     "item_id": 42
    }
    ```
-3. Click "Execute"
+4. Click "Execute"
 
-**Example: GET /events/{id} (get specific event)**
+**Example: GET /items/events/{id} (dancee-cms — get a specific event)**
 
 1. Click "Try it out"
 2. Fill in path parameter:
-   - `id`: 123
+   - `id`: 42
 3. Click "Execute"
 
 #### Step 4: View Response
@@ -293,10 +306,10 @@ After clicking "Execute", you'll see:
 **Request Details**:
 ```
 Curl command:
-curl -X GET "http://localhost:8080/events?city=Prague&limit=10" -H "accept: application/json"
+curl -X GET "http://localhost:8055/items/events?limit=10" -H "accept: application/json"
 
 Request URL:
-http://localhost:8080/events?city=Prague&limit=10
+http://localhost:8055/items/events?limit=10
 ```
 
 **Response**:
@@ -304,14 +317,13 @@ http://localhost:8080/events?city=Prague&limit=10
 Code: 200
 Response body:
 {
-  "events": [
+  "data": [
     {
-      "id": "123",
-      "name": "Prague Dance Night",
-      "city": "Prague"
+      "id": 42,
+      "title": "Pražská Salsa Noc",
+      "organizer": "Prague Salsa Club"
     }
-  ],
-  "total": 1
+  ]
 }
 
 Response headers:
@@ -323,44 +335,61 @@ content-type: application/json
 #### GET Requests (Retrieve Data)
 
 ```
-GET /events
-GET /events/{id}
-GET /favorites/{userId}
+GET /items/events              (dancee-cms)
+GET /items/events/{id}         (dancee-cms)
+GET /api/events/list           (dancee-workflow — filtered via headers, not query params)
+GET /api/favorites/list        (dancee-workflow — requires a Directus user JWT)
 ```
 
-**No request body needed** - just fill in path/query parameters
+**No request body needed** - just fill in path/query parameters, or headers on `dancee-workflow`
 
-#### POST Requests (Create Resources)
+#### POST Requests (Create/Trigger)
 
 ```
-POST /favorites
+POST /api/favorites             (dancee-workflow)
+POST /api/event                 (dancee-workflow — triggers scraping/processing, requires INTERNAL_API_KEY)
+POST /items/events              (dancee-cms — create an event directly in Directus)
 ```
 
-**Requires request body**:
+**Requires request body**, e.g. for `POST /api/favorites`:
 ```json
 {
-  "userId": "user123",
-  "eventId": "event456"
+  "item_type": "event",
+  "item_id": 42
 }
 ```
 
-#### DELETE Requests (Remove Resources)
+#### DELETE-style Requests (Remove Resources)
+
+`dancee-workflow` does not expose a DELETE HTTP method — removal is a dedicated POST endpoint instead:
 
 ```
-DELETE /favorites/{userId}/{eventId}
+POST /api/favorites/delete
+```
+```json
+{
+  "item_type": "event",
+  "item_id": 42
+}
 ```
 
-**Path parameters only** - no request body
+`dancee-cms` (Directus) does support standard `DELETE /items/{collection}/{id}`.
 
 ### Testing with Authentication
 
-If an endpoint requires authentication:
+Two different auth schemes are in play, depending on the endpoint:
+
+- **`dancee-workflow` privileged routes** (`/api/event`, `/api/event/reprocess`, `/api/event/force-reprocess`, `/api/events/process`, `/api/events/process-group`, `/api/event/retranslate`) require `Authorization: Bearer <INTERNAL_API_KEY>` — the shared server-side secret, not a per-user token.
+- **`dancee-workflow` favorites routes** (`/api/favorites`, `/api/favorites/delete`, `/api/favorites/list`) require `Authorization: Bearer <directus-user-jwt>` — a real Directus user session token; the proxy verifies it against `dancee-cms`'s `/users/me` before forwarding the request.
+- **`dancee-cms`** collection endpoints follow standard Directus authentication (a Directus access token, obtainable via `./get-token.sh` in local development).
+
+To test an authenticated endpoint in Swagger UI:
 
 1. Look for the 🔒 lock icon next to the endpoint
 2. Click "Authorize" button at the top of the page
-3. Enter your API key or token
+3. Enter the appropriate token for that endpoint (see above — they are not interchangeable)
 4. Click "Authorize"
-5. Now all requests will include authentication headers
+5. Now matching requests will include the authentication header
 
 ## Using the REST API
 
@@ -381,20 +410,20 @@ curl http://localhost:3003/api/services
 ```json
 [
   {
-    "id": "dancee-events",
-    "name": "Dancee Events API",
+    "id": "dancee-workflow",
+    "name": "Dancee Workflow API",
     "version": "1.0.0",
-    "description": "Event management and favorites API",
+    "description": "Facebook event processing pipeline — scraping, AI parsing, translation, geocoding",
     "baseUrl": "http://localhost:8080",
-    "specPath": "/api/spec/dancee-events"
+    "specPath": "/api/spec/dancee-workflow"
   },
   {
-    "id": "dancee-scraper",
-    "name": "Dancee Scraper API",
+    "id": "dancee-cms",
+    "name": "Dancee CMS API",
     "version": "1.0.0",
-    "description": "Facebook event scraping API",
-    "baseUrl": "http://localhost:3002",
-    "specPath": "/api/spec/dancee-scraper"
+    "description": "Directus headless CMS — event data, venues, groups",
+    "baseUrl": "http://localhost:8055",
+    "specPath": "/api/spec/dancee-cms"
   }
 ]
 ```
@@ -405,11 +434,11 @@ curl http://localhost:3003/api/services
 
 **Example**:
 ```bash
-# Get dancee-events spec
-curl http://localhost:3003/api/spec/dancee-events
+# Get dancee-workflow spec
+curl http://localhost:3003/api/spec/dancee-workflow
 
-# Get dancee-scraper spec
-curl http://localhost:3003/api/spec/dancee-scraper
+# Get dancee-cms spec
+curl http://localhost:3003/api/spec/dancee-cms
 ```
 
 **Response**: Full OpenAPI 3.0 specification in JSON format
@@ -421,6 +450,8 @@ curl http://localhost:3003/api/spec/dancee-scraper
 - Generate documentation in other formats
 
 ### Health Check
+
+This is the documentation service's own health check (port 3003) — it reports whether each backend service's OpenAPI spec loaded successfully, not whether the backend services themselves are reachable.
 
 **Endpoint**: `GET /health`
 
@@ -434,8 +465,8 @@ curl http://localhost:3003/health
 {
   "status": "ok",
   "services": {
-    "dancee-events": "loaded",
-    "dancee-scraper": "loaded"
+    "dancee-workflow": "loaded",
+    "dancee-cms": "loaded"
   }
 }
 ```
@@ -452,7 +483,7 @@ curl http://localhost:3003/health
 4. **Read Descriptions**: Expand endpoints to read summaries and descriptions
 5. **Check Models**: Scroll to the Models section to understand data structures
 6. **Test Simple Endpoint**: Try a GET endpoint with no parameters
-7. **Test with Parameters**: Try endpoints with query or path parameters
+7. **Test with Parameters**: Try endpoints with query, path, or (on `dancee-workflow`) header parameters
 8. **Review Responses**: Examine response schemas and examples
 
 ### Workflow 2: Testing an API Integration
@@ -461,13 +492,13 @@ curl http://localhost:3003/health
 
 1. **Start Backend Service**: Ensure the backend service is running
    ```bash
-   # For dancee_events
-   cd backend/dancee_events
-   task run
-   
-   # For dancee_scraper
-   cd backend/dancee_scraper
+   # For dancee_workflow
+   cd backend/dancee_workflow
    task dev
+
+   # For dancee_cms
+   cd backend/dancee_cms
+   ./start-directus.sh
    ```
 
 2. **Open Swagger UI**: Navigate to `http://localhost:3003`
@@ -476,7 +507,7 @@ curl http://localhost:3003/health
 
 4. **Test Endpoints**:
    - Start with simple GET requests
-   - Test with different parameter values
+   - Test with different parameter/header values
    - Try edge cases (empty values, invalid IDs)
    - Test error scenarios
 
@@ -494,6 +525,7 @@ curl http://localhost:3003/health
    - Verify parameter names and types
    - Check request body structure
    - Ensure required fields are present
+   - On `dancee-workflow`, confirm you're using the right auth scheme for the route (INTERNAL_API_KEY vs. user JWT — see [Testing with Authentication](#testing-with-authentication))
 
 3. **Examine Response**:
    - Check HTTP status code
@@ -516,20 +548,20 @@ curl http://localhost:3003/health
 
 1. **Get OpenAPI Spec**:
    ```bash
-   curl http://localhost:3003/api/spec/dancee-events > events-api.json
+   curl http://localhost:3003/api/spec/dancee-workflow > events-api.json
    ```
 
 2. **Use Code Generator**:
    ```bash
    # Install OpenAPI Generator
    npm install -g @openapitools/openapi-generator-cli
-   
+
    # Generate TypeScript client
    openapi-generator-cli generate \
      -i events-api.json \
      -g typescript-axios \
      -o ./src/api/events-client
-   
+
    # Generate Python client
    openapi-generator-cli generate \
      -i events-api.json \
@@ -539,10 +571,10 @@ curl http://localhost:3003/health
 
 3. **Import and Use**:
    ```typescript
-   import { EventsApi } from './api/events-client';
-   
-   const api = new EventsApi();
-   const events = await api.getEvents({ city: 'Prague' });
+   import { ApiEventsListApi } from './api/events-client';
+
+   const api = new ApiEventsListApi();
+   const events = await api.getEventsList();
    ```
 
 ### Workflow 5: Importing into Postman
@@ -551,7 +583,7 @@ curl http://localhost:3003/health
 
 1. **Get OpenAPI Spec URL**:
    ```
-   http://localhost:3003/api/spec/dancee-events
+   http://localhost:3003/api/spec/dancee-workflow
    ```
 
 2. **Open Postman**
@@ -590,21 +622,21 @@ curl http://localhost:3003/health
 
 1. **Keep Services Running**: Start all backend services you're testing
 2. **Use Separate Terminals**: Run each service in its own terminal window
-3. **Check Service Health**: Verify services are running before testing
+3. **Check Service Health**: Verify services are running before testing (see [Troubleshooting](#troubleshooting) — the two backend services expose health differently)
 4. **Switch Services Frequently**: Compare similar endpoints across services
 5. **Bookmark URLs**: Save direct links to frequently used endpoints
 
 ### Performance Tips
 
-1. **Use Filters**: Apply query parameters to limit response size
-2. **Paginate Results**: Use limit/offset parameters for large datasets
+1. **Use Filters**: Apply Directus query filters (`dancee-cms`) or the `x-dancee-filter` header (`dancee-workflow`) to limit response size
+2. **Paginate Results**: Use `limit`/`offset` on `dancee-cms`
 3. **Cache Responses**: The documentation service caches specs in memory
 4. **Test Locally First**: Use localhost URLs before testing production
 
 ### Security Considerations
 
 1. **Don't Use Production Data**: Test with development/staging environments
-2. **Protect API Keys**: Don't share authentication tokens
+2. **Protect API Keys**: Don't share the `INTERNAL_API_KEY` or user JWTs
 3. **Use HTTPS in Production**: Always use secure connections for production APIs
 4. **Validate Input**: Test with malicious input to verify validation
 5. **Check CORS**: Ensure CORS is properly configured for your frontend
@@ -624,11 +656,12 @@ curl http://localhost:3003/health
 
 1. **Verify Backend Service is Running**:
    ```bash
-   # Check dancee_events
-   curl http://localhost:8080/health
-   
-   # Check dancee_scraper
-   curl http://localhost:3002/health
+   # Check dancee_workflow — no /health route; hitting any unmapped path returns
+   # a 404 JSON body from the proxy itself, which still proves the process is up
+   curl -i http://localhost:8080/api/events/list
+
+   # Check dancee_cms (Directus' own health check path, not /health)
+   curl http://localhost:8055/server/health
    ```
 
 2. **Check Base URL**: Ensure the service URL in `.env` matches the running service
@@ -646,7 +679,7 @@ curl http://localhost:3003/health
 
 **Solutions**:
 
-1. **Verify Endpoint Path**: Check the exact path in the documentation
+1. **Verify Endpoint Path**: Check the exact path in the documentation. On `dancee-workflow`, a 404 with `{"error": "Not found"}` means the path isn't one of the twelve routes it proxies — it isn't a generic "not running" signal.
 2. **Check Path Parameters**: Ensure all required path parameters are filled
 3. **Verify Service**: Confirm the backend service is running and accessible
 
@@ -672,13 +705,13 @@ curl http://localhost:3003/health
 
 **Causes**:
 - Missing authentication
-- Invalid API key/token
-- Expired token
+- Wrong token type for the route (see [Testing with Authentication](#testing-with-authentication) — `INTERNAL_API_KEY` and a Directus user JWT are not interchangeable)
+- Invalid or expired token
 
 **Solutions**:
 
 1. **Click Authorize**: Use the Authorize button at the top
-2. **Enter Valid Token**: Provide a valid API key or bearer token
+2. **Enter the Correct Token Type**: Privileged `dancee-workflow` routes need `INTERNAL_API_KEY`; favorites routes need a real Directus user JWT; `dancee-cms` needs a Directus access token
 3. **Check Token Format**: Ensure correct format (e.g., "Bearer <token>")
 
 ### Issue: 500 Internal Server Error
@@ -707,8 +740,8 @@ curl http://localhost:3003/health
 
 **Solutions**:
 
-1. **Use Pagination**: Add limit/offset parameters
-2. **Filter Results**: Use query parameters to reduce data size
+1. **Use Pagination**: Add `limit`/`offset` parameters on `dancee-cms`
+2. **Filter Results**: Use Directus filters or the `x-dancee-filter` header to reduce data size
 3. **Check Backend**: Verify backend service performance
 4. **Test Locally**: Ensure you're testing against localhost
 

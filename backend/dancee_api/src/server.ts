@@ -73,7 +73,7 @@ export class Server {
     const swaggerOptions = {
       explorer: true, // Enable explorer mode for service selector
       swaggerOptions: {
-        // Configure URLs for all loaded services (dancee-events, dancee-scraper, etc.)
+        // Configure URLs for all loaded services (dancee-workflow, dancee-cms, etc.)
         urls: this.specAggregator.getLoadedServiceIds().map(serviceId => ({
           url: `/api/spec/${serviceId}`,
           name: this.specAggregator.getServiceInfo(serviceId)?.name || serviceId,

@@ -338,7 +338,7 @@ export const servicesConfig: ServiceConfig = {
   ui: {
     title: 'Dancee API Documentation',
     description: 'Unified API documentation for all Dancee backend services',
-    defaultService: 'dancee-events',
+    defaultService: 'dancee-workflow',
     theme: 'light',
   },
 };

@@ -166,11 +166,11 @@ NODE_ENV=development
 Configure URLs for backend services in development:
 
 ```bash
-# Dancee Events API (Go/Gin service)
-EVENTS_SERVICE_URL=http://localhost:8080
+# Dancee Workflow API (TypeScript/Restate service, HTTP proxy)
+WORKFLOW_SERVICE_URL=http://localhost:8080
 
-# Dancee Scraper API (Express/TypeScript service)
-SCRAPER_SERVICE_URL=http://localhost:3002
+# Dancee CMS API (Directus headless CMS)
+CMS_SERVICE_URL=http://localhost:8055
 ```
 
 **Note:** Ensure these services are running on the specified ports when testing API endpoints from Swagger UI.
@@ -181,8 +181,8 @@ For production deployment, uncomment and use production URLs:
 
 ```bash
 # Production URLs (uncomment for production)
-EVENTS_SERVICE_URL=https://dancee-events.fly.dev
-SCRAPER_SERVICE_URL=https://dancee-scraper.fly.dev
+WORKFLOW_SERVICE_URL=https://dancee-workflow.fly.dev
+CMS_SERVICE_URL=https://dancee-cms.fly.dev
 ```
 
 #### CORS Configuration
@@ -204,7 +204,7 @@ UI_TITLE=Dancee API Documentation
 UI_DESCRIPTION=Unified API documentation for all Dancee backend services
 
 # Default service to display on load
-DEFAULT_SERVICE=dancee-events
+DEFAULT_SERVICE=dancee-workflow
 
 # UI theme (light, dark, auto)
 UI_THEME=light
@@ -242,10 +242,10 @@ npm run dev
 ```
 [nodemon] starting `ts-node src/index.ts`
 Loading OpenAPI specifications...
-✓ Loaded spec: dancee-events (Dancee Events API v1.0.0)
-✓ Loaded spec: dancee-scraper (Dancee Scraper API v1.0.0)
+✓ Loaded spec: dancee-workflow (Dancee Workflow API v1.0.0)
+✓ Loaded spec: dancee-cms (Dancee CMS API v1.0.0)
 Dancee API Documentation Service running on http://localhost:3003
-Available services: dancee-events, dancee-scraper
+Available services: dancee-workflow, dancee-cms
 ```
 
 ### Production Mode
@@ -313,8 +313,8 @@ curl http://localhost:3003/health
 # {
 #   "status": "ok",
 #   "services": {
-#     "dancee-events": "loaded",
-#     "dancee-scraper": "loaded"
+#     "dancee-workflow": "loaded",
+#     "dancee-cms": "loaded"
 #   }
 # }
 ```
@@ -345,18 +345,18 @@ curl http://localhost:3003/api/services
 Test retrieving a specific service specification:
 
 ```bash
-# Get dancee-events spec
-curl http://localhost:3003/api/spec/dancee-events
+# Get dancee-workflow spec
+curl http://localhost:3003/api/spec/dancee-workflow
 
-# Get dancee-scraper spec
-curl http://localhost:3003/api/spec/dancee-scraper
+# Get dancee-cms spec
+curl http://localhost:3003/api/spec/dancee-cms
 ```
 
 ### Step 5: Test API Endpoints
 
 From the Swagger UI:
 
-1. Select a service from the dropdown (e.g., "Dancee Events API")
+1. Select a service from the dropdown (e.g., "Dancee Workflow API")
 2. Expand an endpoint (e.g., GET `/events`)
 3. Click "Try it out"
 4. Fill in any required parameters
@@ -393,7 +393,7 @@ Error: listen EADDRINUSE: address already in use :::3003
 
 **Symptom:**
 ```
-Error loading spec: dancee-events
+Error loading spec: dancee-workflow
 ```
 
 **Solution:**
@@ -487,11 +487,11 @@ Failed to fetch: net::ERR_CONNECTION_REFUSED
 
 1. Verify the backend service is running:
    ```bash
-   # For dancee_events (port 8080)
+   # For dancee_workflow (port 8080)
    curl http://localhost:8080/health
    
-   # For dancee_scraper (port 3002)
-   curl http://localhost:3002/health
+   # For dancee_cms (port 3002)
+   curl http://localhost:8055/health
    ```
 
 2. Check service URLs in `.env` match actual service ports
@@ -568,8 +568,8 @@ PORT=3003
 HOST=0.0.0.0
 
 # Production service URLs
-EVENTS_SERVICE_URL=https://dancee-events.fly.dev
-SCRAPER_SERVICE_URL=https://dancee-scraper.fly.dev
+WORKFLOW_SERVICE_URL=https://dancee-workflow.fly.dev
+CMS_SERVICE_URL=https://dancee-cms.fly.dev
 
 # Restrict CORS to your domains
 CORS_ORIGINS=https://app.dancee.com,https://admin.dancee.com
