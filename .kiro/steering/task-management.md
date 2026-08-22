@@ -6,34 +6,30 @@ inclusion: always
 
 This project uses **Taskfile** for automation. Always use tasks instead of direct commands when suggesting or running commands.
 
-## Frontend Tasks (Flutter)
+## Frontend Commands (Flutter)
 
-### Essential Tasks
-- `task run-web` - Run app on web (port 3000)
-- `task run-android` - Run app on Android device/emulator
-- `task run-ios` - Run app on iOS device/simulator
-- `task get-deps` - Install Flutter dependencies
-- `task clean` - Clean project
+`dancee_app` has no Taskfile — use the Flutter CLI directly.
 
-### Build Tasks
-- `task build-web` - Build for web production
-- `task build-android` - Build APK for Android
-- `task build-ios` - Build for iOS
+### Essential Commands
+- `flutter run -d chrome` - Run app on web
+- `flutter run -d <device-id>` - Run app on Android/iOS device or emulator (`flutter devices` lists targets)
+- `flutter pub get` - Install Flutter dependencies
+- `flutter clean` - Clean project
 
-### Code Generation
-- `task build-runner` - Run build runner for code generation
-- `task build-runner-force` - Run with delete conflicting outputs
-- `task build-runner-watch` - Run in watch mode
-- `task build-runner-clean` - Clean generated files
+### Build Commands
+- `flutter build web` - Build for web production
+- `flutter build apk` - Build APK for Android
+- `flutter build ios` - Build for iOS
 
-### Translation Tasks
-- `task slang` - Generate translations from JSON files
-- `task slang-watch` - Watch and auto-regenerate translations
-- `task slang-analyze` - Analyze translations for missing keys
+### Code Generation (slang)
 
-### Testing Tasks
-- `task test` - Run all Flutter tests
-- `task test-coverage` - Run tests with coverage report
+Translation strings live in `lib/i18n/*.i18n.json` and are compiled by `slang_build_runner` to `lib/i18n/strings.g.dart`. After changing a translation file:
+- `dart run build_runner build --delete-conflicting-outputs` - Regenerate `strings.g.dart`
+- `dart run build_runner watch --delete-conflicting-outputs` - Watch and auto-regenerate
+
+### Testing Commands
+- `flutter test` - Run all Flutter tests
+- `flutter test --coverage` - Run tests with coverage report
 
 ## Backend Tasks
 
@@ -71,28 +67,23 @@ task clean-build      # Clean and rebuild
 
 ## Quick Commands Reference
 
-**Frontend (Flutter):**
+**Frontend (Flutter) — no Taskfile, use the Flutter CLI directly:**
 ```bash
 # Start development
-task get-deps
-task run-web
+flutter pub get
+flutter run -d chrome
 
-# Code generation
-task build-runner-watch
-
-# Translations
-task slang              # Generate translations
-task slang-watch        # Auto-regenerate translations
-task slang-analyze      # Check for missing keys
+# Code generation (slang translations, generated code)
+dart run build_runner watch --delete-conflicting-outputs
 
 # Testing
-task test
-task test-coverage
+flutter test
+flutter test --coverage
 
 # Build for production
-task build-web
-task build-android
-task build-ios
+flutter build web
+flutter build apk
+flutter build ios
 ```
 
 **Backend - dancee_api (Express):**

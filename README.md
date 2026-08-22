@@ -32,8 +32,8 @@ backend/dancee_cms/      Directus headless CMS (PostgreSQL, S3)
 ```bash
 cd frontend/dancee_app
 cp lib/config.example.dart lib/config.dart  # fill in values
-task get-deps
-task run-web
+flutter pub get
+flutter run -d chrome
 ```
 
 ### Backend

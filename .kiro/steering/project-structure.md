@@ -11,25 +11,19 @@ Dancee App is a Flutter-based mobile and web application for dance enthusiasts. 
 ## Project Structure
 
 ```
-├── .design/                 # HTML design mockups
 ├── frontend/
 │   └── dancee_app/          # Main Flutter application
-│       ├── lib/             # Dart source code
-│       │   ├── core/        # Shared utilities, DI, routing
-│       │   ├── design/      # Shared design system
-│       │   ├── features/    # Feature modules
-│       │   └── i18n/        # Localization (slang)
+│       ├── lib/             # Dart source code (see "Flutter lib/ Structure" below)
+│       ├── .design/         # HTML design mockups
 │       ├── android/         # Android-specific files
 │       ├── ios/             # iOS-specific files
 │       ├── web/             # Web-specific files
 │       ├── docs/            # Documentation
-│       ├── taskfile.yaml    # Task automation
-│       └── pubspec.yaml     # Flutter dependencies
+│       └── pubspec.yaml     # Flutter dependencies (no Taskfile — use the Flutter CLI directly)
 ├── backend/
 │   ├── dancee_api/          # TypeScript API Gateway (Express)
 │   ├── dancee_workflow/     # TypeScript workflow service (Restate)
 │   └── dancee_cms/          # Directus CMS (headless)
-└── shared/                  # Shared resources (currently empty)
 ```
 
 ## Backend Services
@@ -177,64 +171,48 @@ backend/dancee_cms/
 - **Platforms**: Android, iOS, Web
 
 ### Flutter lib/ Structure:
+
+The app is organized by architectural layer (`core`, `data`, `logic`, `services`, `shared`), not by feature — each layer's own subdirectories are what group things by feature/screen.
+
 ```
 frontend/dancee_app/lib/
 ├── config.dart            # Sensitive config (gitignored)
 ├── config.example.dart    # Config template (committed)
+├── firebase_options.dart  # Generated Firebase config
 ├── main.dart              # App entry point
-├── core/
-│   ├── clients.dart       # API client (Dio)
+├── core/                  # App-wide infrastructure: routing, DI, API clients, theme
+│   ├── app_routes.dart / app_routes.g.dart  # go_router route definitions (generated)
+│   ├── clients.dart       # API client setup (Dio)
+│   ├── colors.dart / theme.dart  # Design tokens
 │   ├── config.dart        # Public config (imports from lib/config.dart)
 │   ├── exceptions.dart    # Custom exceptions
-│   ├── routing.dart       # Go Router setup
+│   ├── router_guard.dart  # Auth-gated route guard
 │   └── service_locator.dart  # Dependency injection (get_it)
-├── design/
-│   ├── colors.dart
-│   ├── theme.dart
-│   ├── typography.dart
-│   └── widgets.dart       # Shared design widgets
-├── features/
-│   ├── app/               # Core app feature (layouts, initial page, error pages)
-│   │   ├── layouts.dart
-│   │   └── pages/
-│   │       ├── error_page.dart
-│   │       ├── initial_page.dart
-│   │       └── not_found_page.dart
-│   ├── auth/              # Authentication
-│   │   ├── data/
-│   │   │   ├── auth_repository.dart
-│   │   │   └── entities.dart
-│   │   ├── logic/
-│   │   │   └── auth.dart  # AuthCubit + AuthState (freezed)
-│   │   └── pages/
-│   │       ├── login/
-│   │       └── register/
-│   ├── events/            # Dance events
-│   │   ├── data/
-│   │   │   ├── entities.dart
-│   │   │   └── event_repository.dart
-│   │   ├── logic/
-│   │   │   ├── event_detail.dart
-│   │   │   ├── event_list.dart  # EventListCubit + State (freezed)
-│   │   │   └── favorites.dart   # FavoritesCubit + State (freezed)
-│   │   └── pages/
-│   │       ├── event_detail/    # Complex page (sections + components)
-│   │       ├── event_list/      # Complex page (sections + components)
-│   │       ├── event_filters_page.dart  # Simple page
-│   │       └── favorites_page.dart      # Simple page
-│   └── settings/          # User settings
-│       ├── data/
-│       │   ├── entities.dart
-│       │   └── settings_repository.dart
-│       ├── logic/
-│       │   └── settings.dart  # SettingsCubit + State (freezed)
-│       └── pages/
-│           └── settings_page.dart
-└── i18n/                  # Translations (slang_flutter)
+├── data/                  # Models and repositories, shared across screens
+│   ├── entities/          # course, event, dance_style, venue, user_profile, favorite, …
+│   ├── repositories/      # auth, course, dance_style, event, favorites, profile
+│   └── premium_repository.dart
+├── logic/                 # State management (flutter_bloc cubits + freezed states)
+│   ├── cubits/            # auth, event, course, favorites, filter, profile, settings, add_event, …
+│   └── states/            # matching *_state.dart (+ generated *.freezed.dart)
+├── screens/                # One directory per screen area, each with its own sub-screens/components
+│   ├── auth/              # login, register, forgot_password, email_verification, onboarding
+│   ├── courses/           # courses_list, course_detail, add_course, edit_course
+│   ├── events/            # events_list, event_detail, add_event, edit_event, filter_location, filter_dance, dance_style_selector
+│   ├── profile/           # profile, profile_edit, change_password, author_contact, premium, legal
+│   └── saved/             # saved_events_screen.dart + sections
+├── services/              # Cross-cutting services: destination_service, directus_auth_service, firebase_auth_service
+├── shared/                # Reusable UI shared across screens
+│   ├── components/        # app_cached_image, back_button_header, background_circles, snap_carousel
+│   ├── elements/          # buttons, forms, labels, navigation
+│   ├── pages/             # auth_gate_page.dart
+│   ├── sections/          # composed sections used by multiple screens (headers, filter chip rows, …)
+│   └── utils/              # formatting/validation helpers (date_format, form_validators, url_launcher, …)
+└── i18n/                  # Translations (slang_flutter + slang_build_runner)
     ├── strings.i18n.json      # English (base)
     ├── strings_cs.i18n.json   # Czech
     ├── strings_es.i18n.json   # Spanish
-    └── strings.g.dart         # Generated translations
+    └── strings.g.dart         # Generated translations — import as `i18n/strings.g.dart`
 ```
 
 ## Platform Support
