@@ -48,7 +48,7 @@ Returns an access token using credentials from `.env`.
    ```sh
    ./fly-secrets.sh
    ```
-   This automatically overrides `PUBLIC_URL` to `https://martin-directus.fly.dev` and skips `PORT`.
+   This automatically overrides `PUBLIC_URL` to `https://<app>.fly.dev` (derived from the `app` name set in `fly.toml`, currently `https://dancee-cms.fly.dev`) and skips `PORT`.
 
 3. Deploy:
    ```sh
@@ -58,3 +58,8 @@ Returns an access token using credentials from `.env`.
 ## Configuration
 
 See [`.env.example`](.env.example) for all available environment variables (database, storage, email, Redis).
+
+## Scripts
+
+- `./backup-db.sh` — creates a timestamped `pg_dump` backup of the Supabase database into `./backups/` (requires `DB_CONNECTION_STRING` in `.env`). Run before deploying changes.
+- `./test-firebase-auth.sh <email> <password>` — exercises the Firebase Auth extension's `/link` and `/auth` endpoints end-to-end against a running Directus instance.
