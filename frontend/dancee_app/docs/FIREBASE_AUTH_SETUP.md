@@ -1,6 +1,6 @@
 # Firebase Authentication Setup Guide
 
-This guide covers the complete setup of Firebase Authentication for the Dancee App (`dancee_app2`), including Email/Password, Google Sign-In, and Apple Sign-In.
+This guide covers the complete setup of Firebase Authentication for the Dancee App (`dancee_app`), including Email/Password, Google Sign-In, and Apple Sign-In.
 
 ---
 
@@ -35,8 +35,8 @@ This guide covers the complete setup of Firebase Authentication for the Dancee A
 2. Enter a project name (e.g. `dancee-app`), choose your analytics settings, and click **Create project**.
 3. Once the project is created, click **Continue** to open the project dashboard.
 4. Register your app platforms:
-   - **Android**: Click the Android icon, enter the package name from `android/app/build.gradle` (e.g. `com.example.dancee_app2`), and download `google-services.json`.
-   - **iOS**: Click the iOS icon, enter the bundle ID from `ios/Runner.xcodeproj` (e.g. `com.example.danceeApp2`), and download `GoogleService-Info.plist`.
+   - **Android**: Click the Android icon, enter the package name from `android/app/build.gradle` (e.g. `com.jablecnik.dancee_app`), and download `google-services.json`.
+   - **iOS**: Click the iOS icon, enter the bundle ID from `ios/Runner.xcodeproj` (e.g. `com.jablecnik.dancee-app`), and download `GoogleService-Info.plist`.
    - **Web**: Click the Web icon, register the app, and note the Firebase web config object (used by FlutterFire CLI).
 
 ---
@@ -80,7 +80,7 @@ The FlutterFire CLI generates `lib/firebase_options.dart` containing your Fireba
    firebase login
    ```
 
-2. From the `frontend/dancee_app2/` directory, run:
+2. From the `frontend/dancee_app/` directory, run:
    ```bash
    flutterfire configure --project=YOUR_FIREBASE_PROJECT_ID
    ```
@@ -146,7 +146,7 @@ Google Sign-In requires OAuth 2.0 client IDs configured in [Google Cloud Console
 1. In [Google Cloud Console](https://console.cloud.google.com), navigate to **APIs & Services > Credentials**.
 2. Click **Create credentials > OAuth client ID**.
 3. Select **Android** as the application type.
-4. Enter the package name (e.g. `com.example.dancee_app2`).
+4. Enter the package name (e.g. `com.jablecnik.dancee_app`).
 5. Enter the **SHA-1 certificate fingerprint** of your signing key:
    - Debug keystore: `keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android`
    - Release keystore: use your release keystore and alias.
@@ -156,7 +156,7 @@ Google Sign-In requires OAuth 2.0 client IDs configured in [Google Cloud Console
 
 1. In Google Cloud Console, click **Create credentials > OAuth client ID**.
 2. Select **iOS** as the application type.
-3. Enter your iOS bundle ID (e.g. `com.example.danceeApp2`).
+3. Enter your iOS bundle ID (e.g. `com.jablecnik.dancee-app`).
 4. Click **Create** and download the `GoogleService-Info.plist` — the `CLIENT_ID` field contains the OAuth client ID.
 5. In Xcode, open `ios/Runner/Info.plist` and verify that the `CFBundleURLTypes` array contains a URL scheme matching your reversed client ID (e.g. `com.googleusercontent.apps.YOUR-CLIENT-ID`). The FlutterFire CLI typically adds this automatically.
 
@@ -180,7 +180,7 @@ Apple Sign-In requires setup in both the Apple Developer Portal and Firebase Con
 3. Select your App ID (bundle ID) and enable the **Sign In with Apple** capability. Click **Save**.
 4. Navigate to **Identifiers** and click **+** to register a new **Services ID**:
    - Description: e.g. `Dancee App Sign-In`
-   - Identifier: e.g. `com.example.danceeApp2.signin` (this is the **Services ID**)
+   - Identifier: e.g. `com.jablecnik.dancee-app.signin` (this is the **Services ID**)
    - Enable **Sign In with Apple** and click **Configure**:
      - Primary App ID: select your App ID
      - Domains and Subdomains: enter your Firebase project domain (e.g. `YOUR-PROJECT.firebaseapp.com`)
@@ -198,7 +198,7 @@ Apple Sign-In requires setup in both the Apple Developer Portal and Firebase Con
 
 1. Return to **Authentication > Sign-in method > Apple** in Firebase Console.
 2. Enter:
-   - **Services ID**: the identifier from step 4 above (e.g. `com.example.danceeApp2.signin`)
+   - **Services ID**: the identifier from step 4 above (e.g. `com.jablecnik.dancee-app.signin`)
    - **Apple Team ID**: from step 6
    - **Key ID**: from step 5
    - **Private key**: upload the `.p8` file from step 5
