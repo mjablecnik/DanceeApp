@@ -215,6 +215,58 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /api/event/force-reprocess:
+    post:
+      tags:
+        - Events
+      summary: Force-reprocess an event by re-scraping it from Facebook
+      description: |
+        Re-scrapes an existing event's original Facebook URL and re-runs the full
+        processing pipeline (parsing, translation, dances) on the fresh data,
+        overwriting the stored event.
+      operationId: forceReprocessEvent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+              properties:
+                id:
+                  oneOf:
+                    - type: string
+                    - type: integer
+                  description: Directus event ID
+              example:
+                id: 42
+      responses:
+        '200':
+          description: Event re-scraped, reprocessed, and updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DirectusEvent'
+        '400':
+          description: Missing 'id', invalid 'id', or event has no original_url
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Facebook re-scrape returned an invalid start timestamp
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /api/events/process:
     get:
       tags:
@@ -235,7 +287,7 @@ paths:
                 acknowledged: true
                 message: "Batch processing started"
 
-  /api/events/group:
+  /api/events/process-group:
     post:
       tags:
         - Events
@@ -329,7 +381,7 @@ paths:
         - name: x-dancee-filter
           in: header
           required: false
-          description: JSON-encoded Directus filter. Allowed fields: dances, start_date, end_date, venue, level, translation_status.
+          description: "JSON-encoded Directus filter. Allowed fields: dances, start_date, end_date, venue, level, translation_status."
           schema:
             type: string
           example: '{"dances":{"_contains":"salsa"}}'

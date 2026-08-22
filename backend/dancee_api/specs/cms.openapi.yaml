@@ -45,6 +45,8 @@ tags:
     description: Terms of Use and Privacy Policy content
   - name: Contact Messages
     description: User-submitted contact/feedback messages
+  - name: Firebase Auth
+    description: Custom firebase-extension endpoints for Firebase-backed authentication
 
 paths:
   /server/health:
@@ -777,6 +779,112 @@ paths:
                     $ref: '#/components/schemas/ContactMessage'
         '400':
           description: Validation error — missing required fields
+
+  /directus-extension-firebase-auth/link:
+    post:
+      tags:
+        - Firebase Auth
+      summary: Link a Firebase account to a Directus user
+      description: |
+        Verifies a Firebase ID token and links it to a Directus user record, creating
+        the user if one doesn't already exist for that email. The Firebase token's
+        email must be verified. On repeat calls for an existing user, refreshes the
+        stored `external_identifier` to the current Firebase UID and backfills the
+        name from the token if the Directus name is still empty.
+
+        Call this once after Firebase sign-up/sign-in, before calling `/auth`.
+      operationId: firebaseLink
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id_token
+              properties:
+                id_token:
+                  type: string
+                  description: Firebase ID token from the client SDK
+      responses:
+        '200':
+          description: User linked (existing or newly created)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      email:
+                        type: string
+                        format: email
+                      role:
+                        type: string
+                        format: uuid
+        '400':
+          description: Missing id_token, or Firebase token has no email
+        '401':
+          description: Invalid Firebase token
+        '403':
+          description: Firebase email is not verified
+        '500':
+          description: Firebase not configured, or configured default role not found
+
+  /directus-extension-firebase-auth/auth:
+    post:
+      tags:
+        - Firebase Auth
+      summary: Exchange a Firebase ID token for a Directus session
+      description: |
+        Verifies a Firebase ID token and issues a Directus-compatible access/refresh
+        token pair for the linked user. The user must already exist — call `/link`
+        first. The refresh token is stored as a Directus session record.
+      operationId: firebaseAuth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id_token
+              properties:
+                id_token:
+                  type: string
+                  description: Firebase ID token from the client SDK
+      responses:
+        '200':
+          description: Access and refresh tokens issued
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      access_token:
+                        type: string
+                      refresh_token:
+                        type: string
+                      expires:
+                        type: integer
+                        description: Access token lifetime in milliseconds
+        '400':
+          description: Missing id_token
+        '401':
+          description: Invalid Firebase token
+        '403':
+          description: Firebase email is not verified
+        '404':
+          description: No Directus user linked to this Firebase account — call /link first
+        '500':
+          description: Firebase not configured
 
 components:
   parameters:
