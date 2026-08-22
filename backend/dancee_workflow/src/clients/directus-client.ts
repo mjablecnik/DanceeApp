@@ -1,11 +1,11 @@
 import { config } from "../core/config";
+import { log } from "../core/logger";
 import {
   DirectusEventSchema,
   DirectusVenueSchema,
   DirectusGroupSchema,
   DirectusErrorSchema,
   DirectusSkippedEventSchema,
-  DirectusLanguageSchema,
   DirectusCourseSchema,
   DirectusDanceStyleSchema,
   DirectusFavoriteSchema,
@@ -14,7 +14,6 @@ import {
   type DirectusGroup,
   type DirectusError,
   type DirectusSkippedEvent,
-  type DirectusLanguage,
   type DirectusCourse,
   type DirectusDanceStyle,
   type DirectusFavorite,
@@ -52,7 +51,7 @@ async function directusGet(path: string): Promise<unknown> {
   if (!response.ok) {
     const text = await response.text().catch(() => "");
     // Log full detail server-side; callers only get a generic message.
-    console.error(`Directus GET ${path} error ${response.status}: ${text}`);
+    log({ level: "error", message: `Directus GET ${path} error ${response.status}`, reason: text });
     throw new Error(`Directus GET request failed (status ${response.status})`);
   }
   return response.json();
@@ -67,7 +66,7 @@ async function directusPost(path: string, body: unknown): Promise<unknown> {
   });
   if (!response.ok) {
     const text = await response.text().catch(() => "");
-    console.error(`Directus POST ${path} error ${response.status}: ${text}`);
+    log({ level: "error", message: `Directus POST ${path} error ${response.status}`, reason: text });
     throw new Error(`Directus POST request failed (status ${response.status})`);
   }
   return response.json();
@@ -82,7 +81,7 @@ async function directusPatch(path: string, body: unknown): Promise<unknown> {
   });
   if (!response.ok) {
     const text = await response.text().catch(() => "");
-    console.error(`Directus PATCH ${path} error ${response.status}: ${text}`);
+    log({ level: "error", message: `Directus PATCH ${path} error ${response.status}`, reason: text });
     throw new Error(`Directus PATCH request failed (status ${response.status})`);
   }
   return response.json();
@@ -153,13 +152,6 @@ export async function listPublishedEvents(extraFilter?: Record<string, unknown>)
   const encoded = encodeURIComponent(JSON.stringify(effectiveFilter));
   const data = await directusGet(`/items/events?filter=${encoded}&fields=*,translations.*,venue.*`);
   const items = extractDirectusData(data, "listPublishedEvents") as unknown[];
-  return z.array(DirectusEventSchema).parse(items);
-}
-
-export async function listEvents(filter: Record<string, unknown>): Promise<DirectusEvent[]> {
-  const encoded = encodeURIComponent(JSON.stringify(filter));
-  const data = await directusGet(`/items/events?filter=${encoded}`);
-  const items = extractDirectusData(data, "listEvents") as unknown[];
   return z.array(DirectusEventSchema).parse(items);
 }
 
@@ -284,22 +276,6 @@ export async function createSkippedEvent(
   return DirectusSkippedEventSchema.parse(extractDirectusData(data, "createSkippedEvent"));
 }
 
-// ---- Languages ----
-
-export async function getLanguages(): Promise<DirectusLanguage[]> {
-  const data = await directusGet("/items/languages");
-  const items = extractDirectusData(data, "getLanguages") as unknown[];
-  return z.array(DirectusLanguageSchema).parse(items);
-}
-
-export async function createLanguage(
-  code: string,
-  name: string,
-): Promise<DirectusLanguage> {
-  const data = await directusPost("/items/languages", { code, name });
-  return DirectusLanguageSchema.parse(extractDirectusData(data, "createLanguage"));
-}
-
 // ---- Files ----
 
 export async function uploadFile(
@@ -321,7 +297,7 @@ export async function uploadFile(
   });
   if (!response.ok) {
     const text = await response.text().catch(() => "");
-    console.error(`Directus POST /files error ${response.status}: ${text}`);
+    log({ level: "error", message: `Directus POST /files error ${response.status}`, reason: text });
     throw new Error(`Directus file upload failed (status ${response.status})`);
   }
   const responseData = await response.json();
@@ -516,7 +492,7 @@ export async function deleteFavorite(
   });
   if (!response.ok) {
     const text = await response.text().catch(() => "");
-    console.error(`Directus DELETE /items/favorites/${id} error ${response.status}: ${text}`);
+    log({ level: "error", message: `Directus DELETE /items/favorites/${id} error ${response.status}`, reason: text });
     throw new Error(`Directus DELETE request failed (status ${response.status})`);
   }
 }

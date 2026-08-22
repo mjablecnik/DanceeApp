@@ -5,6 +5,7 @@ import {
 } from "facebook-event-scraper";
 import type { ScrapeOptions } from "facebook-event-scraper";
 import { config } from "../core/config";
+import { log } from "../core/logger";
 
 /** Timestamp of the last scrape request — used for rate limiting. */
 let lastScrapeTime = 0;
@@ -50,14 +51,14 @@ function buildScrapeOptions(): ScrapeOptions {
  */
 export async function scrapeFacebookEvent(eventUrl: string): Promise<unknown> {
   try {
-    console.log(`Scraping event: ${eventUrl}`);
+    log({ level: "info", message: "Scraping event", url: eventUrl });
     await throttle();
     const eventData = await scrapeFbEvent(eventUrl, buildScrapeOptions());
-    console.log(`Successfully scraped event: ${eventUrl}`);
+    log({ level: "info", message: "Successfully scraped event", url: eventUrl });
     return eventData;
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`Failed to scrape event ${eventUrl}:`, message);
+    log({ level: "error", message: "Failed to scrape event", url: eventUrl, error: message });
     throw new Error(
       `Failed to scrape event [${eventUrl}]: ${message}`,
     );
@@ -73,7 +74,7 @@ export async function scrapeFacebookEventList(
   eventType?: "upcoming" | "past",
 ): Promise<unknown[]> {
   try {
-    console.log(`Scraping event list from: ${pageUrl} (type: ${eventType ?? "all"})`);
+    log({ level: "info", message: `Scraping event list (type: ${eventType ?? "all"})`, url: pageUrl });
 
     let fbEventType: EventType | undefined;
     if (eventType === "upcoming") {
@@ -84,11 +85,11 @@ export async function scrapeFacebookEventList(
 
     await throttle();
     const events = await scrapeFbEventList(pageUrl, fbEventType, buildScrapeOptions());
-    console.log(`Successfully scraped ${events.length} events from: ${pageUrl}`);
+    log({ level: "info", message: `Successfully scraped ${events.length} events`, url: pageUrl });
     return events;
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`Failed to scrape event list from ${pageUrl}:`, message);
+    log({ level: "error", message: "Failed to scrape event list", url: pageUrl, error: message });
     throw new Error(
       `Failed to scrape event list [${pageUrl}]: ${message}`,
     );

@@ -15,7 +15,6 @@ import {
   createVenue,
   updateGroupTimestamp,
   getGroupsOrderedByUpdatedAt,
-  listEvents,
   listPublishedEvents,
 } from "../../clients/directus-client";
 
@@ -105,25 +104,6 @@ describe("Property 24: listPublishedEvents always enforces published filter", ()
     expect(filter._and?.[1]).toEqual(extraFilter);
   });
 
-  it("listEvents passes the raw filter without enforcing published", async () => {
-    let capturedUrl = "";
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockImplementation((url: string) => {
-        capturedUrl = url;
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => ({ data: [] }),
-        });
-      })
-    );
-    const rawFilter = { status: { _eq: "draft" } };
-    await listEvents(rawFilter);
-    const params = new URL(capturedUrl).searchParams;
-    const filter = JSON.parse(params.get("filter") ?? "{}") as Record<string, unknown>;
-    expect((filter as { status?: { _eq?: string } }).status?._eq).toBe("draft");
-  });
 });
 
 describe("Property 10: Venue deduplication", () => {

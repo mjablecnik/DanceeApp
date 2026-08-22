@@ -13,8 +13,6 @@ import type { DirectusEventTranslation, DirectusCourseTranslation, DirectusFavor
 import type { EventWorkflow } from "./workflow";
 import type { BatchService } from "./batch";
 
-export const corsOrigins = config.corsOrigins;
-
 // Only these top-level filter fields are allowed from client input.
 // This prevents clients from crafting filters that bypass the published-only
 // restriction or target internal/sensitive fields (e.g. status, translations).
