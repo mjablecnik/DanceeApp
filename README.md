@@ -4,7 +4,7 @@ Dance event discovery app for finding and exploring dance events. Built with Flu
 
 ## Screenshots
 
-<img src="screenshots/dancee_app/Screenshot_20260505_085016.png" width="32%" alt="Screenshot 1"> <img src="screenshots/dancee_app/Screenshot_20260505_085220.png" width="32%" alt="Screenshot 5"> <img src="screenshots/dancee_app/Screenshot_20260505_085136.png" width="32%" alt="Screenshot 4">
+<img src="screenshots/dancee_app/Screenshot_20260505_085016.png" width="31%" alt="Screenshot 1">&nbsp;&nbsp;&nbsp;<img src="screenshots/dancee_app/Screenshot_20260505_085220.png" width="31%" alt="Screenshot 5">&nbsp;&nbsp;&nbsp;<img src="screenshots/dancee_app/Screenshot_20260505_085136.png" width="31%" alt="Screenshot 4">
 
 ## Architecture
 
